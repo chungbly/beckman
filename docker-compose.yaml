@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - NODE_ENV=production
+    image: buithiendev/r8ckie-web:latest
+    container_name: nextjs-app
+    ports:
+      - "3000:3000"
+    env_file:
+      - .env.production

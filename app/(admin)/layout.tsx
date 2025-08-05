@@ -1,0 +1,104 @@
+import localFont from "next/font/local";
+const poppins = localFont({
+  src: [
+    {
+      path: "../../public/fonts/geist/Geist-Regular.ttf",
+      weight: "400",
+    },
+    {
+      path: "../../public/fonts/geist/Geist-Medium.ttf",
+      weight: "500",
+    },
+    {
+      path: "../../public/fonts/geist/Geist-SemiBold.ttf",
+      weight: "600",
+    },
+    {
+      path: "../../public/fonts/geist/Geist-Bold.ttf",
+      weight: "700",
+    },
+    {
+      path: "../../public/fonts/geist/Geist-ExtraBold.ttf",
+      weight: "800",
+    },
+    {
+      path: "../../public/fonts/geist/Geist-Black.ttf",
+      weight: "900",
+    },
+    {
+      path: "../../public/fonts/geist/Geist-Light.ttf",
+      weight: "300",
+    },
+    {
+      path: "../../public/fonts/geist/Geist-Thin.ttf",
+      weight: "100",
+    },
+  ],
+  variable: "--font-geist",
+});
+
+import { AppSidebar } from "@/components/app-layout/app-sidebar";
+import { SidebarProvider } from "@/components/ui/sidebar";
+import { getAccessToken } from "@/lib/cookies";
+import { cn } from "@/lib/utils";
+import { getUserAdminQuery } from "@/query/auth.admin.query";
+import tokenStore from "@/store/tokenStore";
+import {
+  dehydrate,
+  HydrationBoundary,
+  QueryClient,
+} from "@tanstack/react-query";
+import { Metadata } from "next";
+import { cookies, headers } from "next/headers";
+import MainContent from "./main-content";
+import { getGlobalConfig } from "@/lib/configs";
+
+export const metadata: Metadata = {
+  openGraph: {
+    images: ["/favicon.png"],
+  },
+  metadataBase: new URL("https://r8ckie.com"),
+  icons: {
+    icon: "/favicon.png",
+  },
+  description: "R8ckie Step on your way",
+  title: "R8ckie - Step on your way",
+  appleWebApp: {},
+};
+
+export default async function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  const cookieStore = await cookies();
+  const defaultOpen = cookieStore.get("sidebar:state")?.value === "true";
+  const headersList = await headers();
+  const token = (await getAccessToken())?.value;
+  const pathname = headersList.get("x-pathname");
+  const queryClient = new QueryClient();
+  if (pathname !== "/admin/login") {
+    await queryClient.prefetchQuery(getUserAdminQuery);
+  }
+  const configs = await getGlobalConfig();
+
+  return (
+    <div
+      className={cn(
+        "min-h-screen bg-background antialiased",
+        poppins.className
+      )}
+    >
+      {pathname === "/admin/login" ? (
+        children
+      ) : (
+        <HydrationBoundary state={dehydrate(queryClient)}>
+          <SidebarProvider defaultOpen={defaultOpen}>
+            <AppSidebar configs={configs} />
+            <MainContent token={token}>{children}</MainContent>
+          </SidebarProvider>
+        </HydrationBoundary>
+      )}
+    </div>
+  );
+}
