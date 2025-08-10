@@ -23,6 +23,21 @@ export const getPosts = <T extends boolean = false>(
   });
 };
 
+export const getCategoryCountByTag = async (tags: string[]) => {
+  return callAPI<
+    {
+      tag: string;
+      count: number;
+    }[]
+  >(`/api/posts/count-by-tags`, {
+    query: {
+      q: JSON.stringify({
+        tags,
+      }),
+    },
+  });
+};
+
 export const getSimilarPosts = <T extends boolean = false>(
   query: GetPostQuery,
   limit: number = 100,

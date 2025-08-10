@@ -45,7 +45,7 @@ function ShoeCare({
               >
                 {product.name}
               </Link>
-              <p className="text-xs">{product.discribles[0] || ""}</p>
+              {/* <p className="text-xs">{product.discribles[0] || ""}</p> */}
               <div className="flex items-center justify-between gap-4">
                 <p className="text-[var(--red-brand)] font-bold ">
                   {formatCurrency(product.salePrice || product.basePrice)}

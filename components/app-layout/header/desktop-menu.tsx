@@ -76,7 +76,6 @@ export function HeaderMenu({ categories }: { categories: Category[] }) {
           }
           return acc;
         }, {} as Record<string, CategoryTree[]>);
-        console.log("group", group);
         return (
           <MenuItem
             key={category._id}

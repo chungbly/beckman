@@ -2,6 +2,7 @@
 import { getPostInfinityQuery } from "@/app/(client)/magazine/page";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { Post as TPost } from "@/types/post";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { ChevronDown, Loader } from "lucide-react";
 import { useSearchParams } from "next/navigation";
@@ -17,13 +18,42 @@ function LoadMorePosts() {
 
   const posts = data?.pages?.flatMap((page) => page?.items || []) ?? [];
   if (!posts || !posts?.length) return null;
+  const firstPosts: TPost[] = [];
+  const secondPosts: TPost[] = [];
+  const thirdPosts: TPost[] = [];
+  posts.forEach((post, index) => {
+    if (index % 3 === 0) {
+      firstPosts.push(post);
+    } else if (index % 3 === 1) {
+      secondPosts.push(post);
+    } else {
+      thirdPosts.push(post);
+    }
+  });
+
   return (
-    <div className={cn("mt-4 col-span-full block ")}>
-      <h2 className="text-2xl font-bold mb-2 ">Câu chuyện phong cách</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2  gap-4">
-        {posts?.map((post) => (
-          <Post key={post._id} post={post} />
-        ))}
+    <div
+      className={cn(
+        "mt-4 col-span-full block border-t pt-[20px] border-[var(--brown-brand)]"
+      )}
+    >
+      <div className="grid grid-cols-1 sm:grid-cols-3  gap-4">
+        <div className="space-y-[20px]">
+          {firstPosts?.map((post) => (
+            <Post key={post._id} post={post} size="small" />
+          ))}
+        </div>
+        <div className="space-y-[20px] border-r border-l px-[20px] border-[var(--brown-brand)]">
+          {secondPosts?.map((post) => (
+            <Post key={post._id} post={post} size="small" />
+          ))}
+        </div>
+        <div className="space-y-[20px]">
+          {thirdPosts?.map((post, index) => (
+            <Post key={post._id} post={post} size="small" />
+          ))}
+        </div>
+
         <div className="col-span-full flex items-center justify-center">
           {hasNextPage && (
             <Button

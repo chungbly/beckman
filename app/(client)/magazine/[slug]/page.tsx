@@ -3,8 +3,8 @@ import {
   getPosts,
 } from "@/client/post.client";
 import RenderHTMLFromCMS from "@/components/app-layout/render-html-from-cms";
+import MagazineCategoryFilter from "@/components/pages/client/magazine/categories-filter";
 import LoadMoreSimilarPosts from "@/components/pages/client/magazine/load-more-similar-post";
-import { Breadcrumb } from "@/components/product/breadcrumb";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
@@ -17,11 +17,11 @@ import {
   CircleChevronRight,
   ClockIcon,
 } from "lucide-react";
+import moment from "moment-timezone";
 import { Metadata, ResolvingMetadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import moment from "moment-timezone";
 
 type Props = {
   params: Promise<{ slug: string }>;
@@ -101,103 +101,96 @@ export default async function BlogPostPage({ params }: Props) {
   ]);
   if (!post) notFound();
   return (
-    <>
-      <Breadcrumb
-        items={[
-          { label: "Trang chủ", href: "/" },
-          { label: "Magazine", href: "/magazine" },
-          { label: post.title },
-        ]}
-        className="hidden sm:flex text-[var(--brown-brand)]"
-      />
-      <div className=" space-y-8">
-        {/* Post Header */}
-        <div>
-          {post.tags?.map((tag) => (
-            <Badge key={tag} variant="secondary" className="mr-2 mb-2">
-              {tag}
-            </Badge>
-          ))}
-          <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
-          <div className="flex items-center text-sm text-muted-foreground mb-4">
-            <CalendarIcon className="mr-1 h-4 w-4" />
-            {post.createdAt && (
-              <p className="text-sm text-muted-foreground">
-                {moment
-                  .tz(post.createdAt, "Asia/Ho_Chi_Minh")
-                  .format("D [tháng] M, YYYY")}
-              </p>
-            )}
-            <Separator orientation="vertical" className="mx-2 h-4" />
-            <ClockIcon className="mr-1 h-4 w-4" />
-            {/* <span>{post.readTime}</span> */}
+    <div className="container mx-auto grid sm:grid-cols-3 gap-[20px]">
+      <div className=" space-y-8 col-span-2">
+        <div className=" space-y-8">
+          {/* Post Header */}
+          <div>
+            {post.tags?.map((tag) => (
+              <Badge key={tag} variant="secondary" className="mr-2 mb-2">
+                {tag}
+              </Badge>
+            ))}
+            <h1 className="text-3xl font-bold mb-4">{post.title}</h1>
+            <div className="flex items-center text-sm text-muted-foreground mb-4">
+              <CalendarIcon className="mr-1 h-4 w-4" />
+              {post.createdAt && (
+                <p className="text-sm text-muted-foreground">
+                  {moment
+                    .tz(post.createdAt, "Asia/Ho_Chi_Minh")
+                    .format("D [tháng] M, YYYY")}
+                </p>
+              )}
+              <Separator orientation="vertical" className="mx-2 h-4" />
+              <ClockIcon className="mr-1 h-4 w-4" />
+              {/* <span>{post.readTime}</span> */}
+            </div>
           </div>
-        </div>
 
-        {/* Featured Image */}
-        {post.seo?.thumbnail && (
-          <div className="aspect-video relative rounded-lg overflow-hidden">
-            <Image
-              src={post.seo?.thumbnail}
-              alt={post.title}
-              fill
-              quality={100}
-              priority
-              sizes="800px"
-              className="object-cover"
-            />
-          </div>
-        )}
+          {/* Featured Image */}
+          {post.seo?.thumbnail && (
+            <div className="aspect-video relative rounded-lg overflow-hidden">
+              <Image
+                src={post.seo?.thumbnail}
+                alt={post.title}
+                fill
+                quality={100}
+                priority
+                sizes="800px"
+                className="object-cover"
+              />
+            </div>
+          )}
 
-        {/* Post Content */}
-        <RenderHTMLFromCMS html={post.content} />
+          {/* Post Content */}
+          <RenderHTMLFromCMS html={post.content} />
 
-        {/* Author Info */}
-        {post.author && (
-          <Card>
-            <CardContent className="flex items-center space-x-4 p-6">
-              <Avatar className="h-16 w-16">
-                <AvatarImage
-                  src={post.author.photo}
-                  alt={post.author.fullName}
-                />
-                <AvatarFallback>
-                  {post.author.fullName.charAt(0)}
-                </AvatarFallback>
-              </Avatar>
-              <div>
-                <h3 className="font-semibold">{post.author.fullName}</h3>
-                {post.author.quote && (
-                  <i className="text-sm text-muted-foreground">
-                    &quot;{post.author.quote}&quot;
-                  </i>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-        )}
+          {/* Author Info */}
+          {post.author && (
+            <Card>
+              <CardContent className="flex items-center space-x-4 p-6">
+                <Avatar className="h-16 w-16">
+                  <AvatarImage
+                    src={post.author.photo}
+                    alt={post.author.fullName}
+                  />
+                  <AvatarFallback>
+                    {post.author.fullName.charAt(0)}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="font-semibold">{post.author.fullName}</h3>
+                  {post.author.quote && (
+                    <i className="text-sm text-muted-foreground">
+                      &quot;{post.author.quote}&quot;
+                    </i>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
-        {sameAuthorPosts && sameAuthorPosts.length > 1 && (
-          <div className="flex items-center justify-between">
-            <Link
-              href={sameAuthorPosts[0].seo.slug || "#"}
-              className="max-sm:text-sm max-w-[180px] sm:max-w-[300px] hover:underline flex items-center gap-2"
-            >
-              <CircleChevronLeft className="min-w-fit" />
-              {sameAuthorPosts[0].title}
-            </Link>
-            <Link
-              href={sameAuthorPosts[1].seo.slug || "#"}
-              className="max-sm:text-sm max-w-[180px] sm:max-w-[300px] hover:underline flex items-center gap-2"
-            >
-              {sameAuthorPosts[1].title}
-              <CircleChevronRight className="min-w-fit" />
-            </Link>
-          </div>
-        )}
+          {sameAuthorPosts && sameAuthorPosts.length > 1 && (
+            <div className="flex items-center justify-between">
+              <Link
+                href={sameAuthorPosts[0].seo.slug || "#"}
+                className="max-sm:text-sm max-w-[180px] sm:max-w-[300px] hover:underline flex items-center gap-2"
+              >
+                <CircleChevronLeft className="min-w-fit" />
+                {sameAuthorPosts[0].title}
+              </Link>
+              <Link
+                href={sameAuthorPosts[1].seo.slug || "#"}
+                className="max-sm:text-sm max-w-[180px] sm:max-w-[300px] hover:underline flex items-center gap-2"
+              >
+                {sameAuthorPosts[1].title}
+                <CircleChevronRight className="min-w-fit" />
+              </Link>
+            </div>
+          )}
 
-        {/* Social Share */}
-        {/* <div>
+          {/* Social Share */}
+          {/* <div>
           <h3 className="font-semibold mb-2">Chia sẻ bài viết</h3>
           <div className="flex space-x-2">
             <Button variant="outline" size="icon">
@@ -211,11 +204,22 @@ export default async function BlogPostPage({ params }: Props) {
             </Button>
           </div>
         </div> */}
+        </div>
+        <h2 className="text-2xl">Bài viết liên quan</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <LoadMoreSimilarPosts />
+        </div>
       </div>
-      <h2 className="text-2xl">Bài viết liên quan</h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <LoadMoreSimilarPosts />
+
+      <div className="space-y-8 hidden sm:block">
+        {/* Categories */}
+        <div className="p-[20px] border-l border-[var(--brown-brand)]">
+          <h2 className="font-bold text-[40px] mb-[20px] underline">
+            Danh mục
+          </h2>
+          <MagazineCategoryFilter />
+        </div>
       </div>
-    </>
+    </div>
   );
 }

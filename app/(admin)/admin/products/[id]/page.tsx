@@ -82,7 +82,6 @@ export default function Product(props: {
       return res.data;
     },
   });
-  console.log("product", product);
   const form = useForm<TProductPopulated>({
     defaultValues: product
       ? {

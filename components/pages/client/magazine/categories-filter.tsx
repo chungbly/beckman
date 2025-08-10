@@ -1,32 +1,29 @@
-"use client";
-import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
+import { getCategoryCountByTag } from "@/client/post.client";
+import { getGlobalConfig } from "@/lib/configs";
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+const getCountByTag = async (tags: string[]) => {
+  const res = await getCategoryCountByTag(tags);
+  if (!res || !res.data?.length) {
+    return null;
+  }
+  return res.data;
+};
 
-function MagazineCategoryFilter({ categories }: { categories: string[] }) {
-  const searchParams = useSearchParams();
-  const tags = (searchParams.get("tags") || "").split(",").filter((tag) => tag);
-  const getLink = (tag: string) => {
-    if (tags?.includes(tag)) {
-      return `/magazine?tags=${tags.filter((t) => t !== tag).join(",")}`;
-    }
-    const newTags = [...tags, tag];
-    return newTags.length ? `/magazine?tags=${newTags.join(",")}` : "/magazine";
-  };
+async function MagazineCategoryFilter() {
+  const configs = await getGlobalConfig();
+  const MAGAZINE_CATEGORIES =
+    (configs?.["MAGAZINE_CATEGORIES"] as string[]) || [];
+  const countByTag = (await getCountByTag(MAGAZINE_CATEGORIES)) || [];
   return (
-    <div className="flex flex-wrap gap-2">
-      {categories.map((category) => (
-        <Link key={category} href={getLink(category)}>
-          <Badge
-            className={cn(
-              "p-2 hover:bg-[var(--gray-beige)]",
-              tags?.includes(category) ? "bg-[var(--rose-beige)]" : "bg-muted"
-            )}
-            variant="secondary"
-          >
-            {category}
-          </Badge>
+    <div className="flex flex-col gap-[20px] ">
+      {countByTag.map((c) => (
+        <Link
+          className="hover:shadow-lg p-[10px]"
+          key={c.tag}
+          href={`/magazine?tags=${c.tag}`}
+        >
+          <p className="font-bold text-3xl">{c.tag}</p>
+          <span>Số lượng bài viết : {c.count}</span>
         </Link>
       ))}
     </div>

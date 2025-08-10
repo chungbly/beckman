@@ -48,9 +48,6 @@ function Actions({
       return;
     }
 
-    const resCatogies = await getCategories({}, 100, 1);
-    const categories = resCatogies.data || [];
-
     const total = res.data?.meta.itemCount || 0;
     data.push(...res.data!.items);
 
@@ -70,7 +67,6 @@ function Actions({
     }
 
     const rows = data.map((row, index) => {
-      const cates = categories?.filter((c) => row.categories?.includes(c._id));
       return {
         STT: index + 1,
         ID: row.kvId,
@@ -85,7 +81,7 @@ function Actions({
           .flat()
           .join(","),
         "Tên sản phẩm": row.name,
-        "Danh mục": cates.map((c) => c.name).join(","),
+        "Danh mục": row.categories.map((c) => c.name).join(","),
         Tags: row.tags.join(","),
         "Tags sản phẩm liên quan": row.suggestionTags.join(","),
         "Số lượng tồn kho": row.stock,

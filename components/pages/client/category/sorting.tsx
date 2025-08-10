@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import { ChevronDown, ChevronsUpDown, ChevronUp } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useRouter, useSearchParams } from "next/navigation";
+import MobileFilterV1 from "./mobile-filter-v1";
 const MobileFilter = dynamic(() => import("./mobile-filter"));
 
 function ProductSorting({ count }: { count: number }) {
@@ -180,6 +181,7 @@ function ProductSorting({ count }: { count: number }) {
         </div>
         <MobileFilter />
       </div>
+      <MobileFilterV1/>
     </>
   );
 }

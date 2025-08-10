@@ -22,7 +22,7 @@ function LoadMoreSimilarPosts() {
   return (
     <>
       {posts?.map((post) => (
-        <Post key={post._id} post={post} />
+        <Post key={post._id} post={post} size='small'/>
       ))}
       <div className="col-span-full flex items-center justify-center">
         {hasNextPage && (

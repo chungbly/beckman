@@ -65,7 +65,6 @@ export default function ProductPage({
       return res.data[0];
     },
   });
-  console.log("product", product);
   const category = product?.categories[0] as unknown as Category;
   const { data: variants } = useQuery({
     queryKey: ["get-product-variants", slug, userId],

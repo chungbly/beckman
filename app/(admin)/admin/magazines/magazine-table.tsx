@@ -128,6 +128,30 @@ const columns = [
         <IconPhotoOff className="w-[50px] h-[50px] aspect-square text-gray-500" />
       ),
   }),
+  columnHelper.accessor("tags", {
+    header: "Tag",
+    cell: (info) => (
+      <div className="flex flex-wrap gap-2">
+        {info.getValue()?.map((tag) => (
+          <Badge key={tag}>{tag}</Badge>
+        ))}
+      </div>
+    ),
+  }),
+
+  columnHelper.accessor("isOutStanding", {
+    header: "Nổi bật",
+    cell: (info) => (
+      <Badge
+        className={cn(
+          "min-w-fit",
+          info.getValue() ? "bg-green-600" : "bg-slate-500"
+        )}
+      >
+        {info.getValue() ? "Nổi bật" : "Không"}
+      </Badge>
+    ),
+  }),
 
   columnHelper.accessor("createdAt", {
     header: "Thời gian tạo",

@@ -57,8 +57,11 @@ export default function GrapesStudio() {
         storage: {
           type: "self",
           // Provide a custom handler for saving the project data.
-          onSave: async ({ project }) => {
-            console.log("project", project);
+          onSave: async (data) => {
+            const { project, editor } = data;
+            console.log("data", data);
+            console.log("editor", editor.editor.getHtml());
+            console.log("editor", editor.editor.getCss());
             // throw new Error('Implement your "onSave"!');
             // const body = new FormData();
             // body.append("project", JSON.stringify(project));
