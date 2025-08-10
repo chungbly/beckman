@@ -16,31 +16,20 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { TreeItem } from "./category-item";
 import CategorySkeleton from "./loading";
+import { getChildCategories } from "./page";
 
-export const getChildCategories = (
-  categories: CategoryTree[],
-  parentId: string
-) => {
-  let result: CategoryTree[] = [];
-  for (let i = 0; i < categories.length; i++) {
-    if (categories[i].parentId === parentId) {
-      result.push({
-        ...categories[i],
-        children: getChildCategories(categories, categories[i].id) ?? [],
-      });
-    }
-  }
-  return result;
-};
+
 
 export type CategoryTree = {
   id: string;
   name: string;
+  groupName: string;
   isShow: boolean;
   parentId?: string | null;
   slug?: string;
   children: CategoryTree[];
   index?: number;
+  mobileBanner?: string;
 };
 
 export default function ProductCategories() {
@@ -150,8 +139,9 @@ export default function ProductCategories() {
         </div>
       </div>
       <div className="bg-white rounded-lg shadow">
-        <div className="grid grid-cols-[1fr,200px,200px] gap-4 border-b font-medium text-sm py-4">
+        <div className="grid grid-cols-[1fr,200px,200px,200px] gap-4 border-b font-medium text-sm py-4">
           <div className="pl-4">Tên</div>
+          <div >Tên nhóm</div>
           <div>Trạng thái</div>
           <div className="pr-4">Hành động</div>
         </div>

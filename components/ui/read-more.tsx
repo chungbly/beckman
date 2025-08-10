@@ -7,9 +7,11 @@ import { useEffect, useRef, useState } from "react";
 function ReadMore({
   children,
   maxHeight = 400,
+  className,
 }: {
   children: React.ReactNode;
   maxHeight?: number;
+  className?: string;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -26,7 +28,8 @@ function ReadMore({
     <div
       className={cn(
         "col-span-full relative pb-10",
-        isExpanded ? "pb-10" : "pb-0"
+        isExpanded ? "pb-10" : "pb-0",
+        className
       )}
     >
       <div

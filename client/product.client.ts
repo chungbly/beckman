@@ -1,6 +1,7 @@
 import { Meta } from "@/types/api-response";
 import { Product } from "@/types/product";
 import { callAPI } from "./callAPI";
+import { TProductPopulated } from "@/app/(admin)/admin/products/[id]/page";
 
 export interface ProductWithMeta {
   items: Product[];
@@ -135,7 +136,7 @@ export const getProduct = (id: number | string) => {
   return callAPI<Product>(`/api/products/${id}`);
 };
 
-export const updateProduct = async (id: number, data: Partial<Product>) => {
+export const updateProduct = async (id: number, data: Partial<TProductPopulated>) => {
   return await callAPI<Product>(`/api/products/${id}`, {
     method: "PATCH",
     body: JSON.stringify(data),

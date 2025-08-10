@@ -7,13 +7,13 @@ import VoucherZone from "@/components/pages/client/home-page/voucher-zone";
 function HomePage() {
   return (
     <>
-      <HomePageCarouselServer />
+      {/* <HomePageCarouselServer />
       <div className="container px-0 sm:px-2">
         <SubMenuHomePageContainer />
         <FlashDealContainer />
         <VoucherZone />
       </div>
-      <HighlightCategories />
+      <HighlightCategories /> */}
     </>
   );
 }

@@ -2,18 +2,12 @@
 
 import { APIStatus } from "@/client/callAPI";
 import { updateCart } from "@/client/cart.client";
-import { getCategory } from "@/client/category.client";
 import { getComments } from "@/client/comment.client";
-import {
-  getProducts,
-  getSuggestionProducts,
-  getVariants,
-} from "@/client/product.client";
-import { Breadcrumb } from "@/components/product/breadcrumb";
-import { ColorSelector } from "@/components/product/color-selector";
+import { getProducts, getVariants } from "@/client/product.client";
 import ProductGallery from "@/components/product/product-gallery";
 import { SizeSelector } from "@/components/product/size-selector";
 import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/hooks/use-toast";
 import { getUserId } from "@/lib/cookies";
@@ -21,11 +15,12 @@ import { cn } from "@/lib/utils";
 import { buildCartQuery } from "@/query/order.query";
 import { useCartStore } from "@/store/useCart";
 import { useCustomerStore } from "@/store/useCustomer";
+import { Category } from "@/types/category";
 import { formatCurrency } from "@/utils/number";
 import { useForm } from "@tanstack/react-form";
 import { useQuery } from "@tanstack/react-query";
 import { AnimationControls, useAnimation } from "framer-motion";
-import { ShoppingCart } from "lucide-react";
+import { Dot } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
 import {
@@ -34,18 +29,15 @@ import {
   useRouter,
   useSearchParams,
 } from "next/navigation";
-import { MouseEvent, useEffect, useMemo, useRef, useState } from "react";
+import { MouseEvent, useEffect, useMemo, useRef } from "react";
 import { Product, WithContext } from "schema-dts";
 import { useStore } from "zustand";
-import VoucherZoneContainer from "../pages/client/home-page/voucher-zone/voucher-zone";
-import MobileActionBar from "../pages/client/product/mobile-footer-actionbar";
+import RenderHTMLFromCMS from "../app-layout/render-html-from-cms";
 import ProductReviews from "../pages/client/product/review";
-import ShoeCare from "../pages/client/product/shoe-care";
 import { fbTracking, ggTagTracking } from "../third-parties/utils";
-import { Separator } from "../ui/separator";
+import { ScrollArea } from "../ui/scroll-area";
 import ProductDescription from "./product-description";
 import SizeSelectionGuide from "./size-guide-selection";
-import StarRating from "./star-rating";
 
 export default function ProductPage({
   slug,
@@ -73,23 +65,8 @@ export default function ProductPage({
       return res.data[0];
     },
   });
-  const { data: category } = useQuery({
-    queryKey: ["get-category", product?.categories],
-    queryFn: async () => {
-      if (!product?.categories) return null;
-      const res = await getCategory(product.categories[0]);
-      if (res.status !== APIStatus.OK || !res.data) return null;
-      return res.data;
-    },
-  });
-  const breadcrumbItems = [
-    { label: "Home", href: "/" },
-    { label: category?.name, href: `danh-muc/${category?.seo.slug || "#"}` },
-    {
-      label: product?.name,
-      href: product?.seo.slug,
-    },
-  ].filter((t) => t.label);
+  console.log("product", product);
+  const category = product?.categories[0] as unknown as Category;
   const { data: variants } = useQuery({
     queryKey: ["get-product-variants", slug, userId],
     queryFn: async () => {
@@ -116,21 +93,6 @@ export default function ProductPage({
         1,
         false
       );
-    },
-  });
-
-  const { data: shoecareProducts } = useQuery({
-    queryKey: ["get-shoes-care", slug],
-    queryFn: async () => {
-      if (!slug) return null;
-      const res = await getSuggestionProducts({
-        slug: slug,
-        status: true,
-        suggestionCategoryIds: [configs["SHOECARE_CATEGORY_ID"] as string],
-      });
-      if (res.status !== APIStatus.OK || !res.data || !res.data?.length)
-        return null;
-      return res.data;
     },
   });
 
@@ -171,7 +133,6 @@ export default function ProductPage({
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const [containerHeight, setContainerHeight] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
   const currentProduct = useMemo(() => {
     const size = searchParams.get("size") || product?.size;
@@ -185,6 +146,7 @@ export default function ProductPage({
       size: currentProduct?.size,
       color: currentProduct?.color,
       kvCode: currentProduct?.kvCode,
+      name: currentProduct?.name,
       basePriceTotal: currentProduct?.basePrice || 0,
       finalPriceTotal: currentProduct?.finalPrice || 0,
       addons: [] as number[],
@@ -309,7 +271,9 @@ export default function ProductPage({
       form.setFieldValue("color", product?.color);
       form.setFieldValue("kvId", product?.kvId);
       form.setFieldValue("kvCode", product?.kvCode);
-      router.push(`${pathname}?size=${product.size}`);
+      router.push(`${pathname}?size=${product.size}`, {
+        scroll: false,
+      });
 
       return;
     }
@@ -328,7 +292,7 @@ export default function ProductPage({
     form.setFieldValue("color", currentColor);
     form.setFieldValue("kvId", childProduct?.kvId);
     form.setFieldValue("kvCode", childProduct?.kvCode);
-    router.push(`${pathname}?size=${childProduct.size}`);
+    router.push(`${pathname}?size=${childProduct.size}`, { scroll: false });
   };
 
   const handleChangeColor = (color: string) => {
@@ -356,33 +320,6 @@ export default function ProductPage({
     router.push(`/${childProduct.seo.slug}`);
   };
 
-  const handleChangeAddons = (id: number) => {
-    const currentAddons = form.getFieldValue("addons");
-    let newAddons = currentAddons;
-    if (currentAddons.includes(id)) {
-      newAddons = currentAddons.filter((a: number) => a !== id);
-    } else {
-      newAddons = [...currentAddons, id];
-    }
-    const shoecares =
-      shoecareProducts?.filter((p) => newAddons.includes(p.kvId)) || [];
-    const basePriceTotal = shoecares.reduce(
-      (acc, cur) => acc + cur.basePrice,
-      0
-    );
-    const finalPriceTotal = shoecares.reduce(
-      (acc, cur) => acc + cur.finalPrice,
-      0
-    );
-    const currentFinalPrice = form.getFieldValue("finalPriceTotal");
-    form.setFieldValue(
-      "basePriceTotal",
-      (product?.basePrice || 0) + basePriceTotal
-    );
-    form.setFieldValue("finalPriceTotal", currentFinalPrice + finalPriceTotal);
-    form.setFieldValue("addons", newAddons);
-  };
-
   useEffect(() => {
     const items = cart?.cart;
     if (!items || !items.length || !product) return;
@@ -395,270 +332,296 @@ export default function ProductPage({
     }
   }, [cart, product]);
 
-  useEffect(() => {
-    if (isMobile || !ref.current) return;
-
-    const observer = new ResizeObserver(() => {
-      if (ref.current) {
-        setContainerHeight(ref.current.offsetHeight);
-      }
-    });
-
-    observer.observe(ref.current);
-    return () => observer.disconnect();
-  }, []);
   if (isLoading) return <div>Loading...</div>;
   if (!product) return notFound();
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-      <Breadcrumb
-        items={breadcrumbItems}
-        className="hidden sm:flex px-4 2xl:px-[100px] text-[var(--brown-brand)]"
-      />
-
-      <div
-        style={{
-          ...(containerHeight && !isMobile
-            ? {
-                height: containerHeight,
-                maxHeight: containerHeight,
-                overflow: "hidden",
-              }
-            : {}),
-        }}
-        className={cn(
-          "grid grid-cols-1 sm:grid-cols-2 min-[920px]:grid-cols-10 min-[1120px]:grid-cols-14 xl:grid-cols-3 gap-[10px] sm:gap-[20px] px-0 sm:px-4 2xl:px-[100px]",
-          "h-full sm:h-[734px] min-[920px]:h-[750px] min-[1120px]:h-[868px] xl:h-[967px] 2xl:min-h-[880px]",
-          "max-sm:!min-h-[647px]"
-        )}
-      >
-        <ProductGallery
-          ref={ref}
-          product={product!}
-          form={form}
-          style={{
-            height: containerHeight,
-            maxHeight: containerHeight,
-          }}
-          className="col-span-1 sm:col-span-1 min-[920px]:col-span-6 min-[1120px]:col-span-9 xl:col-span-2"
+      <div className="container mx-auto px-2 sm:py-6 max-sm:mb-[48px]">
+        <script
+          defer
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        <div
-          style={{
-            ...(containerHeight && !isMobile
-              ? {
-                  height: containerHeight,
-                  maxHeight: containerHeight,
-                  overflow: "auto",
-                }
-              : {}),
-          }}
-          className={cn(
-            "hidden sm:block space-y-3 min-[920px]:col-span-4 min-[1120px]:col-span-5 xl:col-span-1 h-[880px] overflow-auto",
-            "h-full sm:h-[734px] min-[920px]:h-[750px] min-[1120px]:h-[868px] xl:h-[967px] 2xl:min-h-[880px]"
-          )}
-        >
-          {/* <h1 className="text-2xl font-bold mb-2">
-            {product?.name || product?.kvFullName}
-          </h1> */}
-          <form.Field name="kvCode">
-            {(field) => (
-              <div className="text-sm text-muted-foreground">
-                SKU: {field.state.value}
-              </div>
+        <div className={cn("grid grid-cols-1 sm:grid-cols-2 gap-[20px]")}>
+          <ProductGallery
+            ref={ref}
+            product={product!}
+            form={form}
+            className="col-span-1 sm:col-span-1"
+          />
+          <div
+            className={cn(
+              "space-y-3 min-[920px]:col-span-4 min-[1120px]:col-span-5 xl:col-span-1 ",
+              "h-full sm:h-[1700px] relative"
             )}
-          </form.Field>
-          <form.Subscribe
-            selector={(state) => ({
-              basePrice: state.values.basePriceTotal,
-              finalPrice: state.values.finalPriceTotal,
-            })}
           >
-            {({ basePrice, finalPrice }) => {
-              return (
-                <>
-                  {product.finalPrice < product.basePrice && (
-                    <p className="line-through text-xl decoration-[var(--red-brand)]">
-                      {formatCurrency(basePrice)}
-                    </p>
-                  )}
-                  <p className="text-[var(--red-brand)] font-bold text-3xl">
-                    {formatCurrency(finalPrice)}
-                  </p>
-                </>
-              );
-            }}
-          </form.Subscribe>
-
-          <div className="flex items-center justify-between">
-            <div className="flex gap-1 items-center">
-              <StarRating rating={average} />
-              {comments.length > 0 && (
-                <span className="text-sm text-[var(--gray-beige)]">
-                  ({comments.length})
-                </span>
-              )}
-            </div>
-            <span className="text-sm text-[var(--gray-beige)] ml-2">
-              Đã bán {product.sold}
-            </span>
-          </div>
-          {product.sizeTags?.length > 1 && (
-            <>
-              <form.Subscribe
-                selector={(state) => ({
-                  color: state.values.color,
-                  size: state.values.size,
-                })}
-              >
-                {({ color, size }) => (
-                  <SizeSelector
-                    variants={variants || []}
-                    sizes={product.sizeTags || []}
-                    selectedSize={size}
-                    selectedColor={color}
-                    onSelect={handleChangeSize}
-                  />
-                )}
-              </form.Subscribe>
-              {category?.sizeSelectionGuide && (
-                <SizeSelectionGuide src={category?.sizeSelectionGuide} />
-              )}
-            </>
-          )}
-
-          {product.colorTags?.length > 1 && (
-            <form.Field name="color">
+            <form.Field name="kvCode">
               {(field) => (
-                <ColorSelector
-                  colors={product.colorTags || []}
-                  selectedColor={field.state.value}
-                  onSelect={handleChangeColor}
-                />
+                <div className="text-base sm:text-xl text-muted-foreground">
+                  {category?.name} - {field.state.value}
+                </div>
               )}
             </form.Field>
-          )}
-          {!!shoecareProducts?.length && (
-            <form.Field name="addons">
+            <form.Field name="name">
               {(field) => (
-                <ShoeCare
-                  products={shoecareProducts}
-                  addons={field.state.value || []}
-                  handleChangeAddons={handleChangeAddons}
-                />
+                <h1 className="uppercase font-bold text-[#36454F] text-2xl sm:text-4xl">
+                  {field.state.value}
+                </h1>
               )}
             </form.Field>
-          )}
-          {!!product.gifts?.length && (
-            <div className="border rounded-lg p-4 space-y-2 hidden sm:block">
-              <div className="font-semibold flex items-center gap-2">
-                <span className="text-lg">🎁</span>
-                Quà tặng đi kèm
-              </div>
-              <ul className="space-y-1">
-                {product?.gifts.map((gift, index) => (
-                  <li key={index} className="flex items-center gap-2">
-                    <span>-</span>
-                    {gift}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-          <div className="grid grid-cols-2 gap-4">
-            <Button
-              className="bg-[#15374E] hover:bg-[#15374E]/90 transition-colors rounded-none"
-              onClick={(e) => handleAddToCart(e, controls)}
+            <form.Subscribe
+              selector={(state) => ({
+                basePrice: state.values.basePriceTotal,
+                finalPrice: state.values.finalPriceTotal,
+              })}
             >
-              Thêm vào giỏ hàng
-              <ShoppingCart className="ml-2 w-4 h-4" />
-              {!isMobile && (
-                <motion.div
-                  className="absolute z-[9999]"
-                  animate={controls}
-                  initial={{ opacity: 0, display: "none" }}
+              {({ basePrice, finalPrice }) => {
+                return (
+                  <>
+                    {product.finalPrice < product.basePrice && (
+                      <p className="line-through text-xl sm:text-2xl decoration-[var(--brown-brand)]">
+                        {formatCurrency(basePrice)}
+                      </p>
+                    )}
+                    <p className="text-[var(--brown-brand)] font-bold text-2xl sm:text-4xl">
+                      {formatCurrency(finalPrice)}
+                    </p>
+                  </>
+                );
+              }}
+            </form.Subscribe>
+            {product.sizeTags?.length > 1 && (
+              <>
+                <form.Subscribe
+                  selector={(state) => ({
+                    color: state.values.color,
+                    size: state.values.size,
+                  })}
                 >
-                  <Image
-                    src={product.seo?.thumbnail || ""}
-                    alt={product.name}
-                    width={100}
-                    height={100}
-                    className="object-cover rounded-lg"
-                  />
-                </motion.div>
-              )}
-            </Button>
-            <form.Field name="finalPriceTotal">
-              {(field) => (
-                <Button
-                  className="flex-1 bg-[#8B1F18] hover:bg-[#6B180F] rounded-none"
-                  onClick={async (e) => {
-                    const isOK = await handleAddToCart(e, controls);
-                    if (!isOK) return;
-                    router.push("/gio-hang");
-                  }}
-                >
-                  Mua ngay {formatCurrency(field.state.value)}
-                </Button>
-              )}
-            </form.Field>
-          </div>
+                  {({ color, size }) => (
+                    <SizeSelector
+                      variants={variants || []}
+                      sizes={product.sizeTags || []}
+                      selectedSize={size}
+                      selectedColor={color}
+                      onSelect={handleChangeSize}
+                    />
+                  )}
+                </form.Subscribe>
+                {category?.sizeSelectionGuide && (
+                  <SizeSelectionGuide src={category?.sizeSelectionGuide} />
+                )}
+              </>
+            )}
+            {!!product.similarProducts?.length && (
+              <>
+                <div className="text-2xl">Sản phẩm tương tự</div>
+                <ScrollArea>
+                  <div className="flex items-center gap-6 mb-4">
+                    {product.similarProducts.map((p) => {
+                      const image = p.images.find((i) => i.color === p.color);
+                      const colorThumbnail = image?.thumbnail;
+                      const altName = image?.altName || image?.color;
+                      if (!altName) return null;
 
-          <VoucherZoneContainer size="small" userId={userId} />
+                      return (
+                        <div key={p._id} className="flex items-center gap-2">
+                          <Image
+                            src={colorThumbnail || p.seo?.thumbnail || ""}
+                            alt={p.name}
+                            sizes="100px"
+                            width={50}
+                            height={50}
+                            className="object-cover rounded-full w-[50px] h-[50px]"
+                          />
+                          <p className="text-xl hover:underline cursor-pointer">
+                            {altName}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </ScrollArea>
+              </>
+            )}
+
+            <div className="grid grid-cols-2 gap-4">
+              <Button
+                className="bg-[#36454F] hover:bg-[#36454F] hover:shadow-[0_5px_5px_rgba(54,69,79,0.25)] rounded-none transition-shadow"
+                onClick={(e) => handleAddToCart(e, controls)}
+              >
+                THÊM VÀO GIỎ
+                {!isMobile && (
+                  <motion.div
+                    className="absolute z-[9999]"
+                    animate={controls}
+                    initial={{ opacity: 0, display: "none" }}
+                  >
+                    <Image
+                      src={product.seo?.thumbnail || ""}
+                      alt={product.name}
+                      width={100}
+                      height={100}
+                      className="object-cover rounded-lg"
+                    />
+                  </motion.div>
+                )}
+              </Button>
+              <Button
+                className="flex-1 bg-[#CD7F32] hover:bg-[#CD7F32] hover:shadow-[0_5px_5px_rgba(54,69,79,0.25)] rounded-none"
+                onClick={async (e) => {
+                  const isOK = await handleAddToCart(e, controls);
+                  if (!isOK) return;
+                  router.push("/gio-hang");
+                }}
+              >
+                MUA NGAY
+              </Button>
+            </div>
+            <div className="flex items-center border p-3 border-[var(--gray-beige)]">
+              <Image
+                src="/icons/free-shipping.svg"
+                width={51}
+                height={30}
+                alt="Giao hàng miễn phí"
+              />
+              <div className="text-[var(--brown-brand)] flex items-center text-xl">
+                <Dot />
+                <b>
+                  MIỄN PHÍ giao hàng toàn quốc - thời gian giao từ 5 - 7 ngày
+                </b>
+              </div>
+            </div>
+            <p>{product?.subDescription}</p>
+
+            <Tabs
+              defaultValue="product-details"
+              className="w-full border-t border-t-[var(--gray-beige)] sm:p-4 pt-2"
+            >
+              <TabsList className="grid w-full grid-cols-3 bg-transparent p-0 h-auto">
+                <TabsTrigger
+                  value="product-details"
+                  className="text-black/50 data-[state=active]:text-[var(--brown-brand)] data-[state=active]:bg-transparent   data-[state=active]:rounded-none data-[state=active]:shadow-none text-base sm:text-2xl font-normal"
+                >
+                  Chi tiết sản phẩm
+                </TabsTrigger>
+                <TabsTrigger
+                  value="warranty-policy"
+                  className="text-black/50 data-[state=active]:text-[var(--brown-brand)] data-[state=active]:bg-transparent border-l border-r border-[var(--brown-brand)] rounded-none data-[state=active]:shadow-none text-base sm:text-2xl font-normal"
+                >
+                  Chính sách bảo hành
+                </TabsTrigger>
+                <TabsTrigger
+                  value="care-guide"
+                  className="text-black/50 data-[state=active]:text-[var(--brown-brand)] data-[state=active]:bg-transparent   data-[state=active]:rounded-none data-[state=active]:shadow-none text-base sm:text-2xl font-normal"
+                >
+                  Hướng dẫn bảo quản
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="product-details" className="mt-4">
+                <div>
+                  {product.discribles.map((item, index) => (
+                    <div
+                      key={item.title}
+                      className={cn(
+                        "grid grid-cols-4 p-2",
+                        index % 2 === 0 && "bg-[#FFECD9]"
+                      )}
+                    >
+                      <p className="max-sm:text-sm col-span-1 text-[#36454F]">
+                        {item.title}
+                      </p>
+                      <p className="max-sm:text-sm col-span-3">
+                        {item.content}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </TabsContent>
+              <TabsContent value="warranty-policy" className="mt-4">
+                <RenderHTMLFromCMS
+                  className="max-sm:text-sm"
+                  html={product.warrantyPolicy}
+                />
+              </TabsContent>
+              <TabsContent value="care-guide" className="mt-4">
+                <RenderHTMLFromCMS
+                  className="max-sm:text-sm"
+                  html={product.careInstructions}
+                />
+              </TabsContent>
+            </Tabs>
+
+            {/* Shoes Tree Product List */}
+            <ScrollArea className="h-[750px] absolute bottom-0 border-t border-[#e8e1d7]">
+              <div className="space-y-4  pt-4">
+                {/* Product 1 */}
+                {product.recommendedProducts?.map((p) => {
+                  return (
+                    <div
+                      key={p._id}
+                      className="flex border-b border-[#e8e1d7] pb-4"
+                    >
+                      <Image
+                        width={200}
+                        height={200}
+                        src={p.seo?.thumbnail || ""}
+                        alt={p.name}
+                        className="aspect-square object-cover w-[200px]"
+                      />
+                      <div className="w-2/3 pl-4 flex flex-col justify-between">
+                        <div className="space-y-[10px]">
+                          <h3 className="text-2xl font-medium text-[#36454F]">
+                            {p.name}
+                          </h3>
+                          <div className="flex items-center mt-1">
+                            {p.finalPrice < p.basePrice && (
+                              <p className="line-through text-xl font-light decoration-[var(--brown-brand)]">
+                                {formatCurrency(p.basePrice)}
+                              </p>
+                            )}
+                            <p className="text-[var(--brown-brand)] text-2xl">
+                              {formatCurrency(p.finalPrice)}
+                            </p>
+                          </div>
+                          {/* <p className="text-sm text-gray-600 mt-2">
+                            Order with a pair of shoes, and receive 25% off your
+                            pair
+                          </p>
+                          <p className="text-sm text-gray-600">
+                            100% Cedar Wood
+                          </p> */}
+                        </div>
+                        <button
+                          onClick={async () => {
+                            if (p.sizeTags?.length > 1) {
+                              router.push(`/${p.seo?.slug}`);
+                            } else {
+                              addItem(p.kvId);
+                              await updateCart(userId, {
+                                items: useCartStore.getState().items,
+                                shippingInfo,
+                              });
+                            }
+                          }}
+                          className="border-[#CD7F32] border  text-[#CD7F32] py-2 px-4 mt-2 hover:bg-[#e8e1d7] transition-colors w-fit"
+                        >
+                          {p.sizeTags?.length > 1 ? "CHỌN LỰA" : "THÊM VÀO GIỎ"}
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </ScrollArea>
+          </div>
         </div>
       </div>
-
-      <div className="flex items-center justify-between sm:hidden my-4 px-2">
-        <div className="flex gap-1 items-center">
-          <StarRating rating={average} />
-          {comments.length > 0 && (
-            <span className="text-sm text-[var(--gray-beige)]">
-              ({comments.length})
-            </span>
-          )}
-        </div>
-        <span className="text-sm text-[var(--gray-beige)] ml-2">
-          Đã bán {product.sold}
-        </span>
-      </div>
-      <Separator className="my-2" />
-      {!!product.gifts?.length && (
-        <div className="border rounded-lg p-4 space-y-2 sm:hidden">
-          <div className="font-semibold flex items-center gap-2">
-            <span className="text-lg">🎁</span>
-            Quà tặng đi kèm
-          </div>
-          <ul className="space-y-1">
-            {product?.gifts.map((gift, index) => (
-              <li key={index} className="flex items-center gap-2">
-                <span>-</span>
-                {gift}
-              </li>
-            ))}
-          </ul>
-        </div>
-      )}
-      <VoucherZoneContainer userId={userId} className="sm:hidden" />
-
       <ProductDescription product={product} />
-      <Separator className="my-4" />
-      <ProductReviews comments={comments} />
-
-      <MobileActionBar
-        product={product}
-        variants={variants || []}
-        shoecareProducts={shoecareProducts}
-        handleChangeColor={handleChangeColor}
-        handleChangeSize={handleChangeSize}
-        handleAddToCart={handleAddToCart}
-        form={form}
-        handleChangeAddons={handleChangeAddons}
-        category={category}
-      />
+      <div className="container mx-auto px-0 sm:py-6 max-sm:mb-[48px]">
+        <ProductReviews comments={comments} />
+      </div>
     </>
   );
 }

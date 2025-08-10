@@ -24,11 +24,11 @@ function ProductReviews({ comments }: { comments: Comment[] }) {
   });
 
   return (
-    <div className="scroll-mt-24 px-2">
-      <h2 className="text-xl md:text-2xl font-bold mb-4">Đánh giá</h2>
+    <div className="scroll-mt-24 px-2 ">
+      <h2 className="text-xl md:text-2xl font-bold mb-4 text-[var(--brown-brand)]">ĐÁNH GIÁ</h2>
       <div className="space-y-6">
         {/* Review Summary */}
-        <div className="flex flex-col md:flex-row gap-8 p-4 sm:p-6 bg-muted rounded-lg">
+        <div className="flex flex-col md:flex-row gap-8 p-4 sm:p-6 bg-secondary/50 rounded-lg">
           <div className="text-center md:w-1/3">
             <div className="text-4xl font-bold mb-2">{average.toFixed(1)}</div>
             <div className="flex justify-center mb-2">
@@ -55,7 +55,7 @@ function ProductReviews({ comments }: { comments: Comment[] }) {
                 <div className="w-12 text-sm min-w-max">{dist.stars} sao</div>
                 <Progress
                   value={(dist.count / total) * 100}
-                  className="h-2"
+                  className="h-2 bg-transparent"
                   indicatorClassName="bg-[var(--gray-beige)]"
                 />
                 <div className="w-12 text-sm text-muted-foreground">

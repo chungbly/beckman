@@ -1,5 +1,9 @@
 //@ts-nocheck
-import { deleteCategory, updateCategoryStatus } from "@/client/category.client";
+import {
+  deleteCategory,
+  updateCategory,
+  updateCategoryStatus,
+} from "@/client/category.client";
 import { Button } from "@/components/ui/button";
 import {
   Select,
@@ -20,6 +24,7 @@ import {
   TreeItemComponentProps,
 } from "dnd-kit-sortable-tree";
 import { forwardRef } from "react";
+import EditableText from "../products/[id]/editable-text";
 
 export const TreeItem = forwardRef<
   HTMLDivElement,
@@ -68,7 +73,7 @@ export const TreeItem = forwardRef<
   return (
     <div
       key={category.id}
-      className="hover:bg-gray-50 grid grid-cols-[1fr,200px,200px] gap-4 items-center py-2 border-b"
+      className="hover:bg-gray-50 grid grid-cols-[1fr,200px,200px,200px] gap-4 items-center py-2 border-b"
     >
       <div>
         <SimpleTreeItemWrapper
@@ -87,6 +92,24 @@ export const TreeItem = forwardRef<
           if (category.id === "1") return null;
           return (
             <>
+              {parent ? (
+                <EditableText
+                  className="text-base text-gray-500"
+                  value={category.groupName}
+                  placeholder="Nhập tên nhóm"
+                  onChange={async (value) => {
+                    form.setFieldValue("category.groupName", value);
+                  }}
+                  onBlur={async (value) => {
+                    updateCategory(category.id!, {
+                      groupName: value,
+                    });
+                  }}
+                />
+              ) : (
+                <div />
+              )}
+
               <div>
                 <Select
                   value={category.isShow ? "active" : "inactive"}

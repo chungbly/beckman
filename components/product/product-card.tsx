@@ -8,6 +8,7 @@ import { formatCurrency } from "@/utils/number";
 import { ImageOff } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { Separator } from "../ui/separator";
 import StarRating from "./star-rating";
 
 export function ProductCard({
@@ -30,7 +31,9 @@ export function ProductCard({
   const frameByCategory = FRAMES.filter(
     (f) =>
       f.type === "Category" &&
-      f.selectedCategory.some((c) => product.categories.includes(c.value))
+      f.selectedCategory.some((c) =>
+        product.categories.some((cat) => cat._id === c.value)
+      )
   );
   const frameByProduct = FRAMES.filter(
     (f) =>
@@ -54,7 +57,7 @@ export function ProductCard({
     <Link
       href={`/${product.seo?.slug || "#"}`}
       className={cn(
-        "group bg-[var(--light-beige)] !no-underline flex flex-col h-full rounded-none cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1",
+        "group bg-[url('/images/product-card-bg.png')] bg-contain !no-underline flex flex-col h-full rounded-none cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1",
         className
       )}
       style={style}
@@ -90,35 +93,26 @@ export function ProductCard({
           </div> */}
       </div>
       <div className="p-2 sm:p-3 space-y-1 flex flex-col flex-1 overflow-hidden">
-        <h3 className="font-medium leading-tight">{product.name}</h3>
+        <span className="text-[#777777] text-sm sm:text-xl">
+          {product.categories?.[0]?.name} -{product.kvCode}
+        </span>
+        <h3 className="font-bold text-lg sm:text-2xl text-[#36454F] leading-tight">
+          {product.name}
+        </h3>
+        <span className="text-[#777777] text-sm sm:text-xl">{product.subName}</span>
         <div className="flex-1 flex justify-end flex-col">
-          <div className="flex items-center justify-between">
+          <Separator className="bg-[#D9D9D9]" />
+
+          <div className="flex items-center justify-between gap-1">
             {product.finalPrice && (
-              <span className="text-sm sm:text-lg font-bold text-[var(--red-brand)]">
+              <span className="text-sm sm:text-lg font-bold text-[var(--brown-brand)]">
                 {formatCurrency(product.finalPrice)}
               </span>
             )}
-            {product.finalPrice < product.basePrice && (
-              <span
-                className={cn(
-                  "font-medium mr-1",
-                  "line-through text-[var(--red-brand)] opacity-50 text-sm sm:text-lg"
-                )}
-              >
-                {formatCurrency(product.basePrice || 0)}
-              </span>
-            )}
-          </div>
-          <div className="flex items-center justify-between gap-1">
             <StarRating
               rating={product.averageRating || 5}
-              className={cn("text-sm", ratingClassName)}
+              className={cn("text-sm ", ratingClassName)}
             />
-            <span
-              className={cn("text-sm text-[var(--gray-beige)]", soldClassName)}
-            >
-              Đã bán {product.sold}
-            </span>
           </div>
         </div>
       </div>

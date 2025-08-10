@@ -1,5 +1,6 @@
 "use client";
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import React from "react";
 
@@ -10,10 +11,16 @@ function ClientFooterWrapper({ children }: { children: React.ReactNode }) {
   return (
     <footer
       className={cn(
-        "bg-[#D9D9D9] pb-12 sm:pb-0 mt-12 relative",
+        "sm:pb-0 mt-12 relative",
         pageNotShowFooterList.includes(pathname) && "hidden"
       )}
     >
+      <Image
+        src="/images/footer-bg.png"
+        alt="footer bg"
+        fill
+        className="absolute top-0 left-0 w-full h-auto aspect-[1920/800] pointer-events-none"
+      />
       {children}
     </footer>
   );

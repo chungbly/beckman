@@ -1,7 +1,5 @@
 import { getCategory } from "@/client/category.client";
 import RenderHTMLFromCMS from "@/components/app-layout/render-html-from-cms";
-import ProductFilter from "@/components/pages/client/category/filter";
-import { Breadcrumb } from "@/components/product/breadcrumb";
 import ReadMore from "@/components/ui/read-more";
 import { getGlobalConfig } from "@/lib/configs";
 import { isMobileServer } from "@/lib/isMobileServer";
@@ -74,18 +72,6 @@ async function CategoryLayout(props: Props) {
 
   return (
     <div className="container px-2 sm:px-4 sm:pt-2">
-      <Breadcrumb
-        items={[
-          {
-            label: "Home",
-            href: "/",
-          },
-          {
-            label: category.name,
-          },
-        ]}
-        className="hidden sm:flex sm:mb-2 text-[var(--brown-brand)]"
-      />
       <div
         className={cn(
           "relative w-screen sm:w-full h-[400px] -mx-2 sm:mx-0",
@@ -114,18 +100,7 @@ async function CategoryLayout(props: Props) {
           />
         )}
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-20">
-        <div className="self-start h-fit sticky top-10 z-10 bg-white">
-          <ProductFilter filterSections={filter} />
-        </div>
-        {props.children}
-      </div>
-      {props.suggestions}
-      {!!category?.description && (
-        <ReadMore>
-          <RenderHTMLFromCMS html={category.description} />
-        </ReadMore>
-      )}
+      {props.children}
     </div>
   );
 }

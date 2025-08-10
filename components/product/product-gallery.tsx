@@ -5,25 +5,12 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useConfigs } from "@/store/useConfig";
 import { Product } from "@/types/product";
-import {
-  ChevronLeft,
-  ChevronRight,
-  CirclePlay,
-  PlayCircle,
-} from "lucide-react";
+import { PlayCircle } from "lucide-react";
 import Image from "next/image";
-import { forwardRef, Ref, useEffect, useState } from "react";
-import { v4 } from "uuid";
+import { forwardRef, Ref, useState } from "react";
 import { ProductDetailFormValue } from "../pages/client/product/mobile-footer-actionbar";
-import {
-  Carousel,
-  CarouselApi,
-  CarouselContent,
-  CarouselItem,
-} from "../ui/carousel";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { ScrollArea } from "../ui/scroll-area";
-import ProductCardDetail from "./product-card-detail";
 
 interface ProductGalleryProps {
   product: Product;
@@ -39,8 +26,6 @@ function ProductGallery(
   ref: Ref<HTMLDivElement>
 ) {
   const isMobile = useIsMobile();
-  const [api, setApi] = useState<CarouselApi>();
-  const [current, setCurrent] = useState(0);
   const [video, setVideo] = useState<string | null>(null); // State to track video play/pause in mobile view
 
   const configs = useConfigs((s) => s.configs);
@@ -49,7 +34,7 @@ function ProductGallery(
   const frameByCategory = FRAMES.filter(
     (f) =>
       f.type === "Category" &&
-      f.selectedCategory.some((c) => product.categories.includes(c.value))
+      f.selectedCategory.some((c) => product.categories.some(cate => cate._id ===c.value))
   );
   const frameByProduct = FRAMES.filter(
     (f) =>
@@ -73,166 +58,53 @@ function ProductGallery(
     ? product?.images?.flatMap((image) => image.urls)
     : [product.seo?.thumbnail];
 
-  const hasVideo = images.some((image) =>
-    videoExtensions.some((v) => image.includes(v))
-  );
-
-  const firstVideoIndex = images.findIndex((image) =>
-    videoExtensions.some((v) => image.includes(v))
-  );
-
-  useEffect(() => {
-    if (!api) {
-      return;
-    }
-
-    setCurrent(api.selectedScrollSnap() + 1);
-
-    api.on("select", () => {
-      setCurrent(api.selectedScrollSnap() + 1);
-    });
-  }, [api]);
-
   return (
-    <div
-      className={cn("grid sm:grid-cols-5 gap-[10px] max-h-full", className)}
-      style={style}
-    >
-      <ScrollArea className="hidden sm:block  col-span-1 max-h-full">
-        {images.map((image, index) => {
-          const isVideo = !!videoExtensions.find((v) => image.includes(v));
-          return (
-            <button
-              key={v4()}
-              id={`image-${index}`}
-              onClick={(e) => {
-                api?.scrollTo(index);
-              }}
-              className={cn(
-                "relative w-full aspect-square flex-shrink-0 rounded-md overflow-hidden transition-all duration-300",
-                current - 1 === index
-                  ? "ring-2 ring-primary"
-                  : "ring-1 ring-gray-200 opacity-70"
-              )}
-            >
-              {isVideo ? (
-                <div className="absolute inset-0 ">
-                  <video
-                    autoPlay={false}
-                    muted
-                    className="w-full h-full object-cover "
-                  >
-                    <source src={image} />
-                  </video>
-                  <PlayCircle className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2 bg-black/50 text-white  p-1 rounded-full" />
-                </div>
-              ) : (
-                <Image
-                  src={image}
-                  alt={`${product.name} ${index + 1}`}
-                  fill
-                  className="object-cover"
-                  sizes="100px"
-                  priority={index < 6}
-                />
-              )}
-            </button>
-          );
-        })}
-      </ScrollArea>
-
-      <ProductCardDetail
-        ref={ref}
-        product={product}
-        form={form}
-        className="col-span-full sm:col-span-4  max-h-fit"
-      >
-        <Carousel setApi={setApi} className="aspect-square">
-          <CarouselContent className="ml-0">
-            {images.map((image, index) => {
-              const isVideo = !!videoExtensions.find((v) => image.includes(v));
-              return (
-                <CarouselItem
-                  className="relative pl-0 aspect-square   overflow-hidden"
-                  key={index}
-                  onClick={() => {
-                    if (!isVideo) return;
-                    if (!isMobile) {
-                      const video = document.querySelector(
-                        `#video-${index}`
-                      ) as HTMLVideoElement; // Type assertion to HTMLVideoElement
-                      if (!video) return;
-                      video.muted = !video.muted;
-                      return;
-                    }
-                    setVideo(image);
-                  }}
-                >
-                  {isVideo ? (
+    <div className={cn("max-h-full", className)}>
+      <ScrollArea>
+        <div
+          className={cn(
+            "flex flex-wrap gap-[10px]",
+            "h-full max-h-[1700px]",
+            "max-sm:!min-h-[647px]"
+          )}
+        >
+          {images.map((image, index) => {
+            const isVideo = !!videoExtensions.find((v) => image.includes(v));
+            return (
+              <button
+                key={index}
+                className={cn(
+                  "relative aspect-square flex-shrink-0 overflow-hidden transition-all duration-300",
+                  index === 0 ? "w-full" : "w-[calc(50%-5px)]"
+                )}
+              >
+                {isVideo ? (
+                  <div className="absolute inset-0 ">
                     <video
-                      id={`video-${index}`}
+                      autoPlay={false}
                       muted
-                      autoPlay
-                      loop
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover "
                     >
                       <source src={image} />
                     </video>
-                  ) : (
-                    <>
-                      <Image
-                        src={image}
-                        alt={product.name}
-                        fill
-                        sizes="400px"
-                        className="object-cover"
-                        priority={index === 1}
-                      />
-                      {frameUrl && (
-                        <div className="absolute top-0 right-0 left-0 bottom-0">
-                          <Image
-                            src={frameUrl}
-                            sizes="300px"
-                            alt="Frame"
-                            fill
-                          />
-                        </div>
-                      )}
-                    </>
-                  )}
-                </CarouselItem>
-              );
-            })}
-          </CarouselContent>
-          <div
-            className={cn(
-              "absolute flex gap-2 bottom-4  bg-black/50 text-white px-3 py-1 rounded-full text-sm",
-              hasVideo ? "left-4" : "right-4"
-            )}
-          >
-            <ChevronLeft
-              className="h-5 w-5 cursor-pointer"
-              onClick={() => api?.scrollPrev()}
-            />
-            {current}/{images.length}
-            <ChevronRight
-              className="h-5 w-5 cursor-pointer"
-              onClick={() => api?.scrollNext()}
-            />
-          </div>
-          {hasVideo && firstVideoIndex !== -1 && (
-            <div
-              onClick={() => {
-                api?.scrollTo(firstVideoIndex);
-                setVideo(images[firstVideoIndex]);
-              }}
-              className="absolute flex gap-2 bottom-4 right-4  bg-black/50 text-white px-3 py-1 rounded-full text-sm"
-            >
-              <CirclePlay />
-            </div>
-          )}
-        </Carousel>
-      </ProductCardDetail>
+                    <PlayCircle className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2 bg-black/50 text-white  p-1 rounded-full" />
+                  </div>
+                ) : (
+                  <Image
+                    src={image}
+                    alt={`${product.name} ${index + 1}`}
+                    fill
+                    className="object-cover"
+                    sizes={index === 0 ? "600px" : "400px"}
+                    priority={index < 6}
+                  />
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </ScrollArea>
+
       {isMobile && !!video && (
         <Dialog open={!!video && isMobile} onOpenChange={() => setVideo(null)}>
           <DialogHeader className="hidden">

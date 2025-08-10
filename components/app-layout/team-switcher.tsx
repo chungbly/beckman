@@ -43,7 +43,7 @@ export function TeamSwitcher({
                 <div className="flex  rounded-lg ">
                   {/* <activeTeam.logo className="size-4" /> */}
                   <Image
-                    src={logoUrl || "/icons/logo.png"}
+                    src={logoUrl || "/icons/logo.svg"}
                     alt="logo"
                     height={68}
                     width={234}

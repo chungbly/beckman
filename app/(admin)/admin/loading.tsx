@@ -24,7 +24,7 @@ export default function Loading() {
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="w-24 h-24 relative flex items-center justify-center">
             <Image
-              src={"/icons/logo.png"}
+              src={"/icons/logo.svg"}
               alt="R8CKIE"
               width={96}
               height={96}

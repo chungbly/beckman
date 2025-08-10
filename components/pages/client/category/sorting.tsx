@@ -25,7 +25,7 @@ function ProductSorting({ count }: { count: number }) {
     }
   })();
 
-  const activeTab = (() => {
+  const currentSort = (() => {
     const sortKey = Object.keys(sort)?.[0] || "none";
     if (sortKey === "finalPrice" && !isMobile) {
       if (sort.finalPrice === 1) {
@@ -65,15 +65,36 @@ function ProductSorting({ count }: { count: number }) {
   return (
     <>
       {/* Desktop sorting */}
-      <div className="hidden sm:flex justify-end items-center mb-4 gap-2 text-[#4E2919]">
+      <div className="hidden sm:flex justify-between items-center mb-4 gap-2 text-[#4E2919]">
         <div className="flex items-center gap-2">
-          <span className="text-sm">Sắp xếp theo:</span>
-          <Select onValueChange={handleTabClick} value={activeTab}>
-            <SelectTrigger className="w-[180px] border-0 focus:ring-0 focus:ring-none focus:ring-offset-0">
-              <SelectValue placeholder="Sắp xếp" />
+          <span className="text-sm">BỘ LỌC:</span>
+          <Select onValueChange={handleTabClick} value={''}>
+            <SelectTrigger className="w-fit bg-transparent border-0 focus:ring-0 focus:ring-none focus:ring-offset-0">
+              <SelectValue placeholder="Size" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="none">Không lọc</SelectItem>
+              <SelectItem value="price-asc">Giá từ thấp đến cao</SelectItem>
+              <SelectItem value="price-desc">Giá từ cao đến thấp</SelectItem>
+              <SelectItem value="createdAt">Mới nhất</SelectItem>
+              <SelectItem value="sold">Bán chạy</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select onValueChange={handleTabClick} value={''}>
+            <SelectTrigger className="w-fit bg-transparent border-0 focus:ring-0 focus:ring-none focus:ring-offset-0">
+              <SelectValue placeholder="Màu" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="price-asc">Giá từ thấp đến cao</SelectItem>
+              <SelectItem value="price-desc">Giá từ cao đến thấp</SelectItem>
+              <SelectItem value="createdAt">Mới nhất</SelectItem>
+              <SelectItem value="sold">Bán chạy</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select onValueChange={handleTabClick} value={''}>
+            <SelectTrigger className="w-fit bg-transparent border-0 focus:ring-0 focus:ring-none focus:ring-offset-0">
+              <SelectValue placeholder="Phân loại" />
+            </SelectTrigger>
+            <SelectContent>
               <SelectItem value="price-asc">Giá từ thấp đến cao</SelectItem>
               <SelectItem value="price-desc">Giá từ cao đến thấp</SelectItem>
               <SelectItem value="createdAt">Mới nhất</SelectItem>
@@ -81,7 +102,24 @@ function ProductSorting({ count }: { count: number }) {
             </SelectContent>
           </Select>
         </div>
-        <div className="text-sm">{count} sản phẩm</div>
+        <div className="flex items-center">
+          <div className="flex items-center gap-2">
+            <span className="text-sm">SẮP XẾP:</span>
+            <Select onValueChange={handleTabClick} value={currentSort}>
+              <SelectTrigger className="w-fit bg-transparent border-0 focus:ring-0 focus:ring-none focus:ring-offset-0">
+                <SelectValue placeholder="Sắp xếp" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">Không lọc</SelectItem>
+                <SelectItem value="price-asc">Giá từ thấp đến cao</SelectItem>
+                <SelectItem value="price-desc">Giá từ cao đến thấp</SelectItem>
+                <SelectItem value="createdAt">Mới nhất</SelectItem>
+                <SelectItem value="sold">Bán chạy</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="text-sm">{count} sản phẩm</div>
+        </div>
       </div>
 
       {/* Mobile sorting */}
@@ -91,7 +129,7 @@ function ProductSorting({ count }: { count: number }) {
             key={tab.id}
             className={cn(
               "col-span-1 text-center px-4 py-1 whitespace-nowrap",
-              activeTab === tab.id && "font-bold ",
+              currentSort === tab.id && "font-bold ",
               index < tabs.length && "border-r border-[#4F2716]"
             )}
             onClick={() => handleTabClick(tab.id)}
@@ -102,11 +140,11 @@ function ProductSorting({ count }: { count: number }) {
         <div
           className={cn(
             "col-span-1 flex items-center justify-center gap-2 px-4 py-1 whitespace-nowrap",
-            activeTab === "finalPrice" && "font-bold ",
+            currentSort === "finalPrice" && "font-bold ",
             "border-r border-[#4F2716]"
           )}
           onClick={() => {
-            if (activeTab === "finalPrice") {
+            if (currentSort === "finalPrice") {
               const currentValue = sort.finalPrice;
               const nextValue =
                 currentValue === 1 ? -1 : currentValue === -1 ? 0 : 1;

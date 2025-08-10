@@ -35,7 +35,8 @@ export default function CategorySkeleton() {
           <TableHeader>
             <TableRow>
               <TableHead className="w-[60%]">Tên</TableHead>
-              <TableHead className="w-[25%]">Trạng thái</TableHead>
+              <TableHead className="w-[15%]">Tên nhóm</TableHead>
+              <TableHead className="w-[10%]">Trạng thái</TableHead>
               <TableHead className="w-[15%]">Hành động</TableHead>
             </TableRow>
           </TableHeader>
@@ -83,6 +84,12 @@ export default function CategorySkeleton() {
                             randomWidths[(i + j) % randomWidths.length]
                           }px`}
                         />
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Skeleton className="h-2 w-2 rounded-full" />
+                        <Skeleton className="h-4 w-16" />
                       </div>
                     </TableCell>
                     <TableCell>

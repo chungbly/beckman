@@ -39,10 +39,10 @@ const poppins = localFont({
 
 import { AppSidebar } from "@/components/app-layout/app-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { getGlobalConfig } from "@/lib/configs";
 import { getAccessToken } from "@/lib/cookies";
 import { cn } from "@/lib/utils";
 import { getUserAdminQuery } from "@/query/auth.admin.query";
-import tokenStore from "@/store/tokenStore";
 import {
   dehydrate,
   HydrationBoundary,
@@ -51,7 +51,6 @@ import {
 import { Metadata } from "next";
 import { cookies, headers } from "next/headers";
 import MainContent from "./main-content";
-import { getGlobalConfig } from "@/lib/configs";
 
 export const metadata: Metadata = {
   openGraph: {

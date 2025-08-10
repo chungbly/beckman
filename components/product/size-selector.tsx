@@ -30,7 +30,7 @@ export function SizeSelector({
   const [isEu, setIsEu] = useState(true);
   const displaySize = (size: string) => {
     // if size is not a number, it's a size tex
-    if(!Number.isInteger(Number(size))) return size;
+    if (!Number.isInteger(Number(size))) return size;
     const sizeNumber = Number(size);
     if (!isEu) {
       const mapping = SIZE_MAPPING.find((s) => s.eu === sizeNumber);
@@ -44,7 +44,10 @@ export function SizeSelector({
         <span className="text-sm">Lựa chọn size</span>
         <div className="flex items-center gap-2">
           <div
-            className={cn("cursor-pointer",isEu && "text-[var(--red-brand)] font-bold")}
+            className={cn(
+              "cursor-pointer",
+              isEu && "text-[var(--red-brand)] font-bold"
+            )}
             onClick={() => setIsEu(true)}
           >
             EU
@@ -54,14 +57,17 @@ export function SizeSelector({
             className="w-[1px] h-[12px] bg-black"
           />
           <div
-            className={cn("cursor-pointer",!isEu && "text-[var(--red-brand)] font-bold")}
+            className={cn(
+              "cursor-pointer",
+              !isEu && "text-[var(--red-brand)] font-bold"
+            )}
             onClick={() => setIsEu(false)}
           >
             US
           </div>
         </div>
       </div>
-      <div className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap">
         {sizes
           .sort((a, b) => Number(a) - Number(b))
           .map((size) => {
@@ -79,8 +85,8 @@ export function SizeSelector({
                 variant="outline"
                 disabled={!isAvailable}
                 className={cn(
-                  "h-10 w-10 rounded-sm font-normal px-4 hover:bg-[var(--red-brand)] bg-[var(--rose-beige)] text-black hover:text-white",
-                  selectedSize === size && "bg-[var(--red-brand)] text-white"
+                  "h-[60px] w-[95px] text-2xl rounded-none font-normal px-4 max-sm:hover:bg-[#FFECD9] hover:border-[#CD7F32] border-x-[2px] border-y-[2px] bg-white text-black",
+                  selectedSize == size && "bg-[#FFECD9]"
                 )}
                 onClick={() => onSelect(size)}
               >

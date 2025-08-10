@@ -5,6 +5,7 @@ import { Check, ChevronDown, ChevronUp } from "lucide-react";
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
+import Image from "next/image";
 
 const Select = SelectPrimitive.Root;
 
@@ -27,7 +28,15 @@ const SelectTrigger = React.forwardRef<
     <>
       {children}
       <SelectPrimitive.Icon asChild>
-        <ChevronDown className="h-4 w-4 opacity-50" />
+        {/* <ChevronDown className="h-4 w-4 opacity-50" />
+         */}
+        <Image
+          src={"/icons/drop-down.svg"}
+          alt={"drop-down"}
+          width={10}
+          height={6}
+          className="ml-2"
+        />
       </SelectPrimitive.Icon>
     </>
   </SelectPrimitive.Trigger>

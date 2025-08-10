@@ -58,28 +58,54 @@ export const ArrayChipProduct = ({
   );
 };
 
+type ProductOption = { value: number; label: string };
+
 function ProductSelector<T extends boolean = false>({
   value,
   onChange,
   disabled,
   multiple,
   className,
+  defaultValue,
 }: {
+  // Controlled mode props
   value?: T extends true ? number[] : number;
   onChange?: (value: T extends true ? number[] : number) => void;
+  // Uncontrolled mode props
+  defaultValue?: T extends true ? number[] : number;
+  // Common props
   disabled?: boolean;
   multiple?: T;
   className?: string;
 }) {
-  const [name, setName] = useState("");
-  const [selectedProducts, setSelectedProducts] = useState<
-    { value: number; label: string }[]
+  // State for search query
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Internal state for selected products (used in uncontrolled mode)
+  const [internalSelectedValue, setInternalSelectedValue] = useState<
+    T extends true ? number[] : number
+  >(
+    (defaultValue as T extends true ? number[] : number) ||
+      ((multiple ? [] : 0) as any)
+  );
+
+  // Formatted selected products for AutoComplete
+  const [selectedProductOptions, setSelectedProductOptions] = useState<
+    ProductOption[]
   >([]);
+
+  // Determine if we're in controlled or uncontrolled mode
+  const isControlled = value !== undefined && onChange !== undefined;
+
+  // The actual value to use (either controlled or internal state)
+  const actualValue = isControlled ? value : internalSelectedValue;
+
+  // Search products based on query
   const { data: products, isLoading } = useQuery({
-    queryKey: ["products", name],
+    queryKey: ["products", searchQuery],
     queryFn: async () => {
       const query = {
-        searchText: name,
+        searchText: searchQuery,
         status: true,
       };
       const res = await getProducts(query, 100, 1, false);
@@ -89,6 +115,7 @@ function ProductSelector<T extends boolean = false>({
     placeholderData: keepPreviousData,
   });
 
+  // Fetch products by IDs
   const fetchProducts = async (ids: number[]): Promise<Product[]> => {
     if (!ids.length) return [];
     const res = await getProducts(
@@ -104,101 +131,127 @@ function ProductSelector<T extends boolean = false>({
     return res.data;
   };
 
-  const handleSetName = debounce((v: string) => setName(v), 300);
+  // Debounced search handler
+  const handleSearch = debounce((v: string) => setSearchQuery(v), 300);
 
+  // Handle value change (for both controlled and uncontrolled modes)
+  const handleValueChange = (newValue: T extends true ? number[] : number) => {
+    if (isControlled) {
+      // In controlled mode, call the onChange prop
+      onChange?.(newValue);
+    } else {
+      // In uncontrolled mode, update internal state
+      setInternalSelectedValue(newValue);
+    }
+  };
+
+  // Load product details when value changes
   useEffect(() => {
-    if (!value) return;
+    if (!actualValue) {
+      setSelectedProductOptions([]);
+      return;
+    }
+
     const init = async () => {
+      // Check if we already have the correct products loaded
+      const valueArray = Array.isArray(actualValue)
+        ? actualValue
+        : [actualValue];
+
       if (
-        selectedProducts.every((prd) =>
-          Array.isArray(value) ? value.includes(prd.value) : value === prd.value
+        selectedProductOptions.every((prd) =>
+          (valueArray as number[]).includes(prd.value)
         ) &&
-        selectedProducts.length === (Array.isArray(value) ? value.length : 1)
+        selectedProductOptions.length === valueArray.length
       ) {
         return;
       }
-      const products = await fetchProducts(
-        Array.isArray(value) ? value : [value]
-      );
-      setSelectedProducts(
+
+      // Fetch product details
+      const products = await fetchProducts(valueArray as number[]);
+
+      setSelectedProductOptions(
         products.map((prd) => ({
           value: prd.kvId,
           label: prd.name,
         }))
       );
     };
-    init();
-  }, [value]);
 
+    init();
+  }, [actualValue]);
+
+  // Format options for AutoComplete
+  const formattedOptions = (products ?? [])
+    .map((prd) => ({
+      value: prd.kvId,
+      label: `${prd.name} - ${prd.kvCode}`,
+    }))
+    .concat(selectedProductOptions)
+    .reduce((acc, current) => {
+      const x = acc.find((item) => item.value === current.value);
+      if (!x) {
+        return acc.concat([current]);
+      } else {
+        return acc;
+      }
+    }, [] as ProductOption[]);
+
+  // Handle AutoComplete change
+  const handleAutoCompleteChange = (selected: any) => {
+    if (multiple) {
+      if (!selected) {
+        handleValueChange([] as any);
+        setSelectedProductOptions([]);
+        return;
+      }
+
+      const newValue = selected.map((item: ProductOption) =>
+        Number(item.value)
+      );
+      handleValueChange(newValue as any);
+      setSelectedProductOptions(selected);
+    } else {
+      if (!selected) {
+        handleValueChange(0 as any);
+        setSelectedProductOptions([]);
+        return;
+      }
+
+      handleValueChange(Number(selected.value) as any);
+      setSelectedProductOptions([selected]);
+    }
+  };
+
+  // Render multiple select
   if (multiple) {
     return (
       <AutoComplete
         className={className}
         disabled={disabled}
-        value={selectedProducts}
-        onInputChange={(v) => handleSetName(v)}
-        options={(products ?? [])
-          .map((prd) => ({
-            value: prd.kvId,
-            label: `${prd.name} - ${prd.kvCode}`,
-          }))
-          .concat(selectedProducts)
-          .reduce((acc, current) => {
-            const x = acc.find((item) => item.value === current.value);
-            if (!x) {
-              return acc.concat([current]);
-            } else {
-              return acc;
-            }
-          }, [] as typeof selectedProducts)}
+        value={selectedProductOptions}
+        onInputChange={handleSearch}
+        options={formattedOptions}
         isLoading={isLoading}
         multiple
         placeholder="Chọn sản phẩm"
-        onChange={(v) => {
-          if (!v) {
-            onChange?.([] as any);
-            setSelectedProducts([]);
-            return;
-          }
-          onChange?.(v.map((c) => Number(c.value)) as any);
-          setSelectedProducts(v);
-        }}
+        onChange={handleAutoCompleteChange}
       />
     );
   }
 
+  // Render single select
   return (
     <AutoComplete
       className={className}
       disabled={disabled}
-      value={selectedProducts[0]}
-      onInputChange={(v) => handleSetName(v)}
-      options={(products ?? [])
-        .map((prd) => ({
-          value: prd.kvId,
-          label: `${prd.name} - ${prd.kvCode}`,
-        }))
-        .concat(selectedProducts)
-        .reduce((acc, current) => {
-          const x = acc.find((item) => item.value === current.value);
-          if (!x) {
-            return acc.concat([current]);
-          } else {
-            return acc;
-          }
-        }, [] as typeof selectedProducts)}
+      value={selectedProductOptions[0]}
+      onInputChange={handleSearch}
+      options={formattedOptions}
       isLoading={isLoading}
       multiple={false}
       placeholder="Chọn sản phẩm"
-      onChange={(v) => {
-        if (!v) {
-          onChange?.(0 as any);
-          setSelectedProducts([]);
-          return;
-        }
-        onChange?.(Number(v?.value) as any);
-        setSelectedProducts([v]);
-      }}
+      onChange={handleAutoCompleteChange}
     />
   );
 }

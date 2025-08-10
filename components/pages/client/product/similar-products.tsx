@@ -59,10 +59,10 @@ function SimilarProducts({ query }: { query: Partial<GetProductQuery> }) {
 
   return (
     <div className={cn("mt-4 col-span-full block px-2")}>
-      <h2 className="text-xl font-bold mb-2 text-[var(--brown-brand)]">
-        Sản phẩm tương tự
+      <h2 className="text-xl font-bold mb-2 text-[var(--brown-brand)]  py-2 pl-1">
+        SẢN PHẨM LIÊN QUAN
       </h2>
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <ProductGrid products={products} />
         <div className="col-span-full flex items-center justify-center">
           {hasNextPage && !isMobile && (

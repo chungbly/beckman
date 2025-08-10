@@ -46,7 +46,9 @@ export async function generateMetadata(
   if (product) {
     return {
       openGraph: {
-        images: product?.seo.thumbnail ? product.images?.[0]?.urls?.[0] : previousImages,
+        images: product?.seo.thumbnail
+          ? product.images?.[0]?.urls?.[0]
+          : previousImages,
       },
       title: product?.seo?.title || "R8ckie - Step on your way",
       description: product?.seo?.description || "R8ckie - Step on your way",
@@ -114,36 +116,25 @@ async function Page(props: Props) {
         );
       },
     }),
-    queryClient.prefetchQuery({
-      queryKey: ["get-shoes-care", productSlug],
-      queryFn: async () => {
-        if (!productSlug) return null;
-        const res = await getSuggestionProducts({
-          slug: productSlug,
-          status: true,
-          suggestionCategoryIds: [configs["SHOECARE_CATEGORY_ID"] as string],
-        });
-        if (res.status !== APIStatus.OK || !res.data || !res.data?.length)
-          return null;
-        return res.data;
-      },
-    }),
+
     queryClient.prefetchQuery(getAllAvailabeCoupon),
   ]);
 
   return (
-    <div className="container mx-auto px-0 sm:py-6 maxsm:mb-[48px]">
+    <>
       <HydrationBoundary state={dehydrate(queryClient)}>
         <ProductPage slug={productSlug} configs={configs} userId={userId!} />
       </HydrationBoundary>
-      <SimilarProducts
-        query={{
-          slug: productSlug,
-          status: true,
-          userId,
-        }}
-      />
-    </div>
+      <div className="container mx-auto px-0 sm:py-6 max-sm:mb-[48px]">
+        <SimilarProducts
+          query={{
+            slug: productSlug,
+            status: true,
+            userId,
+          }}
+        />
+      </div>
+    </>
   );
 }
 

@@ -6,7 +6,9 @@ import { getProduct, updateProduct } from "@/client/product.client";
 import PageBreadCrumb from "@/components/app-layout/page-breadcrumb";
 import CategorySelector from "@/components/category-selector";
 import FileManagerDialog from "@/components/file-manager/file-manager-dialog";
-import InputTags from "@/components/pages/admin/ui/input-tags";
+import ProductSelector, {
+  ArrayChipProduct,
+} from "@/components/selectors/product-selector";
 import SumbitButton from "@/components/submit-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,7 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Product as TProduct } from "@/types/product";
 import { getDirtyData } from "@/utils";
-import { formatCurrency, formatNumber } from "@/utils/number";
+import { formatCurrency } from "@/utils/number";
 import { IconSquareKey } from "@tabler/icons-react";
 import { useForm } from "@tanstack/react-form";
 import { useQuery } from "@tanstack/react-query";
@@ -33,10 +35,10 @@ import {
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import { notFound } from "next/navigation";
-import { v4 } from "uuid";
+import EditableText from "./editable-text";
 import { ProductComments } from "./product-comment";
-import { ProductGifts } from "./product-gifts";
 import ProductDetailSkeleton from "./skeleton";
+import InputTags from "@/components/pages/admin/ui/input-tags";
 const JoditEditor = dynamic(() => import("@/components/jodit-editor"), {
   ssr: false,
 });
@@ -47,7 +49,23 @@ const SeoMetrics = dynamic(
     ssr: false,
   }
 );
+export interface TProductPopulated
+  extends Omit<
+    TProduct,
+    "similarProducts" | "recommendedProducts" | "categories"
+  > {
+  similarProducts: number[];
+  recommendedProducts: number[];
+  categories: string[];
+}
 
+const defaultTitle: Record<number, string> = {
+  0: "Chất liệu",
+  1: "Phương pháp",
+  2: "Lót",
+  3: "Đế",
+  4: "Kiểu dáng",
+};
 export default function Product(props: {
   params: Promise<{
     id: number;
@@ -64,11 +82,35 @@ export default function Product(props: {
       return res.data;
     },
   });
+  console.log("product", product);
+  const form = useForm<TProductPopulated>({
+    defaultValues: product
+      ? {
+          ...product,
+          similarProducts: product.similarProducts?.map((c) => c.kvId) || [],
+          recommendedProducts:
+            product.recommendedProducts?.map((c) => c.kvId) || [],
+          discribles:
+            product.discribles?.map((c, index) => ({
+              content: c.content || "",
+              title: c.title || defaultTitle[index],
+            })) || [],
+          categories: product.categories?.map((c) => c._id) || [],
+        }
+      : ({} as TProductPopulated),
 
-  const form = useForm<TProduct>({
-    defaultValues: product!,
     onSubmit: async ({ value }) => {
-      const dirtyData = getDirtyData(product!, value);
+      const dirtyData = getDirtyData(
+        {
+          ...product,
+          similarProducts: product?.similarProducts?.map((c) => c.kvId) || [],
+          recommendedProducts:
+            product?.recommendedProducts?.map((c) => c.kvId) || [],
+          categories: product?.categories?.map((c) => c._id) || [],
+        },
+        value
+      );
+      delete dirtyData.updatedAt;
       const res = await updateProduct(product!.kvId, dirtyData);
       if (res.status === APIStatus.OK) {
         toast({
@@ -145,19 +187,35 @@ export default function Product(props: {
               </div>
               <Separator />
               <div className="grid grid-cols-1 gap-4">
-                <div className="gap-2 col-span-1">
-                  <Label htmlFor="name">Tên sản phẩm</Label>
-                  <form.Field
-                    name="name"
-                    children={(field) => (
-                      <Input
-                        id="name"
-                        value={field.state.value}
-                        onChange={(e) => field.handleChange(e.target.value)}
-                      />
-                    )}
-                  />
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="gap-2 col-span-1">
+                    <Label htmlFor="name">Tên sản phẩm</Label>
+                    <form.Field
+                      name="name"
+                      children={(field) => (
+                        <Input
+                          id="name"
+                          value={field.state.value}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                        />
+                      )}
+                    />
+                  </div>
+                  <div className="gap-2 col-span-1">
+                    <Label htmlFor="subName">Tên sản phẩm dòng phụ</Label>
+                    <form.Field
+                      name="subName"
+                      children={(field) => (
+                        <Input
+                          id="name"
+                          value={field.state.value}
+                          onChange={(e) => field.handleChange(e.target.value)}
+                        />
+                      )}
+                    />
+                  </div>
                 </div>
+
                 <div className="col-span-1 grid grid-cols-1 sm:grid-cols-2  xl:grid-cols-4 gap-4">
                   <div className="space-y-2 col-span-1">
                     <Label htmlFor="price">Giá gốc</Label>
@@ -195,56 +253,9 @@ export default function Product(props: {
                             }
                           />
                           <p className="text-sm text-muted-foreground">
-                            {formatCurrency(field.state.value)}
-                          </p>
-                        </>
-                      )}
-                    />
-                  </div>
-                  <div className="space-y-2 col-span-1">
-                    <Label htmlFor="shippingFee">Phí ship</Label>
-                    <form.Field
-                      name="shippingFee"
-                      children={(field) => (
-                        <>
-                          <Input
-                            id="shippingFee"
-                            value={field.state.value}
-                            type="number"
-                            onChange={(e) =>
-                              field.handleChange(+e.target.value)
-                            }
-                          />
-                          {field.state.value ? (
-                            <p className="text-sm text-muted-foreground">
-                              {formatCurrency(field.state.value)}
-                            </p>
-                          ) : (
-                            <p className="text-sm text-muted-foreground">
-                              Chưa cài đặt
-                            </p>
-                          )}
-                        </>
-                      )}
-                    />
-                  </div>
-                  <div className="space-y-2 col-span-1">
-                    <Label htmlFor="sold">Đã bán</Label>
-                    <form.Field
-                      name="sold"
-                      children={(field) => (
-                        <>
-                          <Input
-                            id="sold"
-                            value={field.state.value}
-                            type="number"
-                            onChange={(e) =>
-                              field.handleChange(+e.target.value)
-                            }
-                          />
-                          <p className="text-sm text-muted-foreground">
-                            {field.state.value &&
-                              formatNumber(field.state.value || 0)}
+                            {field.state.value
+                              ? formatCurrency(field.state.value)
+                              : "Chưa cài đặt"}
                           </p>
                         </>
                       )}
@@ -265,6 +276,67 @@ export default function Product(props: {
                     )}
                   />
                 </div>
+                <div className="col-span-1 space-y-2">
+                  <Label>Mô tả phụ</Label>
+                  <form.Field
+                    name="subDescription"
+                    children={(field) => (
+                      <Textarea
+                        value={field.state.value}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                      />
+                    )}
+                  />
+                </div>
+                <div className="col-span-1 space-y-2">
+                  <Label htmlFor="similarProducts">Sản phẩm tương tự</Label>
+                  <form.Field
+                    name="similarProducts"
+                    children={(field) => (
+                      <>
+                        <ProductSelector
+                          value={field.state.value || []}
+                          multiple
+                          onChange={(v) => field.handleChange(v)}
+                        />
+                        <ArrayChipProduct
+                          prdIds={field.state.value}
+                          onDelete={(id) =>
+                            field.handleChange(
+                              field.state.value.filter((p) => p !== id)
+                            )
+                          }
+                        />
+                      </>
+                    )}
+                  />
+                </div>
+                <div className="col-span-1 space-y-2">
+                  <Label htmlFor="recommendedProducts">Sản phẩm mua kèm</Label>
+                  <form.Field
+                    name="recommendedProducts"
+                    children={(field) => (
+                      <>
+                        <ProductSelector
+                          value={field.state.value || []}
+                          multiple
+                          onChange={(v) => {
+                            field.handleChange(v);
+                          }}
+                        />
+                        <ArrayChipProduct
+                          prdIds={field.state.value}
+                          onDelete={(id) =>
+                            field.handleChange(
+                              field.state.value.filter((p) => p !== id)
+                            )
+                          }
+                        />
+                      </>
+                    )}
+                  />
+                </div>
+
                 <form.Field name="tags">
                   {(field) => {
                     const tags = field.state.value?.map((t) => t.trim()) || [];
@@ -293,18 +365,6 @@ export default function Product(props: {
                     );
                   }}
                 </form.Field>
-
-                <form.Field
-                  name="gifts"
-                  children={(field) => (
-                    <ProductGifts
-                      gifts={field.state.value ?? []}
-                      onChange={(gifts) => {
-                        field.handleChange(gifts);
-                      }}
-                    />
-                  )}
-                />
               </div>
             </CardContent>
           </Card>
@@ -314,13 +374,19 @@ export default function Product(props: {
               <CardTitle>Mô tả sản phẩm</CardTitle>
             </CardHeader>
             <CardContent>
-              <Tabs defaultValue="description" className="w-full">
-                <TabsList className="w-full">
+              <Tabs defaultValue="description" className="w-full ">
+                <TabsList className="w-full overflow-x-auto scrollbar-hide justify-start">
                   <TabsTrigger value="description" className="flex-1">
                     Mô tả chi tiết
                   </TabsTrigger>
                   <TabsTrigger value="additional" className="flex-1">
-                    Thông tin bổ sung
+                    Chi tiết sản phẩm
+                  </TabsTrigger>
+                  <TabsTrigger value="warrantyPolicy" className="flex-1">
+                    Chính sách bảo hành
+                  </TabsTrigger>
+                  <TabsTrigger value="careInstructions" className="flex-1">
+                    Hướng dẫn bảo quản
                   </TabsTrigger>
                   <TabsTrigger value="images" className="flex-1">
                     Hình ảnh
@@ -346,41 +412,99 @@ export default function Product(props: {
                       <form.Field
                         name="discribles"
                         mode="array"
-                        children={(field) => (
-                          <div className="flex flex-col gap-2">
-                            {Array.from({ length: 5 }).map((_, i) => {
-                              return (
-                                <form.Field key={i} name={`discribles[${i}]`}>
-                                  {(subField) => {
-                                    return (
-                                      <div key={i} className="space-y-2">
-                                        <Label htmlFor={`discrible-${i}`}>
-                                          Mô tả {i + 1}
-                                        </Label>
-                                        <Input
-                                          id={`discrible-${i}`}
-                                          value={subField.state.value}
-                                          onChange={(e) => {
-                                            subField.handleChange(
-                                              e.target.value
-                                            );
-                                            form.setFieldMeta("discribles", {
-                                              ...field.state.meta,
-                                              isDirty: true,
-                                            });
-                                          }}
-                                        />
-                                      </div>
-                                    );
-                                  }}
-                                </form.Field>
-                              );
-                            })}
-                          </div>
-                        )}
+                        children={(field) => {
+                          return (
+                            <div className="grid grid-cols-5 gap-4">
+                              <div className="col-span-2 sm:col-span-1 flex flex-col gap-2">
+                                {Array.from({ length: 5 }).map((_, i) => {
+                                  return (
+                                    <form.Field
+                                      key={i}
+                                      name={`discribles[${i}].title`}
+                                    >
+                                      {(subField) => {
+                                        return (
+                                          <Input
+                                            value={
+                                              subField.state.value ||
+                                              defaultTitle[i]
+                                            }
+                                            onChange={(e) => {
+                                              subField.handleChange(
+                                                e.target.value
+                                              );
+                                              form.setFieldMeta("discribles", {
+                                                ...field.state.meta,
+                                                isDirty: true,
+                                              });
+                                            }}
+                                          />
+                                        );
+                                      }}
+                                    </form.Field>
+                                  );
+                                })}
+                              </div>
+                              <div className="col-span-3  sm:col-span-4 flex flex-col gap-2">
+                                {Array.from({ length: 5 }).map((_, i) => {
+                                  return (
+                                    <form.Field
+                                      key={i}
+                                      name={`discribles[${i}].content`}
+                                    >
+                                      {(subField) => {
+                                        return (
+                                          <div key={i} className="space-y-2">
+                                            <Input
+                                              value={subField.state.value || ""}
+                                              onChange={(e) => {
+                                                subField.handleChange(
+                                                  e.target.value
+                                                );
+                                                form.setFieldMeta(
+                                                  "discribles",
+                                                  {
+                                                    ...field.state.meta,
+                                                    isDirty: true,
+                                                  }
+                                                );
+                                              }}
+                                            />
+                                          </div>
+                                        );
+                                      }}
+                                    </form.Field>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          );
+                        }}
                       />
                     </CardContent>
                   </Card>
+                </TabsContent>
+                <TabsContent value="warrantyPolicy" className="mt-4">
+                  <form.Field
+                    name="warrantyPolicy"
+                    children={(field) => (
+                      <JoditEditor
+                        value={field.state.value}
+                        onChange={field.handleChange}
+                      />
+                    )}
+                  />
+                </TabsContent>
+                <TabsContent value="careInstructions" className="mt-4">
+                  <form.Field
+                    name="careInstructions"
+                    children={(field) => (
+                      <JoditEditor
+                        value={field.state.value}
+                        onChange={field.handleChange}
+                      />
+                    )}
+                  />
                 </TabsContent>
                 <TabsContent value="images" className="mt-4">
                   <Card>
@@ -392,54 +516,44 @@ export default function Product(props: {
                         name="images"
                         children={(field) => {
                           const images = field.state.value || [];
-                          return images.map(({ color, urls }) => (
-                            <div key={color} className="mb-8 last:mb-0">
-                              <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-lg text-neutral-600">
-                                  {color}
-                                </h3>
-                              </div>
-                              <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 xl:grid-cols-8 gap-4">
-                                <FileManagerDialog
-                                  onSelect={(values) => {
-                                    field.handleChange(
-                                      images.map((image) => {
-                                        if (image.color === color) {
-                                          return {
-                                            ...image,
-                                            urls: [...image.urls, ...values],
-                                          };
-                                        }
-                                        return image;
-                                      })
-                                    );
-                                  }}
-                                >
-                                  <div className="flex cursor-pointer items-center justify-center aspect-square bg-gray-200 rounded-lg border border-dashed border-primary">
-                                    <ImagePlus className="h-6 w-6" />
-                                  </div>
-                                </FileManagerDialog>
+                          return images.map(
+                            ({ color, urls, thumbnail, altName }) => (
+                              <div key={color} className="mb-8 last:mb-0">
+                                <div className="flex items-center justify-between mb-4">
+                                  <EditableText
+                                    value={altName || color}
+                                    onChange={(v) => {
+                                      field.handleChange(
+                                        images.map((image) => {
+                                          if (image.color === color) {
+                                            return {
+                                              ...image,
+                                              altName: v,
+                                            };
+                                          }
+                                          return image;
+                                        })
+                                      );
+                                    }}
+                                  />
 
-                                {urls.map((src, imageIndex) => (
-                                  <div key={v4()} className="relative group">
+                                  {thumbnail ? (
                                     <Image
-                                      src={src}
-                                      alt={`${color} - Image ${imageIndex + 1}`}
-                                      width={100}
-                                      height={100}
-                                      className="rounded-lg border object-cover w-full aspect-square"
+                                      src={thumbnail}
+                                      alt={color}
+                                      width={30}
+                                      height={30}
+                                      className="rounded-full"
                                     />
-                                    <button
-                                      className="absolute top-2 right-2 p-1 rounded-full bg-white/80 hover:bg-white shadow-sm invisible group-hover:visible transition-all"
-                                      onClick={() => {
+                                  ) : (
+                                    <FileManagerDialog
+                                      onSelect={(values) => {
                                         field.handleChange(
                                           images.map((image) => {
                                             if (image.color === color) {
                                               return {
                                                 ...image,
-                                                urls: image.urls.filter(
-                                                  (_, i) => i !== imageIndex
-                                                ),
+                                                thumbnail: values[0],
                                               };
                                             }
                                             return image;
@@ -447,13 +561,73 @@ export default function Product(props: {
                                         );
                                       }}
                                     >
-                                      <X className="h-4 w-4 text-gray-600" />
-                                    </button>
-                                  </div>
-                                ))}
+                                      <div className="flex cursor-pointer items-center justify-center aspect-square bg-gray-200 rounded-lg border border-dashed border-primary">
+                                        <ImagePlus className="h-6 w-6" />
+                                      </div>
+                                    </FileManagerDialog>
+                                  )}
+                                </div>
+                                <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 xl:grid-cols-8 gap-4">
+                                  <FileManagerDialog
+                                    onSelect={(values) => {
+                                      field.handleChange(
+                                        images.map((image) => {
+                                          if (image.color === color) {
+                                            return {
+                                              ...image,
+                                              urls: [...image.urls, ...values],
+                                            };
+                                          }
+                                          return image;
+                                        })
+                                      );
+                                    }}
+                                  >
+                                    <div className="flex cursor-pointer items-center justify-center aspect-square bg-gray-200 rounded-lg border border-dashed border-primary">
+                                      <ImagePlus className="h-6 w-6" />
+                                    </div>
+                                  </FileManagerDialog>
+
+                                  {urls.map((src, imageIndex) => (
+                                    <div
+                                      key={src + imageIndex}
+                                      className="relative group"
+                                    >
+                                      <Image
+                                        src={src}
+                                        alt={`${color} - Image ${
+                                          imageIndex + 1
+                                        }`}
+                                        width={100}
+                                        height={100}
+                                        className="rounded-lg border object-cover w-full aspect-square"
+                                      />
+                                      <button
+                                        className="absolute top-2 right-2 p-1 rounded-full bg-white/80 hover:bg-white shadow-sm invisible group-hover:visible transition-all"
+                                        onClick={() => {
+                                          field.handleChange(
+                                            images.map((image) => {
+                                              if (image.color === color) {
+                                                return {
+                                                  ...image,
+                                                  urls: image.urls.filter(
+                                                    (_, i) => i !== imageIndex
+                                                  ),
+                                                };
+                                              }
+                                              return image;
+                                            })
+                                          );
+                                        }}
+                                      >
+                                        <X className="h-4 w-4 text-gray-600" />
+                                      </button>
+                                    </div>
+                                  ))}
+                                </div>
                               </div>
-                            </div>
-                          ));
+                            )
+                          );
                         }}
                       />
                     </CardContent>

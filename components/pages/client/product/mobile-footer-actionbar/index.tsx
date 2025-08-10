@@ -8,6 +8,7 @@ import Link from "next/link";
 
 import ImageCarousel from "@/components/image-carousel";
 import { ColorSelector } from "@/components/product/color-selector";
+import SizeSelectionGuide from "@/components/product/size-guide-selection";
 import { SizeSelector } from "@/components/product/size-selector";
 import {
   Drawer,
@@ -17,13 +18,12 @@ import {
 } from "@/components/ui/drawer";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import { Category } from "@/types/category";
 import { ReactFormExtendedApi } from "@tanstack/react-form";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { MouseEvent, useState } from "react";
 import ShoeCare from "../shoe-care";
-import { Category } from "@/types/category";
-import SizeSelectionGuide from "@/components/product/size-guide-selection";
 export type ProductDetailFormValue = ReactFormExtendedApi<
   {
     kvId: number | undefined;
@@ -31,6 +31,8 @@ export type ProductDetailFormValue = ReactFormExtendedApi<
     color: string | undefined;
     addons: number[];
     kvCode: string | undefined;
+    name: string | undefined;
+
     basePriceTotal: number;
     finalPriceTotal: number;
   },
@@ -119,7 +121,7 @@ function MobileActionBar({
   handleAddToCart,
   handleChangeAddons,
   variants,
-  category
+  category,
 }: {
   product: Product;
   form: ProductDetailFormValue;
@@ -132,7 +134,7 @@ function MobileActionBar({
   ) => Promise<boolean>;
   handleChangeAddons: (id: number) => void;
   variants: Product[];
-    category?: Category | null;
+  category?: Category | null;
 }) {
   const [isOpen, setIsOpen] = useState(false);
   const controls = useAnimation();

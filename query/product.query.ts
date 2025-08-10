@@ -105,7 +105,7 @@ export const getSimilarProductsInfiniteQuery = (
   return {
     queryKey: ["similar-products", query],
     queryFn: async ({ pageParam = 1 }) => {
-      const res = await getSimilarProducts(query, 10, pageParam, true);
+      const res = await getSimilarProducts(query, 8, pageParam, true);
       if (res.status !== APIStatus.OK)
         return {
           items: [],

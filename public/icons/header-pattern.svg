@@ -1,0 +1,26 @@
+<svg width="1920" height="60" viewBox="0 0 1920 60" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<rect width="1920" height="60" fill="#C8B2A3"/>
+<rect width="1920" height="60" fill="url(#pattern0_85_229)" fill-opacity="0.3"/>
+<defs>
+<pattern id="pattern0_85_229" patternUnits="userSpaceOnUse" viewBox="-1194.16 -182 49.84 49.84" width="2.5958355267842612%" height="83.066660563151046%" patternContentUnits="objectBoundingBox">
+<g id="pattern0_85_229_inner">
+<path d="M-1219.08 -182V-169.54L-1231.54 -182H-1219.08Z" fill="#C8B2A3"/>
+<path d="M-1219.08 -169.55V-169.54H-1231.53L-1244 -182H-1231.54L-1219.08 -169.55Z" fill="#DAC7B5"/>
+<path d="M-1243.99 -157.08H-1244V-144.62H-1243.99V-157.08Z" fill="#DAC7B5"/>
+<path d="M-1194.16 -169.54H-1206.62L-1219.08 -181.99V-182H-1206.62L-1194.16 -169.54Z" fill="#DAC7B5"/>
+<path d="M-1194.16 -182V-169.54L-1206.62 -182H-1194.16Z" fill="#DAC7B5"/>
+<path d="M-1194.16 -157.08V-144.62L-1219.08 -169.54V-181.99L-1206.62 -169.54L-1194.16 -157.08Z" fill="#DAC7B5"/>
+<path d="M-1219.08 -144.62H-1231.54L-1243.99 -157.07L-1244 -157.08V-169.54L-1219.08 -144.62Z" fill="#C8B2A3"/>
+<path d="M-1219.08 -157.08V-144.62L-1244 -169.54V-182L-1219.08 -157.08Z" fill="#C8B2A3"/>
+<path d="M-1231.53 -169.54H-1219.07L-1194.16 -144.62H-1206.62L-1231.53 -169.54Z" fill="#C8B2A3"/>
+<path d="M-1219.09 -132.17H-1231.54L-1243.99 -144.62V-157.07L-1231.54 -144.62H-1231.53L-1219.09 -132.17Z" fill="#C8B2A3"/>
+<path d="M-1194.16 -169.54V-157.08L-1206.62 -169.54H-1194.16Z" fill="#C8B2A3"/>
+<path d="M-1231.54 -132.17H-1244V-144.62H-1243.99L-1231.54 -132.17Z" fill="#DAC7B5"/>
+<path d="M-1206.63 -132.17H-1219.09L-1231.53 -144.62H-1219.08L-1206.63 -132.17Z" fill="#DAC7B5"/>
+<path d="M-1206.61 -144.62L-1194.17 -132.17H-1206.63L-1219.08 -144.62V-157.08L-1206.62 -144.62H-1206.61Z" fill="#DAC7B5"/>
+<path d="M-1194.16 -132.17V-132.16L-1194.17 -132.17H-1194.16Z" fill="#DAC7B5"/>
+<path d="M-1194.16 -144.62V-132.16L-1206.62 -144.62H-1194.16Z" fill="#DAC7B5"/>
+</g>
+<use xlink:href="#pattern0_85_229_inner" transform="translate(49.84 0)"/>
+</pattern></defs>
+</svg>

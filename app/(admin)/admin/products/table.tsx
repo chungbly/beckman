@@ -1,7 +1,6 @@
 "use client";
 
 import { APIStatus } from "@/client/callAPI";
-import { getCategories } from "@/client/category.client";
 import { GetProductQuery, updateProductStatus } from "@/client/product.client";
 import TablePagination from "@/components/app-layout/table-pagination";
 import ImageCarousel from "@/components/image-carousel";
@@ -23,7 +22,6 @@ import { useAlert } from "@/store/useAlert";
 import { Meta } from "@/types/api-response";
 import { Product } from "@/types/product";
 import { formatCurrency, formatNumber } from "@/utils/number";
-import { useQuery } from "@tanstack/react-query";
 import {
   createColumnHelper,
   flexRender,
@@ -31,7 +29,7 @@ import {
   RowSelectionState,
   useReactTable,
 } from "@tanstack/react-table";
-import { Loader2, ShieldCheck, ShieldMinus } from "lucide-react";
+import { ShieldCheck, ShieldMinus } from "lucide-react";
 import moment from "moment";
 import Link from "next/link";
 import { HTMLProps, useEffect, useMemo, useRef, useState } from "react";
@@ -75,22 +73,6 @@ function ProductTable({
   const [selectedRows, setSelectedRows] = useState<RowSelectionState>({});
   const { setAlert, closeAlert } = useAlert();
   const { toast } = useToast();
-  const categoryIds = Array.from(
-    new Set(products.map((product) => product.categories).flat())
-  );
-
-  const { data: categories, isLoading } = useQuery({
-    queryKey: ["categories", categoryIds],
-    staleTime: 1000 * 60 * 60,
-    queryFn: async () => {
-      if (!categoryIds.length) return [];
-      const res = await getCategories({
-        ids: categoryIds,
-      });
-      if (res.status !== APIStatus.OK || !res.data?.length) return [];
-      return res.data;
-    },
-  });
 
   const columns = useMemo(
     () => [
@@ -202,24 +184,18 @@ function ProductTable({
         minSize: 200,
         cell: (info) => (
           <ul>
-            {isLoading ? (
-              <Loader2 className="w-6 h-6 animate-spin" />
-            ) : (
-              !!info.getValue()?.length &&
+            {!!info.getValue()?.length &&
               info.getValue()!.map((cate) => (
-                <li className="min-w-max flex gap-1" key={cate}>
+                <li className="min-w-max flex gap-1" key={cate._id}>
                   -
                   <Link
                     className="underline text-primary"
-                    href={`/admin/categories/${
-                      categories?.find((c) => c._id === cate)?.seo?.slug || cate
-                    }`}
+                    href={`/admin/categories/${cate?.seo?.slug}`}
                   >
-                    {categories?.find((c) => c._id === cate)?.name || cate}
+                    {cate?.name}
                   </Link>
                 </li>
-              ))
-            )}
+              ))}
           </ul>
         ),
       }),
@@ -263,7 +239,7 @@ function ProductTable({
             : "Không xác định",
       }),
     ],
-    [meta.limit, meta.page, categories, isLoading]
+    [meta.limit, meta.page]
   );
   const table = useReactTable({
     data: products,

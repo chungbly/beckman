@@ -13,6 +13,7 @@ export interface Category {
   sizeSelectionGuide: string;
   mobileBanner: string;
   name: string;
+  groupName: string;
   parentId: string | null;
   products: number[];
   seo: SEO;

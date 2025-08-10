@@ -136,17 +136,24 @@ const config = {
         slideDown: {
           from: {
             height: "0",
+            opacity: "0",
+
           },
           to: {
             height: "var(--radix-collapsible-content-height)",
+            opacity: "1",
+
           },
         },
         slideUp: {
           from: {
             height: "var(--radix-collapsible-content-height)",
+            opacity: "1",
+
           },
           to: {
             height: "0",
+            opacity: "0",
           },
         },
         "marquee-vertical": {

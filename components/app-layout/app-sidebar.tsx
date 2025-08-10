@@ -58,7 +58,7 @@ export function AppSidebar({
     },
     teams: [
       {
-        name: "R8ckie",
+        name: "Beckman",
         logo: GalleryVerticalEnd,
         plan: "Enterprise",
       },
@@ -73,20 +73,8 @@ export function AppSidebar({
             url: "/admin/ui/carousel",
           },
           {
-            title: "Menu phụ",
-            url: "/admin/ui/sub-menu",
-          },
-          {
-            title: "Flash Deal",
-            url: "/admin/ui/flash-deal",
-          },
-          {
-            title: "Highlights",
-            url: "/admin/ui/highlights",
-          },
-          {
-            title: "Collections Menu",
-            url: "/admin/ui/collections",
+            title: "Trang tuỳ chỉnh",
+            url: "/admin/ui/layout-editor",
           },
           {
             title: "Khung hình",
@@ -121,6 +109,10 @@ export function AppSidebar({
           {
             title: "Liên hệ",
             url: "/admin/contact",
+          },
+          {
+            title: "Giới thiệu",
+            url: "/admin/about",
           },
         ],
       },

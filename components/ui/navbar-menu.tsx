@@ -1,10 +1,8 @@
 "use client";
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 import React from "react";
-import { Button } from "./button";
 
 const transition = {
   type: "spring",
@@ -22,7 +20,7 @@ export const MenuItem = ({
   children,
   className,
   menuTrigger,
-  style
+  style,
 }: {
   setActive: (item: string) => void;
   active: string | null;
@@ -34,37 +32,48 @@ export const MenuItem = ({
   style?: React.CSSProperties;
 }) => {
   return (
-    <div onMouseEnter={() => setActive(item)} className="relative" style={style}>
+    <div
+      onMouseEnter={() => setActive(item)}
+      className="relative"
+      style={style}
+    >
       <motion.p
         transition={{ duration: 0.3 }}
-        className="cursor-pointer text-black hover:opacity-[0.9] dark:text-white "
+        className="cursor-pointer  hover:opacity-[0.9] dark:text-white "
+
       >
         {menuTrigger}
       </motion.p>
-      {active !== null && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.85, y: 10 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={transition}
-        >
-          {active === item && (
-            <div className="absolute left-1/2 transform -translate-x-1/2 pt-4">
-              <motion.div
-                transition={transition}
-                layoutId="active" // layoutId ensures smooth animation
-                className="bg-white dark:bg-black backdrop-blur-sm rounded-md border border-black/[0.2] dark:border-white/[0.2] shadow-xl"
-              >
+      <div
+        className="h-10 absolute top-[100%] left-0 right-0 bg-transparent"
+
+      />
+      <div className="fixed top-20 left-0 right-0 w-screen bg-white">
+        {active !== null && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.85, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            transition={transition}
+          >
+            {active === item && (
+              <div className="">
                 <motion.div
-                  layout // layout ensures smooth animation
-                  className={cn("w-max h-full p-1", className)}
+                  transition={transition}
+                  layoutId="active" // layoutId ensures smooth animation
+                  className=" dark:bg-black backdrop-blur-sm "
                 >
-                  {children}
+                  <motion.div
+                    layout // layout ensures smooth animation
+                    className={cn("w-max h-full p-1 ", className)}
+                  >
+                    {children}
+                  </motion.div>
                 </motion.div>
-              </motion.div>
-            </div>
-          )}
-        </motion.div>
-      )}
+              </div>
+            )}
+          </motion.div>
+        )}
+      </div>
     </div>
   );
 };
@@ -76,7 +85,7 @@ export const SubMenuItem = ({
   children,
   className,
   style,
-  subMenuTrigger
+  subMenuTrigger,
 }: {
   active: string | null;
   setActive: (item: string | null) => void;

@@ -1,3 +1,10 @@
+import { Category } from "./category";
+
+interface Describle {
+  title: string;
+  content: string;
+}
+
 export interface Product {
   _id: string;
   deletedAt: null;
@@ -19,7 +26,13 @@ export interface Product {
   stock: number;
   salePrice: number;
   name: string;
-  discribles: string[];
+  subName: string;
+  discribles: Describle[];
+  careInstructions: string;
+  warrantyPolicy: string;
+  subDescription: string;
+  similarProducts: Product[];
+  recommendedProducts: Product[];
   images: Image[];
   seo: SEO;
   shippingFee: number;
@@ -31,7 +44,7 @@ export interface Product {
   sizeTags: string[];
   colorTags: string[];
   suggestionTags: string[];
-  categories: string[];
+  categories: Category[];
   finalPrice: number; // Math.min(basePrice, salePrice); salePrice > 0
   createdAt: Date;
   updatedAt: Date;
@@ -40,18 +53,20 @@ export interface Product {
   averageRating: number;
 }
 
- interface Image {
+interface Image {
   color: string;
+  altName: string;
+  thumbnail: string;
   urls: string[];
 }
 
- interface KvAttribute {
+interface KvAttribute {
   productId: number;
   attributeName: string;
   attributeValue: string;
 }
 
- interface SEO {
+interface SEO {
   thumbnail: string;
   title: string;
   slug: string;

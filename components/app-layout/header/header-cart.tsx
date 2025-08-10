@@ -71,11 +71,12 @@ function HeaderCart() {
             variant="ghost"
             id="header-cart"
             className={cn(
-              "hidden sm:block relative focus:bg-transparent focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0  p-4 h-fit max-sm:border-0 hover:bg-[var(--header-color)] hover:text-white",
-              (isProductPage || isCartPage) && "block"
+              "hidden sm:block relative focus:bg-transparent hover:bg-transparent focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0  p-4 h-fit max-sm:border-0",
+              (isProductPage || isCartPage) && "block",
+              "text-[var(--brown-brand)]"
             )}
           >
-            <ShoppingCart className="w-[20px] text-white h-[20px] sm:w-[26px] sm:h-[26px]" />
+            <ShoppingCart className="w-[20px] text-[var(--brown-brand)] h-[20px] sm:w-[26px] sm:h-[26px]" />
             <AnimatePresence mode="popLayout">
               <motion.span
                 key={items.length}

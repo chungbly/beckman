@@ -5,28 +5,35 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { getCategoryQuery } from "@/query/category.query";
+import { Category } from "@/types/category";
 import { Customer } from "@/types/customer";
-import { useQuery } from "@tanstack/react-query";
-import { Menu } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { MobileSidebar } from "./mobile-sidebar";
-const MenuMobile = ({ customer }: { customer?: Customer | null }) => {
-  const { data } = useQuery(getCategoryQuery);
-  const categories = data?.filter((c) => c.isShow);
+const MenuMobile = ({
+  customer,
+  categories,
+}: {
+  customer?: Customer | null;
+  categories: Category[];
+}) => {
   const [isOpen, setIsOpen] = useState(false);
   const handleClose = () => setIsOpen(false);
 
   return (
     <>
       <div
-        className="sm:hidden mr-2 text-white"
+        className="sm:hidden mr-2 text-[var(--brown-brand)]"
         onClick={() => setIsOpen(true)}
       >
-        <Menu />
+        {isOpen ? <X /> : <Menu />}
       </div>
       <Sheet open={isOpen} onOpenChange={() => setIsOpen(false)}>
-        <SheetContent className="p-2">
+        <SheetContent
+          className="p-0 top-[60px] w-full"
+          overlayClassName="bg-transparent"
+          closeIconClassName="hidden"
+        >
           <SheetHeader>
             <SheetTitle></SheetTitle>
           </SheetHeader>

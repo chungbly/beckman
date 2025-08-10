@@ -21,8 +21,8 @@ function ListProductReview({ comments }: { comments: Comment[] }) {
         if (index < (currentPage - 1) * 5) return null;
         if (index >= currentPage * 5) return null;
         return (
-          <Card key={review._id}>
-            <CardContent className="p-2 sm:p-6">
+          <Card key={review._id} className="bg-transparent border-black/10">
+            <CardContent className="p-2 sm:p-6 ">
               <div className="flex justify-between mb-4">
                 <div className="flex items-center gap-4">
                   <Avatar>
