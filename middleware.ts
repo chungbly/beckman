@@ -8,7 +8,7 @@ let redirectCache: {
   expiresAt: number;
 } | null = null;
 
-const REDIRECT_CACHE_TTL = 1 * 60 * 1000;
+const REDIRECT_CACHE_TTL = 1 * 30 * 1000;
 
 async function getRedirectsCached() {
   const now = Date.now();
@@ -53,15 +53,13 @@ export async function middleware(request: NextRequest) {
     } = await getRedirectsCached();
 
     const page = pages.find((p) => p.slug === pathname);
+    console.log("page", page?.title);
     if (page && page.status === "published") {
       requestHeaders.set("x-pathname", page.id);
 
-      return NextResponse.rewrite(
-        new URL(`/custom-page?id=${page.id}`, request.url),
-        {
-          headers: requestHeaders,
-        }
-      );
+      return NextResponse.rewrite(new URL("/custom-page", request.url), {
+        headers: requestHeaders,
+      });
     }
 
     const redirectRule = redirects.find((r) => r.rootUrl === pathname);
