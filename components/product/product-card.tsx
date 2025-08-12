@@ -16,14 +16,12 @@ export function ProductCard({
   priority = false,
   className = "",
   ratingClassName = "",
-  soldClassName = "",
   style = {},
 }: {
   priority?: boolean;
   product: Product;
   className?: string;
   ratingClassName?: string;
-  soldClassName?: string;
   style?: React.CSSProperties;
 }) {
   const configs = useConfigs((s) => s.configs);
@@ -96,16 +94,18 @@ export function ProductCard({
         <span className="text-[#777777] text-sm sm:text-xl">
           {product.categories?.[0]?.name} -{product.kvCode}
         </span>
-        <h3 className="font-bold text-lg sm:text-2xl text-[#36454F] leading-tight">
+        <h3 className="font-bold sm:text-2xl text-[#36454F] leading-tight">
           {product.name}
         </h3>
-        <span className="text-[#777777] text-sm sm:text-xl">{product.subName}</span>
+        <span className="text-[#777777] text-sm sm:text-xl">
+          {product.subName}
+        </span>
         <div className="flex-1 flex justify-end flex-col">
           <Separator className="bg-[#D9D9D9]" />
 
           <div className="flex items-center justify-between gap-1">
             {product.finalPrice && (
-              <span className="text-sm sm:text-lg font-bold text-[var(--brown-brand)]">
+              <span className="sm:text-lg font-bold text-[var(--brown-brand)]">
                 {formatCurrency(product.finalPrice)}
               </span>
             )}

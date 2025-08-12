@@ -5,12 +5,23 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useConfigs } from "@/store/useConfig";
 import { Product } from "@/types/product";
-import { PlayCircle } from "lucide-react";
+import { ReactFormExtendedApi } from "@tanstack/react-form";
+import {
+  ChevronLeft,
+  ChevronRight,
+  CirclePlay,
+  PlayCircle,
+} from "lucide-react";
 import Image from "next/image";
-import { forwardRef, Ref, useState } from "react";
+import { forwardRef, Ref, useEffect, useState } from "react";
+import {
+  Carousel,
+  CarouselApi,
+  CarouselContent,
+  CarouselItem,
+} from "../ui/carousel";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { ScrollArea } from "../ui/scroll-area";
-import { ReactFormExtendedApi } from "@tanstack/react-form";
 
 export type ProductDetailFormValue = ReactFormExtendedApi<
   {
@@ -41,6 +52,8 @@ function ProductGallery(
   ref: Ref<HTMLDivElement>
 ) {
   const isMobile = useIsMobile();
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
   const [video, setVideo] = useState<string | null>(null); // State to track video play/pause in mobile view
 
   const configs = useConfigs((s) => s.configs);
@@ -74,60 +87,166 @@ function ProductGallery(
   const images = product?.images?.flatMap((image) => image.urls)?.length
     ? product?.images?.flatMap((image) => image.urls)
     : [product.seo?.thumbnail];
+  const hasVideo = images.some((image) =>
+    videoExtensions.some((v) => image.includes(v))
+  );
 
+  const firstVideoIndex = images.findIndex((image) =>
+    videoExtensions.some((v) => image.includes(v))
+  );
+
+  useEffect(() => {
+    if (!api) {
+      return;
+    }
+
+    setCurrent(api.selectedScrollSnap() + 1);
+
+    api.on("select", () => {
+      setCurrent(api.selectedScrollSnap() + 1);
+    });
+  }, [api]);
   return (
     <div className={cn("max-h-full", className)}>
-      <ScrollArea>
-        <div
-          className={cn(
-            "flex flex-wrap gap-[10px]",
-            "h-full max-h-[1700px] ",
-            "max-sm:!min-h-[647px]",
-            !!product.recommendedProducts?.length
-              ? "md:h-[1400px] xl:h-[1700px]"
-              : "md:h-[1000px] xl:h-[1000px]"
-          )}
-        >
-          {images.map((image, index) => {
-            const isVideo = !!videoExtensions.find((v) => image.includes(v));
-            return (
-              <button
-                key={index}
-                className={cn(
-                  "relative aspect-square flex-shrink-0 overflow-hidden transition-all duration-300",
-                  index === 0 ? "w-full" : "w-[calc(50%-5px)]"
-                )}
-              >
-                {isVideo ? (
-                  <div className="absolute inset-0 ">
+      {isMobile ? (
+        <Carousel setApi={setApi} className="aspect-square mt-7">
+          <CarouselContent className="ml-0">
+            {images.map((image, index) => {
+              const isVideo = !!videoExtensions.find((v) => image.includes(v));
+              return (
+                <CarouselItem
+                  className="relative pl-0 aspect-square   overflow-hidden"
+                  key={index}
+                  onClick={() => {
+                    if (!isVideo) return;
+                    if (!isMobile) {
+                      const video = document.querySelector(
+                        `#video-${index}`
+                      ) as HTMLVideoElement; // Type assertion to HTMLVideoElement
+                      if (!video) return;
+                      video.muted = !video.muted;
+                      return;
+                    }
+                    setVideo(image);
+                  }}
+                >
+                  {isVideo ? (
                     <video
-                      autoPlay={false}
+                      id={`video-${index}`}
                       muted
-                      className="w-full h-full object-cover "
+                      autoPlay
+                      loop
+                      className="w-full h-full object-cover"
                     >
                       <source src={image} />
                     </video>
-                    <PlayCircle className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2 bg-black/50 text-white  p-1 rounded-full" />
-                  </div>
-                ) : (
-                  <Image
-                    src={
-                      image?.startsWith("http")
-                        ? image
-                        : `https://beckman.vn/${image}`
-                    }
-                    alt={`${product.name} ${index + 1}`}
-                    fill
-                    className="object-cover"
-                    sizes={index === 0 ? "600px" : "400px"}
-                    priority={index < 6}
-                  />
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </ScrollArea>
+                  ) : (
+                    <>
+                      <Image
+                        src={image}
+                        alt={product.name}
+                        fill
+                        sizes="400px"
+                        className="object-cover"
+                        priority={index === 1}
+                      />
+                      {frameUrl && (
+                        <div className="absolute top-0 right-0 left-0 bottom-0">
+                          <Image
+                            src={frameUrl}
+                            sizes="300px"
+                            alt="Frame"
+                            fill
+                          />
+                        </div>
+                      )}
+                    </>
+                  )}
+                </CarouselItem>
+              );
+            })}
+          </CarouselContent>
+          <div
+            className={cn(
+              "absolute flex gap-2 bottom-4  bg-black/50 text-white px-3 py-1 rounded-full text-sm",
+              hasVideo ? "left-4" : "right-4"
+            )}
+          >
+            <ChevronLeft
+              className="h-5 w-5 cursor-pointer"
+              onClick={() => api?.scrollPrev()}
+            />
+            {current}/{images.length}
+            <ChevronRight
+              className="h-5 w-5 cursor-pointer"
+              onClick={() => api?.scrollNext()}
+            />
+          </div>
+          {hasVideo && firstVideoIndex !== -1 && (
+            <div
+              onClick={() => {
+                api?.scrollTo(firstVideoIndex);
+                setVideo(images[firstVideoIndex]);
+              }}
+              className="absolute flex gap-2 bottom-4 right-4  bg-black/50 text-white px-3 py-1 rounded-full text-sm"
+            >
+              <CirclePlay />
+            </div>
+          )}
+        </Carousel>
+      ) : (
+        <ScrollArea>
+          <div
+            className={cn(
+              "flex flex-wrap gap-[10px]",
+              "h-full max-h-[1700px] ",
+              "max-sm:!min-h-[647px]",
+              !!product.recommendedProducts?.length
+                ? "md:h-[1400px] xl:h-[1700px]"
+                : "md:h-[1000px] xl:h-[1000px]"
+            )}
+          >
+            {images.map((image, index) => {
+              const isVideo = !!videoExtensions.find((v) => image.includes(v));
+              return (
+                <button
+                  key={index}
+                  className={cn(
+                    "relative aspect-square flex-shrink-0 overflow-hidden h-fit transition-all duration-300",
+                    index === 0 ? "w-full" : "w-[calc(50%-5px)]"
+                  )}
+                >
+                  {isVideo ? (
+                    <div className="absolute inset-0 ">
+                      <video
+                        autoPlay={false}
+                        muted
+                        className="w-full h-full object-cover "
+                      >
+                        <source src={image} />
+                      </video>
+                      <PlayCircle className="absolute -translate-x-1/2 -translate-y-1/2 top-1/2 left-1/2 bg-black/50 text-white  p-1 rounded-full" />
+                    </div>
+                  ) : (
+                    <Image
+                      src={
+                        image?.startsWith("http")
+                          ? image
+                          : `https://beckman.vn/${image}`
+                      }
+                      alt={`${product.name}`}
+                      fill
+                      className="object-cover"
+                      sizes={index === 0 ? "600px" : "400px"}
+                      priority={index < 6}
+                    />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </ScrollArea>
+      )}
 
       {isMobile && !!video && (
         <Dialog open={!!video && isMobile} onOpenChange={() => setVideo(null)}>
