@@ -69,7 +69,7 @@ function ProductSorting({ count }: { count: number }) {
 
   const currentSort = (() => {
     const sortKey = Object.keys(sort)?.[0] || "none";
-    if (sortKey === "finalPrice" && !isMobile) {
+    if (sortKey === "finalPrice") {
       if (sort.finalPrice === 1) {
         return "price-asc";
       } else if (sort.finalPrice === -1) {
@@ -171,14 +171,14 @@ function ProductSorting({ count }: { count: number }) {
                 value={currentSort}
                 key={f.id}
               >
-                <SelectTrigger className="text-xl w-fit bg-transparent border-0 focus:ring-0 focus:ring-none focus:ring-offset-0">
+                <SelectTrigger className="text-xl  w-fit bg-transparent border-0 focus:ring-0 focus:ring-none focus:ring-offset-0">
                   <SelectValue placeholder={f.title} />
                 </SelectTrigger>
                 <SelectContent className="bg-[#FFECD9] ">
                   {f.options.map((o) => {
                     return (
                       <SelectItem
-                        className="focus:bg-white"
+                        className="focus:bg-white "
                         value={o.value.toString()}
                         key={o.id}
                       >

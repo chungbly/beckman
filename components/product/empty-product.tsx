@@ -42,7 +42,7 @@ export default function EmptyProducts() {
   );
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-transparent">
       {/* Main Content */}
       <main className="px-4 py-12">
         <div className="max-w-3xl mx-auto text-center">

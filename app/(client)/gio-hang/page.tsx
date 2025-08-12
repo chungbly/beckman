@@ -92,7 +92,8 @@ function CartPage() {
   const { data: userVouchers } = useQuery(
     getUserVouchersQuery(
       useCustomerStore.getState().customer?._id ||
-        useCustomerStore.getState().userId || ''
+        useCustomerStore.getState().userId ||
+        ""
     )
   );
   const { data: coupons } = useQuery(getCouponsQuery());
@@ -153,7 +154,7 @@ function CartPage() {
   }, [invalidVouchers]);
 
   return (
-    <div className="bg-white min-h-screen max-sm:mb-[56px]">
+    <div className="bg-transparent min-h-screen max-sm:mb-[56px]">
       <div className="container py-6 max-sm:px-0">
         <h1 className="text-2xl font-bold mb-6 max-sm:px-2">Giỏ hàng</h1>
 

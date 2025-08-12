@@ -73,7 +73,6 @@ function MobileFilter({
             setCurrentMenu(undefined);
           }
           const scrollToTop = document.getElementById("scroll-to-top");
-          console.log("scrollToTop", scrollToTop);
           if (scrollToTop) {
             scrollToTop.style.display = !isOpen ? "none" : "flex";
           }
@@ -123,7 +122,7 @@ function MobileFilter({
             exit={{ opacity: 0, right: 0, display: "none" }}
             transition={transition}
             className={cn(
-              "absolute -top-4 -translate-y-full right-20 p-[20px] bg-black/30 rounded-[30px] backdrop-blur-sm z-[51] flex flex-col gap-4",
+              "absolute -top-4 -translate-y-full right-20 p-[10px] bg-black/30 rounded-[30px] backdrop-blur-sm z-[51] flex flex-col gap-4",
               currentMenu.id === "size" && "px-[10px]"
             )}
           >
@@ -145,7 +144,7 @@ function MobileFilter({
                       currentMenu
                     )}
                     className={cn(
-                      "relative min-w-max w-full h-10 rounded-[20px] flex items-center justify-center",
+                      "relative min-w-max w-full h-10 rounded-[20px] px-2 flex items-center justify-center",
                       currentMenu.id === "size" && "w-[40px]"
                     )}
                   >
