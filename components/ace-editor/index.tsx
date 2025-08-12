@@ -1,8 +1,9 @@
+"use client";
+import AceEditor from "react-ace";
 import "ace-builds/src-noconflict/ext-language_tools";
 import "ace-builds/src-noconflict/mode-java";
 import "ace-builds/src-noconflict/theme-github";
-import AceEditor from "react-ace";
-
+import 'ace-builds/src-noconflict/ace';
 function AceEmmetEditor({
   value,
   onChange,
