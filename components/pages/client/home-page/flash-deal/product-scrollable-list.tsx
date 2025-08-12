@@ -41,11 +41,7 @@ function ProductScrollAbleList({
             key={product._id}
             className="w-[calc((100%-5rem)/2)] sm:w-[calc((100%-5rem)/3)] lg:w-[calc((100%-5rem)/4)] xl:w-[calc((100%-5rem)/6)] flex-none"
           >
-            <ProductCard
-              product={product}
-              soldClassName="hidden sm:flex"
-              ratingClassName="hidden sm:flex"
-            />
+            <ProductCard product={product} ratingClassName="hidden sm:flex" />
           </div>
         ))}
         <div

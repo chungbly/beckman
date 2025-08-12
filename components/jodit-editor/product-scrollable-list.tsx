@@ -12,7 +12,7 @@ function ProductScrollAbleList({
 }: {
   products: Product[];
   children?: React.ReactNode;
-    className?: string;
+  className?: string;
 }) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -38,11 +38,7 @@ function ProductScrollAbleList({
             key={product._id}
             className="2xl:w-[calc((100%-5rem)/5)] lg:w-[calc((100%-5rem)/4)] w-[calc((100%-5rem)/2)] flex-none"
           >
-            <ProductCard
-              product={product}
-              soldClassName="hidden sm:flex"
-              ratingClassName="hidden sm:flex"
-            />
+            <ProductCard product={product} ratingClassName="hidden sm:flex" />
           </div>
         ))}
       </div>
