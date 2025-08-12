@@ -146,7 +146,11 @@ function ProductSorting({ count }: { count: number }) {
                 <SelectContent className="bg-[#FFECD9] border-[var(--brown-brand)] ">
                   {f.options.map((o) => {
                     return (
-                      <SelectItem value={o.value.toString()} key={o.id}>
+                      <SelectItem
+                        className="focus:bg-white"
+                        value={o.value.toString()}
+                        key={o.id}
+                      >
                         {o.label}
                       </SelectItem>
                     );
@@ -156,34 +160,36 @@ function ProductSorting({ count }: { count: number }) {
             );
           })}
         </div>
-        <div className="flex items-center">
-          <div className="flex items-center gap-2">
-            <span className="text-xl">SẮP XẾP:</span>
-            {filter.map((f) => {
-              if (f.id !== "sort") return null;
+        <div className="flex justify-around gap-4 items-center max-w-fit">
+          <span className="text-xl">SẮP XẾP:</span>
+          {filter.map((f) => {
+            if (f.id !== "sort") return null;
 
-              return (
-                <Select
-                  onValueChange={(v) => router.push(getTagsSearchParams(v, f))}
-                  value={currentSort}
-                  key={f.id}
-                >
-                  <SelectTrigger className="text-xl w-fit bg-transparent border-0 focus:ring-0 focus:ring-none focus:ring-offset-0">
-                    <SelectValue placeholder={f.title} />
-                  </SelectTrigger>
-                  <SelectContent className="bg-[#FFECD9] ">
-                    {f.options.map((o) => {
-                      return (
-                        <SelectItem value={o.value.toString()} key={o.id}>
-                          {o.label}
-                        </SelectItem>
-                      );
-                    })}
-                  </SelectContent>
-                </Select>
-              );
-            })}
-          </div>
+            return (
+              <Select
+                onValueChange={(v) => router.push(getTagsSearchParams(v, f))}
+                value={currentSort}
+                key={f.id}
+              >
+                <SelectTrigger className="text-xl w-fit bg-transparent border-0 focus:ring-0 focus:ring-none focus:ring-offset-0">
+                  <SelectValue placeholder={f.title} />
+                </SelectTrigger>
+                <SelectContent className="bg-[#FFECD9] ">
+                  {f.options.map((o) => {
+                    return (
+                      <SelectItem
+                        className="focus:bg-white"
+                        value={o.value.toString()}
+                        key={o.id}
+                      >
+                        {o.label}
+                      </SelectItem>
+                    );
+                  })}
+                </SelectContent>
+              </Select>
+            );
+          })}
           <div className="text-xl">{count} sản phẩm</div>
         </div>
       </div>
