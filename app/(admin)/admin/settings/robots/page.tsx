@@ -1,8 +1,8 @@
 "use client";
-import { CodeiumEditor } from "@codeium/react-code-editor";
 
 import { APIStatus } from "@/client/callAPI";
 import { updateConfig } from "@/client/configs.client";
+import AceEmmetEditor from "@/components/ace-editor";
 import PageBreadCrumb from "@/components/app-layout/page-breadcrumb";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
@@ -87,12 +87,10 @@ export default function RobotsViewer() {
           </div>
         </CardHeader>
         <CardContent className="h-[65vh]">
-          <CodeiumEditor
+          <AceEmmetEditor
             language="xml"
-            theme="vs-dark"
-            className="h-[60vh]"
+            value={robotsContent || ""}
             onChange={(value) => setContent(value)}
-            value={robotsContent}
           />
         </CardContent>
       </Card>

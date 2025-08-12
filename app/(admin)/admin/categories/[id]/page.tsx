@@ -8,6 +8,7 @@ import {
   getCategory,
   updateCategory,
 } from "@/client/category.client";
+import AceEmmetEditor from "@/components/ace-editor";
 import PageBreadCrumb from "@/components/app-layout/page-breadcrumb";
 import GrapesStudio from "@/components/grapes/v1";
 import SumbitButton from "@/components/submit-button";
@@ -31,13 +32,8 @@ import { Globe, Info, LinkIcon, Tag } from "lucide-react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import AceEditor from "react-ace";
 import { z } from "zod";
 import CategoryFormSkeleton from "./loading";
-
-import "ace-builds/src-noconflict/ext-language_tools";
-import "ace-builds/src-noconflict/mode-java";
-import "ace-builds/src-noconflict/theme-github";
 
 const ImageSelector = dynamic(() => import("../select-image"));
 
@@ -327,30 +323,9 @@ export default function CategoryForm(props: {
                 <form.Field
                   name="filterJSON"
                   children={(field) => (
-                    <AceEditor
-                      style={{
-                        height: "600px",
-                        width: "100%",
-                      }}
-                      placeholder="Placeholder Text"
-                      mode="json"
-                      theme="github"
-                      name="blah2_1"
-                      value={field.state.value}
+                    <AceEmmetEditor
+                      value={field.state.value || ""}
                       onChange={(value) => field.handleChange(value)}
-                      fontSize={14}
-                      lineHeight={19}
-                      showPrintMargin={true}
-                      showGutter={true}
-                      highlightActiveLine={true}
-                      setOptions={{
-                        enableBasicAutocompletion: true,
-                        enableLiveAutocompletion: true,
-                        enableSnippets: true,
-                        enableMobileMenu: true,
-                        showLineNumbers: true,
-                        tabSize: 2,
-                      }}
                     />
                   )}
                 />

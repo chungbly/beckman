@@ -17,7 +17,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ShoppingCart, Trash, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams, usePathname } from "next/navigation";
 import { v4 } from "uuid";
 import { useStore } from "zustand";
 
@@ -44,13 +43,8 @@ const EmptyCartDialog = () => {
 };
 
 function HeaderCart() {
-  const params = useParams();
-  const pathname = usePathname();
   const items = useStore(useCartStore, (state) => state.items);
   const productIds = items.map((item) => item.productId);
-
-  const isProductPage = !!params.productSlug;
-  const isCartPage = pathname === "/gio-hang";
   const { data: products, isLoading } = useQuery({
     ...getProductsQuery(
       {
@@ -71,8 +65,7 @@ function HeaderCart() {
             variant="ghost"
             id="header-cart"
             className={cn(
-              "hidden sm:block relative focus:bg-transparent hover:bg-transparent focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0  p-4 h-fit max-sm:border-0",
-              (isProductPage || isCartPage) && "block",
+              "block relative focus:bg-transparent hover:bg-transparent focus-visible:ring-0 focus-visible:ring-transparent focus-visible:ring-offset-0  p-4 h-fit max-sm:border-0",
               "text-[var(--brown-brand)]"
             )}
           >

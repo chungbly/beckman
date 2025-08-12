@@ -1,6 +1,7 @@
 "use client";
 import { APIStatus } from "@/client/callAPI";
 import { createEmbed, getEmbed, updateEmbed } from "@/client/embed.client";
+import AceEmmetEditor from "@/components/ace-editor";
 import PageBreadCrumb from "@/components/app-layout/page-breadcrumb";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -17,7 +18,6 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { EmbedPosition } from "@/types/embed";
-import { CodeiumEditor } from "@codeium/react-code-editor";
 import { useForm } from "@tanstack/react-form";
 import { useQuery } from "@tanstack/react-query";
 import { notFound, useParams, useRouter } from "next/navigation";
@@ -223,10 +223,8 @@ export default function EmbedCodeForm() {
             <form.Field
               name="code"
               children={(field) => (
-                <CodeiumEditor
-                  language="xml"
-                  theme="vs-dark"
-                  value={field.state.value}
+                <AceEmmetEditor
+                  value={field.state.value || ""}
                   onChange={(value) => field.handleChange(value)}
                 />
               )}

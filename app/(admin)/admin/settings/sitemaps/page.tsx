@@ -1,11 +1,10 @@
 "use client";
-import { CodeiumEditor } from "@codeium/react-code-editor";
 
+import AceEmmetEditor from "@/components/ace-editor";
 import PageBreadCrumb from "@/components/app-layout/page-breadcrumb";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
 import { useQuery } from "@tanstack/react-query";
 import { InfoIcon } from "lucide-react";
 
@@ -45,12 +44,7 @@ export default function SitemapViewer() {
           </Button>
         </CardHeader>
         <CardContent className="h-[65vh]">
-          <CodeiumEditor
-            language="xml"
-            theme="vs-dark"
-            className="h-[60vh]"
-            value={sitemapContent}
-          />
+          <AceEmmetEditor language="xml" value={sitemapContent || ""} />
         </CardContent>
       </Card>
     </div>
