@@ -121,7 +121,7 @@ function ProductSorting({ count }: { count: number }) {
       {/* Desktop sorting */}
       <div className="hidden sm:flex justify-between items-center mb-4 gap-2 text-[#4E2919]">
         <div className="flex items-center gap-2">
-          <span className="text-sm">BỘ LỌC:</span>
+          <span className="text-xl">BỘ LỌC:</span>
           {filter.map((f) => {
             if (f.id === "sort") return null;
 
@@ -140,7 +140,7 @@ function ProductSorting({ count }: { count: number }) {
                 value={value}
                 key={f.id}
               >
-                <SelectTrigger className="w-fit bg-transparent border-0 focus:ring-0 focus:ring-none focus:ring-offset-0">
+                <SelectTrigger className="text-xl w-fit bg-transparent border-0 focus:ring-0 focus:ring-none focus:ring-offset-0">
                   <SelectValue placeholder={f.title} />
                 </SelectTrigger>
                 <SelectContent className="bg-[#FFECD9] border-[var(--brown-brand)] ">
@@ -158,7 +158,7 @@ function ProductSorting({ count }: { count: number }) {
         </div>
         <div className="flex items-center">
           <div className="flex items-center gap-2">
-            <span className="text-sm">SẮP XẾP:</span>
+            <span className="text-xl">SẮP XẾP:</span>
             {filter.map((f) => {
               if (f.id !== "sort") return null;
 
@@ -168,7 +168,7 @@ function ProductSorting({ count }: { count: number }) {
                   value={currentSort}
                   key={f.id}
                 >
-                  <SelectTrigger className="w-fit bg-transparent border-0 focus:ring-0 focus:ring-none focus:ring-offset-0">
+                  <SelectTrigger className="text-xl w-fit bg-transparent border-0 focus:ring-0 focus:ring-none focus:ring-offset-0">
                     <SelectValue placeholder={f.title} />
                   </SelectTrigger>
                   <SelectContent className="bg-[#FFECD9] ">
@@ -184,7 +184,7 @@ function ProductSorting({ count }: { count: number }) {
               );
             })}
           </div>
-          <div className="text-sm">{count} sản phẩm</div>
+          <div className="text-xl">{count} sản phẩm</div>
         </div>
       </div>
       {filter.length > 0 && (
