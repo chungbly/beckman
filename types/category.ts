@@ -22,11 +22,15 @@ export interface Category {
   children?: Category[];
   index?: number; // for sorting
   filterJSON?: string;
+  header?: {
+    html: string;
+    css: string;
+    project: string;
+  };
 }
 
 export interface SEO {
   description: string;
-  
   title: string;
   slug: string;
   tags: string;

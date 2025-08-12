@@ -1,19 +1,12 @@
-import { CategoryTree } from "@/app/(admin)/admin/categories/container";
-import { getChildCategories } from "@/app/(admin)/admin/categories/page";
 import { APIStatus } from "@/client/callAPI";
 import { getCategories } from "@/client/category.client";
-import { getCustomer } from "@/client/customer.client";
-import { Menu } from "@/components/ui/navbar-menu";
-import { getGlobalConfig } from "@/lib/configs";
-import { getUserId } from "@/lib/cookies";
-import { isMobileServer } from "@/lib/isMobileServer";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
+import { HeaderMenu } from "./desktop-menu";
 import HeaderCart from "./header-cart";
 import HeaderSearch from "./header-search";
 import MenuMobile from "./menu-mobile";
-import { HeaderMenu } from "./desktop-menu";
 
 const fetchCategories = async () => {
   const res = await getCategories({
@@ -29,10 +22,6 @@ const fetchCategories = async () => {
 };
 
 const Header = async () => {
-  const userId = await getUserId();
-  const isMobile = await isMobileServer();
-  const res = userId && isMobile ? await getCustomer(userId) : null;
-  const customer = res?.data;
   const categories = await fetchCategories();
 
   return (
@@ -46,7 +35,7 @@ const Header = async () => {
         <Link href="/" className="py-1 relative top-0 sm:translate-y-[25%]">
           <Image
             src={"/icons/logo.svg"}
-            alt="R8ckie"
+            alt="Beckman"
             sizes="(max-width: 700px) 100px, 300px"
             priority
             height={96}
@@ -60,7 +49,7 @@ const Header = async () => {
           </div>
           <HeaderMenu categories={categories} />
           <HeaderCart />
-          <MenuMobile customer={customer} categories={categories} />
+          <MenuMobile categories={categories} />
         </div>
       </div>
     </header>

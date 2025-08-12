@@ -8,9 +8,24 @@ import { Product } from "@/types/product";
 import { PlayCircle } from "lucide-react";
 import Image from "next/image";
 import { forwardRef, Ref, useState } from "react";
-import { ProductDetailFormValue } from "../pages/client/product/mobile-footer-actionbar";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { ScrollArea } from "../ui/scroll-area";
+import { ReactFormExtendedApi } from "@tanstack/react-form";
+
+export type ProductDetailFormValue = ReactFormExtendedApi<
+  {
+    kvId: number | undefined;
+    size: string | undefined;
+    color: string | undefined;
+    addons: number[];
+    kvCode: string | undefined;
+    name: string | undefined;
+
+    basePriceTotal: number;
+    finalPriceTotal: number;
+  },
+  undefined
+>;
 
 interface ProductGalleryProps {
   product: Product;
@@ -34,7 +49,9 @@ function ProductGallery(
   const frameByCategory = FRAMES.filter(
     (f) =>
       f.type === "Category" &&
-      f.selectedCategory.some((c) => product.categories.some(cate => cate._id ===c.value))
+      f.selectedCategory.some((c) =>
+        product.categories.some((cate) => cate._id === c.value)
+      )
   );
   const frameByProduct = FRAMES.filter(
     (f) =>
@@ -64,8 +81,11 @@ function ProductGallery(
         <div
           className={cn(
             "flex flex-wrap gap-[10px]",
-            "h-full max-h-[1700px]",
-            "max-sm:!min-h-[647px]"
+            "h-full max-h-[1700px] ",
+            "max-sm:!min-h-[647px]",
+            !!product.recommendedProducts?.length
+              ? "md:h-[1400px] xl:h-[1700px]"
+              : "md:h-[1000px] xl:h-[1000px]"
           )}
         >
           {images.map((image, index) => {
@@ -91,7 +111,11 @@ function ProductGallery(
                   </div>
                 ) : (
                   <Image
-                    src={image}
+                    src={
+                      image?.startsWith("http")
+                        ? image
+                        : `https://beckman.vn/${image}`
+                    }
                     alt={`${product.name} ${index + 1}`}
                     fill
                     className="object-cover"

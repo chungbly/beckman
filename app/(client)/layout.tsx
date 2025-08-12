@@ -24,8 +24,8 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.png",
   },
-  description: "R8ckie Step on your way",
-  title: "R8ckie - Step on your way",
+  description: "Beckman - Be a Classic Gentleman",
+  title: "Beckman - Be a Classic Gentleman",
   appleWebApp: {},
 };
 

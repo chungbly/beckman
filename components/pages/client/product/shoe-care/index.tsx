@@ -27,7 +27,7 @@ function ShoeCare({
       <div className="max-w-full overflow-x-auto flex gap-2 items-center">
         {products.map((product,index) => (
           <div
-            key={product._id + index}
+            key={product._id}
             className="flex items-center gap-2 min-w-[300px] w-[300px] bg-[var(--light-beige)]"
           >
             <div className="relative aspect-square w-[100px]">

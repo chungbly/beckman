@@ -135,7 +135,7 @@ function HeaderCart() {
                   )?.quantity;
                   return (
                     <div
-                      key={v4()}
+                      key={item._id}
                       className="flex gap-4 hover:bg-slate-100 transition-all cursor-pointer"
                     >
                       <div className="relative h-24 w-24 flex-none rounded-lg overflow-hidden border bg-muted ">

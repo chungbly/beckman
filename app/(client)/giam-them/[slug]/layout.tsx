@@ -30,8 +30,8 @@ export async function generateMetadata(
         images: previousImages,
       },
       title: voucher.name,
-      description: voucher?.description || "R8ckie - Step on your way",
-      keywords: voucher?.description || "R8ckie, giay, dep",
+      description: voucher?.description || "Beckman - Be a Classic Gentleman",
+      keywords: voucher?.description || "Beckman, giay, dep",
     };
   }
   return {
@@ -40,7 +40,7 @@ export async function generateMetadata(
     },
     description: "Giảm thêm khi mua kèm ",
     title: "Giảm thêm khi mua kèm",
-    keywords: "R8ckie, giay, dep, giam them, discount",
+    keywords: "Beckman, giay, dep, giam them, discount",
   };
 }
 async function CategoryLayout(props: Props) {

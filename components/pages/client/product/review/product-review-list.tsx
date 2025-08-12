@@ -8,7 +8,6 @@ import { Comment } from "@/types/comment";
 import { ThumbsDown, ThumbsUp } from "lucide-react";
 import moment from "moment-timezone";
 import { useState } from "react";
-import { v4 } from "uuid";
 import ImageCarousel from "../../../../image-carousel";
 import StarRating from "../../../../product/star-rating";
 
@@ -50,9 +49,9 @@ function ListProductReview({ comments }: { comments: Comment[] }) {
               </p>
               {!!review.images?.length && (
                 <div className="flex flex-wrap gap-2 mt-4">
-                  {review.images.map((image) => (
+                  {review.images.map((image, index) => (
                     <ImageCarousel
-                      key={v4()}
+                      key={index}
                       images={[image]}
                       className="relative w-20 h-20 max-h-20 max-w-20"
                     />

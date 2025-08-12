@@ -226,7 +226,7 @@ export default function VoucherForm({
                       {" "}
                       {field.state.value
                         ? "Coupon dùng cho tất cả đối tượng khách hàng"
-                        : "Voucher chỉ áp dụng cho khách hàng đã là thành viên của R8ckie"}
+                        : "Voucher chỉ áp dụng cho khách hàng đã là thành viên của Beckman"}
                     </p>
                   </>
                 )}

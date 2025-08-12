@@ -25,7 +25,7 @@ export default function Loading() {
           <div className="w-24 h-24 relative flex items-center justify-center">
             <Image
               src={"/icons/logo.svg"}
-              alt="R8CKIE"
+              alt="beckman"
               width={96}
               height={96}
               className="object-contain"

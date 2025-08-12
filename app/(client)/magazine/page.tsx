@@ -1,8 +1,9 @@
 import { APIStatus } from "@/client/callAPI";
-import { getPosts } from "@/client/post.client";
+import { getPostById, getPosts } from "@/client/post.client";
 import MagazineCategoryFilter from "@/components/pages/client/magazine/categories-filter";
 import LoadMorePosts from "@/components/pages/client/magazine/load-more-posts";
 import Post from "@/components/pages/client/magazine/post";
+import { getGlobalConfig } from "@/lib/configs";
 import { Meta } from "@/types/api-response";
 import { PostWithMeta, Post as TPost } from "@/types/post";
 import {
@@ -10,25 +11,11 @@ import {
   HydrationBoundary,
   QueryClient,
 } from "@tanstack/react-query";
-import MagazineSlide from "./carousel";
+import Image from "next/image";
 
-const getPostWithSlide = async (tags: string[]) => {
-  const res = await getPosts(
-    {
-      isSlide: true,
-      isShow: true,
-      isMagazine: true,
-
-      ...(tags?.length
-        ? {
-            tags,
-          }
-        : {}),
-    },
-    10,
-    1
-  );
-  if (!res || !res.data?.length) {
+const getPinnedPost = async (id: string) => {
+  const res = await getPostById(id);
+  if (!res || !res.data) {
     return null;
   }
   return res.data;
@@ -89,7 +76,6 @@ const getFeaturedPost = async () => {
   return res.data;
 };
 
-
 export default async function BlogPage({
   searchParams,
 }: {
@@ -99,19 +85,32 @@ export default async function BlogPage({
 }) {
   const tags = (await searchParams).tags;
   const tagArr = tags?.split(",").filter((tag) => !!tag);
+  const configs = await getGlobalConfig();
+  const PINNED_POST_ID = configs?.["PINNED_POST_ID"] as string;
 
   const query = new QueryClient();
-  const [postWithSlide, _, featuredPost] = await Promise.all([
-    getPostWithSlide(tagArr),
+  const [pinnedPost, _, featuredPost] = await Promise.all([
+    getPinnedPost(PINNED_POST_ID),
     getRegularPosts(query, tagArr),
     getFeaturedPost(),
   ]);
 
   return (
-    <div className="px-4 py-8">
-      <div className="grid lg:grid-cols-5 gap-[20px]">
+    <div className="">
+      <div className="relative w-full h-[155px]  sm:h-[310px] border-b border-[var(--brown-brand)]">
+        <Image
+          src="/icons/beckman.svg"
+          alt="beckman"
+          fill
+          className="aspect-[1162/200] max-w-[1162px] mx-auto max-sm:p-2"
+        />
+      </div>
+      <p className="font-bold tracking-[4px] sm:tracking-[9px] text-center border-b-4 border-[var(--brown-brand)]">
+        TẠP CHÍ DÀNH CHO NHỮNG GÃ TRAI PHÓNG KHOÁNG VÀ ĐANG TÌM KIẾM CHÂN TRỜI
+      </p>
+      <div className="grid lg:grid-cols-5 gap-[20px] px-4 mt-8">
         {/* Featured Posts */}
-        <div className="h-fit col-span-1 p-[20px] border-r border-[var(--brown-brand)]">
+        <div className="h-fit col-span-1 sm:p-[20px] sm:border-r border-[var(--brown-brand)] sticky top-20">
           <h2 className="font-bold text-[40px] underline">Tin nổi bật</h2>
           <div className="space-y-5">
             {!!featuredPost?.length &&
@@ -121,7 +120,7 @@ export default async function BlogPage({
           </div>
         </div>
         <div className="lg:col-span-3 space-y-8">
-          <MagazineSlide posts={postWithSlide || []} />
+          {pinnedPost && <Post post={pinnedPost} />}
 
           {/* Regular Posts Grid */}
           <div className="grid md:grid-cols-2 gap-6">
@@ -133,7 +132,7 @@ export default async function BlogPage({
         {/* Sidebar */}
         <div className="space-y-8 hidden sm:block">
           {/* Categories */}
-          <div className="p-[20px] border-l border-[var(--brown-brand)]">
+          <div className="p-[20px] sm:border-l border-[var(--brown-brand)] sticky top-20">
             <h2 className="font-bold text-[40px] mb-[20px] underline">
               Danh mục
             </h2>

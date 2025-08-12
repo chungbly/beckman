@@ -31,7 +31,7 @@ function CollectionMenu({ menus }: { menus: TCollectionMenu[] }) {
             const isInternalLink = child.href.startsWith("/");
             if (isInternalLink) {
               return (
-                <Link key={child.name + index} href={child.href || "#"}>
+                <Link key={child.href} href={child.href || "#"}>
                   <Button
                     variant="ghost"
                     className={cn("justify-start pl-2 w-full min-w-[100px]")}

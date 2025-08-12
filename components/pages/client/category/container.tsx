@@ -25,7 +25,7 @@ function CategoryContainer({ query }: { query: Partial<GetProductQuery> }) {
     <>
       <ProductSorting count={data?.pages?.[0]?.meta?.itemCount ?? 0} />
       {products?.length ? (
-        <div className="sm:my-6 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
+        <div className="sm:my-6 max-sm:mt-4 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
           <ProductGrid products={products} />
           <div className="col-span-full flex items-center justify-center">
             {hasNextPage && (

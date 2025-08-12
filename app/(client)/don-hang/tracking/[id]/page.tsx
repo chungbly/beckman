@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import OrderTrackingClient from "./order-tracking";
 
 export const metadata: Metadata = {
-  title: "Theo dõi đơn hàng | R8ckie",
+  title: "Theo dõi đơn hàng | Beckman",
   description: "Theo dõi trạng thái và thông tin chi tiết đơn hàng của bạn.",
 };
 
@@ -42,11 +42,9 @@ async function getOrderDetails(orderId: string) {
   };
 }
 
-export default async function OrderTrackingPage(
-  props: {
-    searchParams: Promise<{ orderId: string }>;
-  }
-) {
+export default async function OrderTrackingPage(props: {
+  searchParams: Promise<{ orderId: string }>;
+}) {
   const searchParams = await props.searchParams;
   const orderId = searchParams.orderId || "R8-12345"; // Default order ID if not provided
   const orderDetails = await getOrderDetails(orderId);

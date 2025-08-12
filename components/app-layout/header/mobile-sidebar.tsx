@@ -13,7 +13,6 @@ import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
 import { useConfigs } from "@/store/useConfig";
 import { Category } from "@/types/category";
-import { Customer } from "@/types/customer";
 import { Oswald } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
@@ -30,11 +29,9 @@ interface MenuItem extends CategoryTree {
 export function MobileSidebar({
   categories,
   handleClose,
-  customer,
 }: {
   categories: Category[];
   handleClose: () => void;
-  customer?: Customer | null;
 }) {
   const configs = useConfigs((s) => s.configs);
   const MOBILE_MENU_CSS = configs["MOBILE_MENU_CSS"] as Record<string, string>;
@@ -103,10 +100,9 @@ function MenuItem({
     }, {} as Record<string, MenuItem[]>);
     return (
       <Collapsible open={isOpen} onOpenChange={setIsOpen} style={style}>
-        <Button
-          variant="ghost"
+        <div
           className={cn(
-            "w-full py-[3px] h-[30px] justify-between pl-1 font-bold uppercase focus-visible:ring-0 focus-visible:outline-none focus-visible:ring-offset-0",
+            "w-full py-[3px] flex h-[30px] pr-4 justify-between pl-1 font-bold uppercase focus-visible:ring-0 focus-visible:outline-none focus-visible:ring-offset-0",
             isOpen && "bg-muted",
             "bg-transparent hover:bg-transparent hover:text-[var(--brown-brand)]",
             className
@@ -140,7 +136,7 @@ function MenuItem({
               )}
             />
           </CollapsibleTrigger>
-        </Button>
+        </div>
         <CollapsibleContent className=" data-[state=closed]:animate-slideUp data-[state=open]:animate-slideDown transition-all">
           <div className={cn("flex flex-col gap-[10px]")}>
             {Object.entries(group).map(([groupName, children]) => {

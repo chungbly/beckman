@@ -75,22 +75,22 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     fetchPosts(),
   ]);
   const categoryUrls = categories.map((category) => ({
-    url: `https://r8ckie.com/danh-muc/${category.seo.slug}`,
+    url: `https://Beckman .com/danh-muc/${category.seo.slug}`,
     lastModified: new Date(),
     changeFrequency: "daily" as ChangeFrequency,
     priority: 1,
   }));
   const productUrls = products.map((product) => ({
-    url: `https://r8ckie.com/${product.seo.slug}`,
+    url: `https://beckman .com/${product.seo.slug}`,
     lastModified: new Date(),
     changeFrequency: "daily" as ChangeFrequency,
     priority: 1,
   }));
   const postUrls = posts.map((post) => {
     return {
-      url: `https://r8ckie.com/${post.isMagazine ? "magazine" : "gioi-thieu"}/${
-        post.seo.slug
-      }`,
+      url: `https://beckman .com/${
+        post.isMagazine ? "magazine" : "gioi-thieu"
+      }/${post.seo.slug}`,
       lastModified: new Date(),
       changeFrequency: "daily" as ChangeFrequency,
       priority: 1,

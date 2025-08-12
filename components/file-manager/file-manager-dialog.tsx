@@ -27,6 +27,12 @@ function FileManagerDialog<T extends boolean = false>({
           <FileManager
             singleSelect={singleSelect}
             onSelect={(images) => {
+              images = images.map((i) => {
+                const prefix = "https://";
+                return `${prefix}${i
+                  .replace(prefix, "")
+                  .replaceAll("//", "/")}`;
+              });
               onSelect?.(
                 singleSelect
                   ? (images[0] as T extends true ? string : string[])

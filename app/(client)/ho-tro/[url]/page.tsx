@@ -2,7 +2,43 @@ import { SupportPage } from "@/app/(admin)/admin/policy/[url]/container";
 import RenderHTMLFromCMS from "@/components/app-layout/render-html-from-cms";
 import { Breadcrumb } from "@/components/product/breadcrumb";
 import { getGlobalConfig } from "@/lib/configs";
+import { Metadata, ResolvingMetadata } from "next";
 import { notFound } from "next/navigation";
+type Props = {
+  params: Promise<{ url: string }>;
+};
+export async function generateMetadata(
+  { params }: Props,
+  parent: ResolvingMetadata
+): Promise<Metadata> {
+  const url = (await params).url;
+
+  const configs = await getGlobalConfig();
+  const DYNAMIC_SUPPORT_PAGE_LIST = configs?.[
+    "DYNAMIC_SUPPORT_PAGE_LIST"
+  ] as SupportPage;
+  const page = DYNAMIC_SUPPORT_PAGE_LIST[url];
+  const previousImages = (await parent).openGraph?.images || [];
+
+  if (page) {
+    return {
+      openGraph: {
+        images: previousImages,
+      },
+      title: page.name,
+      description: page.name,
+      keywords: page.name.split(" "),
+    };
+  }
+  return {
+    openGraph: {
+      images: [...previousImages],
+    },
+    description: "Beckman - Be a Classic Gentleman",
+    title: "Beckman - Be a Classic Gentleman",
+    keywords: "Beckman, giay, dep, giam them, discount",
+  };
+}
 
 async function Page(props: {
   params: Promise<{

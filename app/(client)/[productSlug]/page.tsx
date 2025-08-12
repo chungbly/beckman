@@ -1,10 +1,6 @@
 import { APIStatus } from "@/client/callAPI";
 import { getComments } from "@/client/comment.client";
-import {
-  getProducts,
-  getSuggestionProducts,
-  getVariants,
-} from "@/client/product.client";
+import { getProducts, getVariants } from "@/client/product.client";
 import SimilarProducts from "@/components/pages/client/product/similar-products";
 import ProductPage from "@/components/product/product-detail";
 import { getGlobalConfig } from "@/lib/configs";
@@ -50,8 +46,9 @@ export async function generateMetadata(
           ? product.images?.[0]?.urls?.[0]
           : previousImages,
       },
-      title: product?.seo?.title || "R8ckie - Step on your way",
-      description: product?.seo?.description || "R8ckie - Step on your way",
+      title: product?.seo?.title || "Beckman - Be a Classic Gentleman",
+      description:
+        product?.seo?.description || "Beckman - Be a Classic Gentleman",
       keywords: product?.seo?.keywords,
     };
   }
@@ -59,9 +56,9 @@ export async function generateMetadata(
     openGraph: {
       images: [...previousImages],
     },
-    description: "R8ckie - Step on your way",
-    title: "R8ckie - Step on your way",
-    keywords: "R8ckie, giay, dep",
+    description: "Beckman - Be a Classic Gentleman",
+    title: "Beckman - Be a Classic Gentleman",
+    keywords: "Beckman, giay, dep",
   };
 }
 

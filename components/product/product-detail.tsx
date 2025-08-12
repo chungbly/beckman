@@ -33,6 +33,7 @@ import { MouseEvent, useEffect, useMemo, useRef } from "react";
 import { Product, WithContext } from "schema-dts";
 import { useStore } from "zustand";
 import RenderHTMLFromCMS from "../app-layout/render-html-from-cms";
+import MobileSizeSelector from "../pages/client/product/mobile-size-selector";
 import ProductReviews from "../pages/client/product/review";
 import { fbTracking, ggTagTracking } from "../third-parties/utils";
 import { ScrollArea } from "../ui/scroll-area";
@@ -216,7 +217,7 @@ export default function ProductPage({
     },
     offers: {
       "@type": "Offer",
-      url: `https://r8ckie.com/${product?.seo?.slug}`,
+      url: `https://Beckman.com/${product?.seo?.slug}`,
       priceCurrency: "VND",
       price: product?.finalPrice,
       availability: product?.stock ? "InStock" : "OutOfStock",
@@ -351,20 +352,23 @@ export default function ProductPage({
           />
           <div
             className={cn(
-              "space-y-3 min-[920px]:col-span-4 min-[1120px]:col-span-5 xl:col-span-1 ",
-              "h-full sm:h-[1700px] relative"
+              "space-y-3 sm:col-span-1 ",
+              "h-full sm:h-[1200px] md:h-[1400px] xl:h-[1700px] relative",
+              !!product.recommendedProducts?.length
+                ? "xl:h-[1700px]"
+                : "md:h-[1000px] xl:h-[1000px]"
             )}
           >
             <form.Field name="kvCode">
               {(field) => (
-                <div className="text-base sm:text-xl text-muted-foreground">
+                <div className="text-base xl:text-xl text-muted-foreground">
                   {category?.name} - {field.state.value}
                 </div>
               )}
             </form.Field>
             <form.Field name="name">
               {(field) => (
-                <h1 className="uppercase font-bold text-[#36454F] text-2xl sm:text-4xl">
+                <h1 className="uppercase font-bold text-[#36454F] text-2xl xl:text-4xl">
                   {field.state.value}
                 </h1>
               )}
@@ -399,13 +403,27 @@ export default function ProductPage({
                   })}
                 >
                   {({ color, size }) => (
-                    <SizeSelector
-                      variants={variants || []}
-                      sizes={product.sizeTags || []}
-                      selectedSize={size}
-                      selectedColor={color}
-                      onSelect={handleChangeSize}
-                    />
+                    <>
+                      <SizeSelector
+                        variants={variants || []}
+                        sizes={product.sizeTags || []}
+                        selectedSize={size}
+                        selectedColor={color}
+                        onSelect={handleChangeSize}
+                      />
+                      <MobileSizeSelector
+                        variants={variants || []}
+                        sizes={product.sizeTags || []}
+                        selectedSize={size}
+                        selectedColor={color}
+                        onSelect={handleChangeSize}
+                        controls={controls}
+                        handleAddToCart={(e: MouseEvent<HTMLButtonElement>) =>
+                          handleAddToCart(e, controls)
+                        }
+                        product={product}
+                      />
+                    </>
                   )}
                 </form.Subscribe>
                 {category?.sizeSelectionGuide && (
@@ -501,19 +519,19 @@ export default function ProductPage({
               <TabsList className="grid w-full grid-cols-3 bg-transparent p-0 h-auto">
                 <TabsTrigger
                   value="product-details"
-                  className="text-black/50 data-[state=active]:text-[var(--brown-brand)] data-[state=active]:bg-transparent   data-[state=active]:rounded-none data-[state=active]:shadow-none text-base sm:text-2xl font-normal"
+                  className="text-black/50 data-[state=active]:text-[var(--brown-brand)] data-[state=active]:bg-transparent   data-[state=active]:rounded-none data-[state=active]:shadow-none text-base xl:text-2xl font-normal"
                 >
                   Chi tiết sản phẩm
                 </TabsTrigger>
                 <TabsTrigger
                   value="warranty-policy"
-                  className="text-black/50 data-[state=active]:text-[var(--brown-brand)] data-[state=active]:bg-transparent border-l border-r border-[var(--brown-brand)] rounded-none data-[state=active]:shadow-none text-base sm:text-2xl font-normal"
+                  className="text-black/50 data-[state=active]:text-[var(--brown-brand)] data-[state=active]:bg-transparent border-l border-r border-[var(--brown-brand)] rounded-none data-[state=active]:shadow-none text-base xl:text-2xl font-normal"
                 >
                   Chính sách bảo hành
                 </TabsTrigger>
                 <TabsTrigger
                   value="care-guide"
-                  className="text-black/50 data-[state=active]:text-[var(--brown-brand)] data-[state=active]:bg-transparent   data-[state=active]:rounded-none data-[state=active]:shadow-none text-base sm:text-2xl font-normal"
+                  className="text-black/50 data-[state=active]:text-[var(--brown-brand)] data-[state=active]:bg-transparent   data-[state=active]:rounded-none data-[state=active]:shadow-none text-base xl:text-2xl font-normal"
                 >
                   Hướng dẫn bảo quản
                 </TabsTrigger>
@@ -553,67 +571,71 @@ export default function ProductPage({
             </Tabs>
 
             {/* Shoes Tree Product List */}
-            <ScrollArea className="h-[750px] absolute bottom-0 border-t border-[#e8e1d7]">
-              <div className="space-y-4  pt-4">
-                {/* Product 1 */}
-                {product.recommendedProducts?.map((p) => {
-                  return (
-                    <div
-                      key={p._id}
-                      className="flex border-b border-[#e8e1d7] pb-4"
-                    >
-                      <Image
-                        width={200}
-                        height={200}
-                        src={p.seo?.thumbnail || ""}
-                        alt={p.name}
-                        className="aspect-square object-cover w-[200px]"
-                      />
-                      <div className="w-2/3 pl-4 flex flex-col justify-between">
-                        <div className="space-y-[10px]">
-                          <h3 className="text-2xl font-medium text-[#36454F]">
-                            {p.name}
-                          </h3>
-                          <div className="flex items-center mt-1">
-                            {p.finalPrice < p.basePrice && (
-                              <p className="line-through text-xl font-light decoration-[var(--brown-brand)]">
-                                {formatCurrency(p.basePrice)}
+            {!!product.recommendedProducts?.length && (
+              <ScrollArea className="h-fit sm:h-[750px] absolute bottom-0 border-t border-[#e8e1d7]">
+                <div className="space-y-4  pt-4">
+                  {/* Product 1 */}
+                  {product.recommendedProducts?.map((p) => {
+                    return (
+                      <div
+                        key={p._id}
+                        className="flex border-b border-[#e8e1d7] pb-4"
+                      >
+                        <Image
+                          width={200}
+                          height={200}
+                          src={p.seo?.thumbnail || ""}
+                          alt={p.name}
+                          className="aspect-square object-cover w-[200px]"
+                        />
+                        <div className="w-2/3 pl-4 flex flex-col justify-between">
+                          <div className="space-y-[10px]">
+                            <h3 className="text-2xl font-medium text-[#36454F]">
+                              {p.name}
+                            </h3>
+                            <div className="flex items-center mt-1">
+                              {p.finalPrice < p.basePrice && (
+                                <p className="line-through text-xl font-light decoration-[var(--brown-brand)]">
+                                  {formatCurrency(p.basePrice)}
+                                </p>
+                              )}
+                              <p className="text-[var(--brown-brand)] text-2xl">
+                                {formatCurrency(p.finalPrice)}
                               </p>
-                            )}
-                            <p className="text-[var(--brown-brand)] text-2xl">
-                              {formatCurrency(p.finalPrice)}
-                            </p>
-                          </div>
-                          {/* <p className="text-sm text-gray-600 mt-2">
+                            </div>
+                            {/* <p className="text-sm text-gray-600 mt-2">
                             Order with a pair of shoes, and receive 25% off your
                             pair
                           </p>
                           <p className="text-sm text-gray-600">
                             100% Cedar Wood
                           </p> */}
+                          </div>
+                          <button
+                            onClick={async () => {
+                              if (p.sizeTags?.length > 1) {
+                                router.push(`/${p.seo?.slug}`);
+                              } else {
+                                addItem(p.kvId);
+                                await updateCart(userId, {
+                                  items: useCartStore.getState().items,
+                                  shippingInfo,
+                                });
+                              }
+                            }}
+                            className="border-[#CD7F32] border  text-[#CD7F32] py-2 px-4 mt-2 hover:bg-[#e8e1d7] transition-colors w-fit"
+                          >
+                            {p.sizeTags?.length > 1
+                              ? "CHỌN LỰA"
+                              : "THÊM VÀO GIỎ"}
+                          </button>
                         </div>
-                        <button
-                          onClick={async () => {
-                            if (p.sizeTags?.length > 1) {
-                              router.push(`/${p.seo?.slug}`);
-                            } else {
-                              addItem(p.kvId);
-                              await updateCart(userId, {
-                                items: useCartStore.getState().items,
-                                shippingInfo,
-                              });
-                            }
-                          }}
-                          className="border-[#CD7F32] border  text-[#CD7F32] py-2 px-4 mt-2 hover:bg-[#e8e1d7] transition-colors w-fit"
-                        >
-                          {p.sizeTags?.length > 1 ? "CHỌN LỰA" : "THÊM VÀO GIỎ"}
-                        </button>
                       </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </ScrollArea>
+                    );
+                  })}
+                </div>
+              </ScrollArea>
+            )}
           </div>
         </div>
       </div>

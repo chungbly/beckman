@@ -11,26 +11,43 @@ import {
   tableComponent,
   youtubeAssetProvider,
 } from "@grapesjs/studio-sdk-plugins";
-import StudioEditor from "@grapesjs/studio-sdk/react";
+import StudioEditor, {
+  PagesConfig,
+  ProjectConfig,
+  ProjectDataResult,
+} from "@grapesjs/studio-sdk/react";
 import "@grapesjs/studio-sdk/style";
 
-export default function GrapesStudio() {
+export default function GrapesStudio({
+  pages,
+  onSave,
+  value,
+  project = {
+    type: "web",
+    default: {
+      pages,
+    },
+  },
+}: {
+  value?: ProjectDataResult;
+  pages?: false | PagesConfig | undefined;
+  project: ProjectConfig;
+  onSave?: (data: { html: string; css: string; project: string }) => void;
+}) {
+  function transformBodyToDiv(html: string) {
+    return html
+      .replace(/<body([^>]*)>/i, "<div$1>")
+      .replace(/<\/body>/i, "</div>");
+  }
   return (
     <StudioEditor
       options={{
-        licenseKey:
-          "944d8864aeac48f98f0458e9c36e146f3311139b80934a59b69393eb75749b28",
+        onReady: (editor) => (window.editor = editor),
+        gjsOptions: { storageManager: false },
+        licenseKey: process.env.NEXT_PUBLIC_GRAPES_API_KEY || "",
         theme: "dark",
-        project: {
-          type: "web",
-          default: {
-            pages: [
-              { name: "Home", component: "<h1>Home page</h1>" },
-              { name: "About", component: "<h1>About page</h1>" },
-              { name: "Contact", component: "<h1>Contact page</h1>" },
-            ],
-          },
-        },
+        project,
+        pages,
         assets: {
           storageType: "self",
           // Provide a custom upload handler for assets
@@ -58,10 +75,19 @@ export default function GrapesStudio() {
           type: "self",
           // Provide a custom handler for saving the project data.
           onSave: async (data) => {
-            const { project, editor } = data;
-            console.log("data", data);
+            const { editor, project } = data;
+            // console.log("data", data);
             console.log("editor", editor.editor.getHtml());
             console.log("editor", editor.editor.getCss());
+            // console.log("editor", editor.editor.getCurrentPage());
+            console.log("project", project);
+            if (onSave) {
+              onSave({
+                html: transformBodyToDiv(editor.editor.getHtml() || ""),
+                css: editor.editor.getCss() || "",
+                project: JSON.stringify(project),
+              });
+            }
             // throw new Error('Implement your "onSave"!');
             // const body = new FormData();
             // body.append("project", JSON.stringify(project));
@@ -69,14 +95,18 @@ export default function GrapesStudio() {
           },
           // Provide a custom handler for loading project data.
           onLoad: async () => {
-            throw new Error('Implement your "onLoad"!');
-            const response = await fetch("PROJECT_LOAD_URL");
-            const project = await response.json();
+            // throw new Error('Implement your "onLoad"!');
+            // const response = await fetch("PROJECT_LOAD_URL");
+            // const project = await response.json();
             // The project JSON is expected to be returned inside an object.
-            return { project };
+            console.log("value", value);
+            if (!value) return { project: {} };
+            return {
+              project: value,
+            };
           },
-          autosaveChanges: 100,
-          autosaveIntervalMs: 10000,
+          // autosaveChanges: 100,
+          // autosaveIntervalMs: 10000,
         },
         plugins: [
           tableComponent.init({

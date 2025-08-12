@@ -4,10 +4,10 @@ import { Lora } from "next/font/google";
 import React from "react";
 
 export const metadata: Metadata = {
-  title: "R8ckie Magazine",
-  description: "R8ckie - Magazine",
+  title: "Beckman Magazine",
+  description: "Beckman - Magazine",
   keywords:
-    "R8ckie, giay, dep, giam them, discount, magazine, tap-chi, huong-dan",
+    "Beckman, giay, dep, giam them, discount, magazine, tap-chi, huong-dan",
 };
 const lora = Lora({
   weight: ["400", "500", "700"],

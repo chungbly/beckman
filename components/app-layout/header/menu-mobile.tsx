@@ -11,10 +11,8 @@ import { Menu, X } from "lucide-react";
 import { useState } from "react";
 import { MobileSidebar } from "./mobile-sidebar";
 const MenuMobile = ({
-  customer,
   categories,
 }: {
-  customer?: Customer | null;
   categories: Category[];
 }) => {
   const [isOpen, setIsOpen] = useState(false);
@@ -39,7 +37,6 @@ const MenuMobile = ({
           </SheetHeader>
           <MobileSidebar
             categories={categories!}
-            customer={customer}
             handleClose={handleClose}
           />
         </SheetContent>

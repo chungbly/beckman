@@ -1,12 +1,13 @@
 //@ts-nocheck
-
 "use client";
 import { APIStatus } from "@/client/callAPI";
+import { updateConfig } from "@/client/configs.client";
 import { updatePost } from "@/client/post.client";
 import FileManagerDialog from "@/components/file-manager/file-manager-dialog";
 import { restoreShortcodesFromPreview } from "@/components/jodit-editor";
 import SumbitButton from "@/components/submit-button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +20,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { TooltipWrap } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { getPostByIdQuery } from "@/query/post.query";
 import { useConfigs } from "@/store/useConfig";
@@ -31,6 +33,7 @@ import {
   ImagePlus,
   Image as ImageUpscale,
   LinkIcon,
+  Pin,
   Tag,
   X,
 } from "lucide-react";
@@ -56,6 +59,8 @@ export default function MagazineEditor() {
   const configs = useConfigs((s) => s.configs);
   const MAGAZINE_CATEGORIES =
     (configs?.["MAGAZINE_CATEGORIES"] as string[]) || [];
+  const PINNED_POST_ID = configs?.["PINNED_POST_ID"] as string;
+
   const id = params.id as string;
   const { data } = useQuery(getPostByIdQuery(id));
   const [copied, setCopied] = useState(false);
@@ -90,6 +95,24 @@ export default function MagazineEditor() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handlePinPost = async () => {
+    const res = await updateConfig("PINNED_POST_ID", id);
+
+    if (res.status === APIStatus.OK) {
+      toast({
+        title: "Ghim bài viết thành công",
+        variant: "success",
+      });
+      window.location.reload();
+    } else {
+      toast({
+        title: "Ghim bài viết thất bại",
+        variant: "error",
+        description: res.message,
+      });
+    }
+  };
+
   return (
     <div className=" p-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -121,9 +144,24 @@ export default function MagazineEditor() {
             <CardContent className="p-6">
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-lg font-semibold mb-4">
-                    1. Thông tin cơ bản
-                  </h2>
+                  <div className="flex items-center justify-between text-lg font-semibold mb-4">
+                    <span>1. Thông tin cơ bản</span>
+                    {id !== "new" && (
+                      <TooltipWrap
+                        content={
+                          PINNED_POST_ID === id ? "Bỏ ghim" : "Ghim bài viết"
+                        }
+                      >
+                        <Button onClick={handlePinPost} variant="ghost">
+                          <Pin
+                            className={
+                              PINNED_POST_ID === id ? "text-primary" : ""
+                            }
+                          />
+                        </Button>
+                      </TooltipWrap>
+                    )}
+                  </div>
 
                   <div className="space-y-4">
                     <div className="flex items-center justify-between">
@@ -135,23 +173,6 @@ export default function MagazineEditor() {
                       </div>
                       <form.Field
                         name="isShow"
-                        children={(field) => (
-                          <Switch
-                            checked={field.state.value ?? true}
-                            onCheckedChange={field.handleChange}
-                          />
-                        )}
-                      />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label>Cách hiển thị</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Hiển thị ở dạng carousel (slide)
-                        </p>
-                      </div>
-                      <form.Field
-                        name="isSlide"
                         children={(field) => (
                           <Switch
                             checked={field.state.value ?? true}
@@ -279,11 +300,12 @@ export default function MagazineEditor() {
                     </div>
                     <form.Field name="images">
                       {(field) => {
-                        const images = field.state.value;
+                        const images = field.state.value || [];
                         return (
                           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 xl:grid-cols-8 gap-4">
                             <FileManagerDialog
                               onSelect={(values) => {
+                                console.log("values", values);
                                 field.handleChange([...images, ...values]);
                               }}
                             >
@@ -292,7 +314,7 @@ export default function MagazineEditor() {
                               </div>
                             </FileManagerDialog>
 
-                            {images.map((src, index) => (
+                            {images?.map((src, index) => (
                               <div key={v4()} className="relative group">
                                 <Image
                                   src={src}

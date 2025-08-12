@@ -39,9 +39,9 @@ function ProductReviews({ comments }: { comments: Comment[] }) {
             </div>
           </div>
           <div className="flex-1">
-            {distribution.reverse().map((dist) => (
+            {distribution.reverse().map((dist,index) => (
               <div
-                key={dist.stars}
+                key={index}
                 className="flex items-center gap-4 mb-2 cursor-pointer"
                 onClick={() => {
                   if (stars.includes(dist.stars)) {

@@ -8,7 +8,7 @@ let redirectCache: {
   expiresAt: number;
 } | null = null;
 
-const REDIRECT_CACHE_TTL = 5 * 60 * 1000;
+const REDIRECT_CACHE_TTL = 1 * 60 * 1000;
 
 async function getRedirectsCached() {
   const now = Date.now();
@@ -46,7 +46,24 @@ export async function middleware(request: NextRequest) {
       },
     });
   } else {
-    const { redirects = [], staticHTMLs = [] } = await getRedirectsCached();
+    const {
+      redirects = [],
+      staticHTMLs = [],
+      pages = [],
+    } = await getRedirectsCached();
+
+    const page = pages.find((p) => p.slug === pathname);
+    if (page && page.status === "published") {
+      requestHeaders.set("x-pathname", page.id);
+
+      return NextResponse.rewrite(
+        new URL(`/custom-page?id=${page.id}`, request.url),
+        {
+          headers: requestHeaders,
+        }
+      );
+    }
+
     const redirectRule = redirects.find((r) => r.rootUrl === pathname);
     if (redirectRule) {
       if (redirectRule.destinationUrl.includes(".html")) {

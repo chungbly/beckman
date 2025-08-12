@@ -71,7 +71,7 @@ function Actions({
         STT: index + 1,
         ID: row.kvId,
         SKU: row.kvCode,
-        "Link sản phẩm": `www.r8ckie.com/${row.seo.slug}`,
+        "Link sản phẩm": `www.Beckman.com/${row.seo.slug}`,
         "Trạng thái": row.isShow ? "Đang hoạt động" : "Ngừng hoạt động",
         "Giá gốc": row.basePrice,
         "Giá Sale": row.salePrice || "",
@@ -107,7 +107,7 @@ function Actions({
       type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
     });
 
-    saveAs(blob, "Danh sách sản phẩm R8ckie.xlsx");
+    saveAs(blob, "Danh sách sản phẩm Beckman.xlsx");
     setIsLoading(false);
   };
 
@@ -172,7 +172,7 @@ function Actions({
               sanitizeObject({
                 kvId,
                 basePrice,
-                slug: slug.replace("www.r8ckie.com/", ""),
+                slug: slug.replace("www.Beckman.com/", ""),
                 salePrice: salePrice || undefined,
                 isShow: status === "Đang hoạt động",
                 name: escapeHtml(name.trim()),

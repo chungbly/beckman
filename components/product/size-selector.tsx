@@ -7,7 +7,7 @@ import { Product } from "@/types/product";
 import { Separator } from "@radix-ui/react-separator";
 import { useState } from "react";
 
-interface SizeSelectorProps {
+export interface SizeSelectorProps {
   sizes: string[];
   selectedSize?: string;
   selectedColor?: string;

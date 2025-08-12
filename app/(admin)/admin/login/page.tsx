@@ -16,7 +16,7 @@ export default function AuthPage() {
       <Card className="w-full max-w-md shadow-xl">
         <CardHeader className="text-center">
           <CardTitle className="text-4xl font-bold text-gray-800">
-            <AuroraText>R8ckie Admin</AuroraText>
+            <AuroraText>Beckman Admin</AuroraText>
           </CardTitle>
           <CardDescription className=" text-gray-600">
             Đăng nhập để truy cập vào Admin Dashboard

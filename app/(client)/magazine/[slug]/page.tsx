@@ -59,17 +59,17 @@ export async function generateMetadata(
         images: post?.seo?.thumbnail || post.images?.[0] || previousImages,
       },
       title: post.title,
-      description: post?.seo?.description || "R8ckie - Step on your way",
-      keywords: post?.seo?.keywords || "R8ckie, giay, dep",
+      description: post?.seo?.description || "Beckman - Be a Classic Gentleman",
+      keywords: post?.seo?.keywords || "Beckman, giay, dep",
     };
   }
   return {
     openGraph: {
       images: [...previousImages],
     },
-    description: "R8ckie - Step on your way",
-    title: "R8ckie - Step on your way",
-    keywords: "R8ckie, giay, dep, giam them, discount",
+    description: "Beckman - Be a Classic Gentleman",
+    title: "Beckman - Be a Classic Gentleman",
+    keywords: "Beckman, giay, dep, giam them, discount",
   };
 }
 
@@ -211,9 +211,9 @@ export default async function BlogPostPage({ params }: Props) {
         </div>
       </div>
 
-      <div className="space-y-8 hidden sm:block">
+      <div className="space-y-8 hidden sm:block ">
         {/* Categories */}
-        <div className="p-[20px] border-l border-[var(--brown-brand)]">
+        <div className="p-[20px] border-l border-[var(--brown-brand)] sticky top-24">
           <h2 className="font-bold text-[40px] mb-[20px] underline">
             Danh mục
           </h2>

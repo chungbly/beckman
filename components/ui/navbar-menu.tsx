@@ -40,14 +40,12 @@ export const MenuItem = ({
       <motion.p
         transition={{ duration: 0.3 }}
         className="cursor-pointer  hover:opacity-[0.9] dark:text-white "
-
       >
         {menuTrigger}
       </motion.p>
-      <div
-        className="h-10 absolute top-[100%] left-0 right-0 bg-transparent"
-
-      />
+      {active === item && (
+        <div className="h-10 absolute top-[100%] left-0 right-0 bg-transparent" />
+      )}
       <div className="fixed top-20 left-0 right-0 w-screen bg-white">
         {active !== null && (
           <motion.div

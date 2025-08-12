@@ -13,11 +13,11 @@ User-agent: *
 Allow: /
 
 # Host
-Host: https://r8ckie.com/
+Host: https://Beckman.com/
 
 # Sitemaps
-Sitemap: https://r8ckie.com/sitemap.xml
-Sitemap: https://r8ckie.com/server-sitemap.xml
+Sitemap: https://Beckman.com/sitemap.xml
+Sitemap: https://Beckman.com/server-sitemap.xml
 `;
   try {
     const res = await getConfigs();

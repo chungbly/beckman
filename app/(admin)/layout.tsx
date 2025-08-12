@@ -56,12 +56,12 @@ export const metadata: Metadata = {
   openGraph: {
     images: ["/favicon.png"],
   },
-  metadataBase: new URL("https://r8ckie.com"),
+  metadataBase: new URL("https://beckman.com"),
   icons: {
     icon: "/favicon.png",
   },
-  description: "R8ckie Step on your way",
-  title: "R8ckie - Step on your way",
+  description: "Beckman - Be a Classic Gentleman",
+  title: "Beckman - Be a Classic Gentleman",
   appleWebApp: {},
 };
 

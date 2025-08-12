@@ -34,7 +34,8 @@ export default function ScrollToTop() {
 
   return (
     <Button
-      className="fixed bg-[var(--gray-beige)]  bottom-24 right-10 p-2 rounded-full hover:bg-[var(--gray-beige)] hover:scale-105 transition-all duration-300 shadow-lg"
+      id="scroll-to-top"
+      className="fixed bg-[var(--gray-beige)] w-[60px] h-[60px] bottom-[100px] right-6 p-2 rounded-full hover:bg-[var(--gray-beige)] hover:scale-105 transition-all duration-300 shadow-lg"
       onClick={scrollToTop}
       aria-label="Scroll to top"
     >

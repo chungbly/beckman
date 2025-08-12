@@ -71,8 +71,8 @@ function Post({
     );
   }
   return (
-    <div className="grid grid-cols-3">
-      <div className="aspect-video relative col-span-2">
+    <div className="grid sm:grid-cols-3">
+      <div className="aspect-video relative sm:col-span-2">
         {!!post.images?.length && post.images.length > 1 ? (
           <Carousel
             plugins={[
@@ -109,13 +109,13 @@ function Post({
           )
         )}
       </div>
-      <div className="p-4 col-span-1">
-        <h3 className="font-bold text-6xl line-clamp-3">
-          <Link href={`${prefix}/${post.seo.slug}`} className="hover:underline">
+      <div className="sm:p-4 sm:py-1 sm:col-span-1">
+        <h3 className="font-bold text-6xl ">
+          <Link href={`${prefix}/${post.seo.slug}`} className="hover:underline line-clamp-3 leading-[77px]">
             {post.title}
           </Link>
         </h3>
-        <p className="text-black">{post.subDescription}</p>
+        <p className="text-black mt-2">{post.subDescription}</p>
       </div>
     </div>
   );

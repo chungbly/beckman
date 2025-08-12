@@ -1,3 +1,4 @@
+import { CustomPage } from "@/app/(admin)/admin/ui/layout-editor/container";
 import { Meta } from "@/types/api-response";
 import { Product } from "@/types/product";
 import { Redirect } from "@/types/redirect";
@@ -61,20 +62,25 @@ export const deleteRedirects = (ids: string[]) => {
 
 export const getRedirectsWithCache = async () => {
   try {
-    const result = await fetch("http://127.0.0.1:3000/api/redirects", {
-      cache: "force-cache",
-      next: {
-        revalidate: 5 * 60,
-      },
-    });
+    const result = await fetch(
+      `${process.env.NEXT_PUBLIC_WEB_URL}/api/redirects`,
+      {
+        cache: "force-cache",
+        next: {
+          revalidate: 5 * 60,
+        },
+      }
+    );
     const res = (await result.json()) as unknown as APIResponse<{
       redirects: Redirect[];
       staticHTMLs: StaticHTML[];
+      pages: CustomPage[];
     }>;
     if (res.status !== APIStatus.OK || !res.data)
       return {} as {
         redirects: Redirect[];
         staticHTMLs: StaticHTML[];
+        pages: CustomPage[];
       };
     return res.data;
   } catch (e) {
@@ -82,6 +88,7 @@ export const getRedirectsWithCache = async () => {
     return {} as {
       redirects: Redirect[];
       staticHTMLs: StaticHTML[];
+      pages: CustomPage[];
     };
   }
 };

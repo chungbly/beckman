@@ -66,7 +66,7 @@ interface KvAttribute {
   attributeValue: string;
 }
 
-interface SEO {
+export interface SEO {
   thumbnail: string;
   title: string;
   slug: string;
