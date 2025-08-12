@@ -44,7 +44,11 @@ export default function SitemapViewer() {
           </Button>
         </CardHeader>
         <CardContent className="h-[65vh]">
-          <AceEmmetEditor language="xml" value={sitemapContent || ""} />
+          <AceEmmetEditor
+            language="xml"
+            value={sitemapContent || ""}
+            readOnly={true}
+          />
         </CardContent>
       </Card>
     </div>

@@ -9,11 +9,13 @@ function AceEmmetEditor({
   onChange,
   language = "json",
   theme = "github",
+  readOnly = false,
 }: {
   value: string;
   onChange?: (value: string) => void;
   language?: string;
-  theme?: string;
+    theme?: string;
+  readOnly?: boolean;
 }) {
   return (
     <AceEditor
@@ -26,6 +28,7 @@ function AceEmmetEditor({
       theme={theme || "github"}
       name="blah2_1"
       value={value}
+      readOnly={readOnly}
       onChange={(value) => onChange?.(value)}
       fontSize={14}
       lineHeight={19}

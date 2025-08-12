@@ -89,7 +89,7 @@ export default function RobotsViewer() {
         <CardContent className="h-[65vh]">
           <AceEmmetEditor
             language="xml"
-            value={robotsContent || ""}
+            value={content || ""}
             onChange={(value) => setContent(value)}
           />
         </CardContent>

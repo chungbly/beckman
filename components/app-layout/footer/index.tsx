@@ -109,7 +109,11 @@ const Footer = async () => {
               <ul className="space-y-3 h-auto transition-all duration-300">
                 {socialLinks.map((item) => (
                   <li key={item.name} className="text-xl uppercase">
-                    <Link href={item.url} rel="noopener noreferrer">
+                    <Link
+                      href={item.url}
+                      rel="noopener noreferrer"
+                      className="hover:text-[var(--brown-brand)]"
+                    >
                       {item.name}
                     </Link>
                   </li>
