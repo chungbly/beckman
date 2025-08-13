@@ -35,7 +35,6 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const userId = await getUserId();
-  console.log("server", userId);
   return (
     <div
       className={cn(
