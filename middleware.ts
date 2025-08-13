@@ -53,7 +53,6 @@ export async function middleware(request: NextRequest) {
     } = await getRedirectsCached();
 
     const page = pages.find((p) => p.slug === pathname);
-    console.log("page", page?.title);
     if (page && page.status === "published") {
       requestHeaders.set("x-pathname", page.id);
 
