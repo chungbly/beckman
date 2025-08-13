@@ -8,7 +8,13 @@ import { ChevronDown, Loader } from "lucide-react";
 import ProductGrid from "../category/product-grid";
 import ProductSorting from "../category/sorting";
 
-function DiscountListContainer({ query }: { query: Partial<GetProductQuery> }) {
+function DiscountListContainer({
+  query,
+  configs,
+}: {
+  query: Partial<GetProductQuery>;
+  configs: Record<string, unknown>;
+}) {
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery({
       ...getProductInfiniteQuery(query),
@@ -23,7 +29,11 @@ function DiscountListContainer({ query }: { query: Partial<GetProductQuery> }) {
 
   return (
     <>
-      <ProductSorting count={data?.pages?.[0]?.meta?.itemCount ?? 0} />
+      <ProductSorting
+        count={data?.pages?.[0]?.meta?.itemCount ?? 0}
+        configs={configs}
+      />
+
       {products?.length ? (
         <div className="sm:my-6 grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-2 sm:gap-4">
           <ProductGrid products={products} />
