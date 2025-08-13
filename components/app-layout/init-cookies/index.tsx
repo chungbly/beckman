@@ -11,7 +11,7 @@ function InitCookies({ userId }: { userId?: string }) {
         try {
           const newUserId = v4();
           const res = await callAPI("/api/cookies", {
-            baseURL: process.env.NEXT_PUBLIC_WEB_URL,
+            baseURL: process.env.NEXT_PUBLIC_API_URL,
             method: "POST",
             body: JSON.stringify({
               userId: newUserId,
@@ -21,9 +21,11 @@ function InitCookies({ userId }: { userId?: string }) {
             useCustomerStore.setState({
               userId: newUserId,
             });
+          } else {
+            console.error("init cookies error", JSON.stringify(res));
           }
         } catch (e) {
-          console.log("init cookies error", JSON.stringify(e));
+          console.error("init cookies error", JSON.stringify(e));
         }
       }
     };
