@@ -1,5 +1,6 @@
 import { ProductWithMeta } from "@/client/product.client";
 import CategoryContainer from "@/components/pages/client/category/container";
+import { getGlobalConfig } from "@/lib/configs";
 import { getUserId } from "@/lib/cookies";
 import { getProductInfiniteQuery } from "@/query/product.query";
 import {
@@ -12,29 +13,31 @@ interface Props {
     prices: string;
     tags: string;
     sort: string;
-    sizeTags: string;
-    colorTags: string;
+    sizeTag: string;
+    colorTag: string;
     keyword: string;
   }>;
 }
 
 async function Category(props: Props) {
   const userId = await getUserId();
+  const configs = await getGlobalConfig();
+
   const searchParams = await props.searchParams;
-  const { tags, prices, sort, sizeTags, colorTags, keyword } = (() => {
+  const { tags, prices, sort, sizeTag, colorTag, keyword } = (() => {
     const tagString = searchParams.tags;
     const priceString = searchParams.prices;
     const sortString = searchParams.sort;
-    const sizeString = searchParams.sizeTags;
-    const colorString = searchParams.colorTags;
+    const sizeString = searchParams.sizeTag;
+    const colorString = searchParams.colorTag;
     const keyword = searchParams.keyword;
     try {
       return {
         tags: tagString ? JSON.parse(tagString) : null,
         prices: priceString ? JSON.parse(priceString) : null,
         sort: sortString ? JSON.parse(sortString) : null,
-        sizeTags: sizeString ? JSON.parse(sizeString) : null,
-        colorTags: colorString ? JSON.parse(colorString) : null,
+        sizeTag: sizeString,
+        colorTag: colorString,
         keyword: keyword,
       };
     } catch (e) {
@@ -42,8 +45,8 @@ async function Category(props: Props) {
         tags: null,
         prices: null,
         sort: null,
-        sizeTags: null,
-        colorTags: null,
+        sizeTag: null,
+        colorTag: null,
         keyword: "",
       };
     }
@@ -58,8 +61,8 @@ async function Category(props: Props) {
       kvCode: 1,
     },
     priceRange: prices,
-    sizeTags,
-    colorTags,
+    sizeTags: sizeTag ? [sizeTag] : [],
+    colorTags: colorTag ? [colorTag] : [],
     userId,
     searchText: keyword,
   };
@@ -76,7 +79,7 @@ async function Category(props: Props) {
     <>
       <div className="col-span-2 sm:col-span-4">
         <HydrationBoundary state={dehydrate(queryClient)}>
-          <CategoryContainer query={query} />
+          <CategoryContainer query={query} configs={configs} />
         </HydrationBoundary>
       </div>
     </>
