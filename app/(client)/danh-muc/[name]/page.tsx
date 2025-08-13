@@ -1,3 +1,4 @@
+import { getCategory } from "@/client/category.client";
 import { ProductWithMeta } from "@/client/product.client";
 import CategoryContainer from "@/components/pages/client/category/container";
 import { getGlobalConfig } from "@/lib/configs";
@@ -7,6 +8,8 @@ import {
   getProductInfiniteQuery,
   getSuggestionProductsInfiniteQuery,
 } from "@/query/product.query";
+import { Category as TCategory } from "@/types/category";
+
 import {
   dehydrate,
   HydrationBoundary,
@@ -88,6 +91,15 @@ async function Category(props: Props) {
       },
       initialPageParam: 1,
     }),
+    queryClient.prefetchQuery({
+      queryKey: ["category", params.name],
+      queryFn: async () => {
+        const res = await getCategory(params.name as string);
+        const category = res.data;
+        return category ? category : ({} as TCategory);
+      },
+    }),
+
     isMobile &&
       queryClient.prefetchInfiniteQuery({
         ...getSuggestionProductsInfiniteQuery(suggestionMobileQuery),
@@ -105,7 +117,7 @@ async function Category(props: Props) {
   return (
     <div className="col-span-2 sm:col-span-4">
       <HydrationBoundary state={dehydrate(queryClient)}>
-        <CategoryContainer query={query} />
+        <CategoryContainer query={query} configs={configs} />
       </HydrationBoundary>
     </div>
   );

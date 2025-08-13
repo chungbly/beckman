@@ -7,8 +7,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useIsMobile } from "@/hooks/use-mobile";
-import { useConfigs } from "@/store/useConfig";
 import { Category } from "@/types/category";
 import { useQuery } from "@tanstack/react-query";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -16,11 +14,15 @@ import { useMemo } from "react";
 import { FilterSection } from "./filter";
 import MobileFilter from "./mobile-filter";
 
-function ProductSorting({ count }: { count: number }) {
-  const isMobile = useIsMobile();
+function ProductSorting({
+  count,
+  configs,
+}: {
+  count: number;
+  configs: Record<string, unknown>;
+}) {
   const params = useParams();
   const searchParams = useSearchParams();
-  const configs = useConfigs((s) => s.configs);
   const router = useRouter();
   const { data: category } = useQuery({
     queryKey: ["category", params.name],
@@ -115,7 +117,6 @@ function ProductSorting({ count }: { count: number }) {
     }
     return `?${currentParams.toString()}`;
   };
-
   return (
     <>
       {/* Desktop sorting */}
