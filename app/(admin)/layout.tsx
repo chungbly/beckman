@@ -49,7 +49,7 @@ import {
   QueryClient,
 } from "@tanstack/react-query";
 import { Metadata } from "next";
-import { cookies, headers } from "next/headers";
+import { cookies } from "next/headers";
 import MainContent from "./main-content";
 
 export const metadata: Metadata = {
@@ -72,13 +72,10 @@ export default async function RootLayout({
 }>) {
   const cookieStore = await cookies();
   const defaultOpen = cookieStore.get("sidebar:state")?.value === "true";
-  const headersList = await headers();
   const token = (await getAccessToken())?.value;
-  const pathname = headersList.get("x-pathname");
   const queryClient = new QueryClient();
-  if (pathname !== "/admin/login") {
-    await queryClient.prefetchQuery(getUserAdminQuery);
-  }
+  await queryClient.prefetchQuery(getUserAdminQuery);
+
   const configs = await getGlobalConfig();
 
   return (
@@ -88,16 +85,12 @@ export default async function RootLayout({
         poppins.className
       )}
     >
-      {pathname === "/admin/login" ? (
-        children
-      ) : (
-        <HydrationBoundary state={dehydrate(queryClient)}>
-          <SidebarProvider defaultOpen={defaultOpen}>
-            <AppSidebar configs={configs} />
-            <MainContent token={token}>{children}</MainContent>
-          </SidebarProvider>
-        </HydrationBoundary>
-      )}
+      <HydrationBoundary state={dehydrate(queryClient)}>
+        <SidebarProvider defaultOpen={defaultOpen}>
+          <AppSidebar configs={configs} />
+          <MainContent token={token}>{children}</MainContent>
+        </SidebarProvider>
+      </HydrationBoundary>
     </div>
   );
 }

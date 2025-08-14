@@ -32,11 +32,9 @@ export async function middleware(request: NextRequest) {
     if (accessToken?.value) {
       const res = await getUser();
       if (res.status !== APIStatus.OK || !res?.data) {
-        requestHeaders.set("x-pathname", "/admin/login");
         return NextResponse.redirect(new URL("/admin/login", request.url));
       }
     } else {
-      requestHeaders.set("x-pathname", "/admin/login");
       return NextResponse.redirect(new URL("/admin/login", request.url));
     }
 

@@ -540,7 +540,7 @@ export default function ProductPage({
                 <div>
                   {product.discribles.map((item, index) => (
                     <div
-                      key={item.title}
+                      key={index}
                       className={cn(
                         "grid grid-cols-4 p-2",
                         index % 2 === 0 && "bg-[#FFECD9]"

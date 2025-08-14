@@ -4,7 +4,6 @@ import AppLayout from "@/components/app-layout";
 import InitCookies from "@/components/app-layout/init-cookies";
 import FacebookPixel from "@/components/third-parties/facebook";
 import GoogleTagManagers from "@/components/third-parties/google";
-import { getUserId } from "@/lib/cookies";
 import { cn } from "@/lib/utils";
 import { Metadata } from "next";
 import DynamicClientScript from "../dynamic-client-script";
@@ -34,7 +33,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const userId = await getUserId();
   return (
     <div
       className={cn(
@@ -42,7 +40,7 @@ export default async function RootLayout({
         oswald.className
       )}
     >
-      <InitCookies userId={userId} />
+      <InitCookies />
       <AppLayout>{children}</AppLayout>
       <FacebookPixel />
       <DynamicClientScript />

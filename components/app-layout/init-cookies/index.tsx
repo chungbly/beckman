@@ -1,33 +1,20 @@
 "use client";
-import { APIStatus, callAPI } from "@/client/callAPI";
 import { useCustomerStore } from "@/store/useCustomer";
 import { useEffect } from "react";
 import { v4 } from "uuid";
 
-function InitCookies({ userId }: { userId?: string }) {
+function InitCookies() {
   useEffect(() => {
+    const userId = document.cookie
+      .split("; ")
+      .find((row) => row.startsWith("userId="))
+      ?.split("=")[1];
     const initCookies = async () => {
-      if (!userId) {
-        try {
-          const newUserId = v4();
-          const res = await callAPI("/api/cookies", {
-            baseURL: process.env.NEXT_PUBLIC_API_URL,
-            method: "POST",
-            body: JSON.stringify({
-              userId: newUserId,
-            }),
-          });
-          if (res.status === APIStatus.OK) {
-            useCustomerStore.setState({
-              userId: newUserId,
-            });
-          } else {
-            console.error("init cookies error", JSON.stringify(res));
-          }
-        } catch (e) {
-          console.error("init cookies error", JSON.stringify(e));
-        }
-      }
+      const newUserId = v4();
+      document.cookie = `userId=${newUserId}; path=/; max-age=31536000`;
+      useCustomerStore.setState({
+        userId: newUserId,
+      });
     };
     if (!userId) {
       initCookies();
@@ -36,7 +23,7 @@ function InitCookies({ userId }: { userId?: string }) {
         userId,
       });
     }
-  }, [userId]);
+  }, []);
 
   return null;
 }
