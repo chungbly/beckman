@@ -126,7 +126,7 @@ function MobileSizeSelector({
               animate={{ opacity: 1, top: -16, y: "-100%" }}
               exit={{ opacity: 0, width: 0 }}
               transition={transition}
-              className="absolute right-0  flex backdrop-blur-sm h-[60px] bg-black/30 rounded-[30px] gap-4 px-1"
+              className="absolute right-0 max-w-[350px] overflow-y-auto scrollbar-hide flex backdrop-blur-sm h-[60px] bg-black/30 rounded-[30px] gap-4 px-1"
             >
               {sizes.map((size) => {
                 const isAvailable = selectedColor
