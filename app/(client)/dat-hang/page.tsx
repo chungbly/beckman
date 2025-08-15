@@ -163,8 +163,6 @@ function PurchasePage() {
 
       const res = await createOrder(payload);
       if (res.status !== APIStatus.OK) {
-        ggTagTracking(products, "purchase", "", prices.finalPrice);
-        fbTracking(products, "Purchase", "", prices.finalPrice);
         return toast({
           title: "Đặt hàng không thành công",
           description: res.message,
@@ -173,6 +171,10 @@ function PurchasePage() {
       }
       const order = res.data;
       const orderCode = order?.code;
+      ggTagTracking(products, "purchase", "", prices.finalPrice);
+      ggTagTracking(products, "begin_checkout", "", prices.finalPrice);
+      fbTracking(products, "Purchase", "", prices.finalPrice);
+
       if (process.env.NODE_ENV === "production") {
         useCartStore.getState().clearCart();
         useCartStore.getState().setInfo({
