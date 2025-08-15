@@ -77,8 +77,8 @@ function OrderInfo({
               <div>
                 <Input
                   placeholder="Số điện thoại"
-                  value={field.state.value}
-                  onChange={(e) => {
+                  defaultValue={field.state.value}
+                  onBlur={(e) => {
                     field.handleChange(escapeHtml(e.target.value));
                     useCartStore.setState({
                       userSelectedVouchers: [],
@@ -222,10 +222,24 @@ function OrderInfo({
                 <div className="relative">
                   <Input
                     placeholder="Nhập số điện thoại để hiển thị voucher"
-                    value={field.state.value}
-                    onChange={(e) =>
-                      field.handleChange(escapeHtml(e.target.value))
-                    }
+                    defaultValue={field.state.value}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        const value = (e.target as HTMLInputElement).value;
+                        field.handleChange(escapeHtml(value));
+                        useCartStore.setState({
+                          userSelectedVouchers: [],
+                          userDeselectedAutoAppliedVouchers: [],
+                        });
+                      }
+                    }}
+                    onBlur={(e) => {
+                      field.handleChange(escapeHtml(e.target.value));
+                      useCartStore.setState({
+                        userSelectedVouchers: [],
+                        userDeselectedAutoAppliedVouchers: [],
+                      });
+                    }}
                     className="rounded-none"
                   />
                   <Search className="absolute top-1/2 right-2 -translate-y-1/2" />
