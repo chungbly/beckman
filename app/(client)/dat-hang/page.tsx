@@ -24,7 +24,7 @@ import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import { getUserId } from "@/lib/cookies";
 import { buildCartQuery } from "@/query/order.query";
-import { getAllAvailabeCoupon } from "@/query/voucher.query";
+import { getCouponsQuery, getUserVouchersQuery } from "@/query/voucher.query";
 import { useConfigs } from "@/store/useConfig";
 import { useCustomerStore } from "@/store/useCustomer";
 import { formSchema, TOrderInfo } from "@/types/cart";
@@ -169,11 +169,13 @@ function PurchasePage() {
           variant: "error",
         });
       }
+      await new Promise((resolve) => {
+        ggTagTracking(products, "purchase", "purchase", prices.finalPrice);
+        fbTracking(products, "Purchase", "Purchase", prices.finalPrice);
+        setTimeout(resolve, 1000);
+      });
       const order = res.data;
       const orderCode = order?.code;
-      ggTagTracking(products, "purchase", "", prices.finalPrice);
-      ggTagTracking(products, "begin_checkout", "", prices.finalPrice);
-      fbTracking(products, "Purchase", "", prices.finalPrice);
 
       if (process.env.NODE_ENV === "production") {
         useCartStore.getState().clearCart();
@@ -194,11 +196,26 @@ function PurchasePage() {
     },
   });
 
-  const { data: vouchers } = useQuery(getAllAvailabeCoupon);
+  const phoneNumber = form.getFieldValue("phoneNumber");
+
+  const { data: userVouchers } = useQuery(
+    getUserVouchersQuery({
+      ...(phoneNumber
+        ? { phoneNumber }
+        : {
+            userId:
+              useCustomerStore.getState().customer?._id ||
+              useCustomerStore.getState().userId ||
+              "",
+          }),
+    })
+  );
+  const { data: coupons } = useQuery(getCouponsQuery());
+  const vouchers = [...(userVouchers || []), ...(coupons || [])];
 
   const isLoadingPrice = (isLoading || !prices) && !!items.length;
 
-  const SHIPPING_FEE_DEFAULT = (configs?.["SHIPPING_FEE_DEFAULT"] ||
+  const SHIPPING_FEE_DEFAULT = (configs?.["SHIPPING_FEE_DEFAULT"] ??
     35000) as number;
   const {
     finalPrice,

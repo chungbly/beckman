@@ -23,7 +23,11 @@ export default function VoucherZoneContainer({
 }) {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  const { data: vouchers } = useQuery(getUserVouchersQuery(userId));
+  const { data: vouchers } = useQuery(
+    getUserVouchersQuery({
+      userId,
+    })
+  );
   const { data: coupons } = useQuery(getCouponsQuery());
   const { data: customer } = useQuery(getCustomerQuery(userId));
 

@@ -12,6 +12,7 @@ import EmptyCart from "@/components/pages/client/cart/empty-cart";
 import MobileActionBar from "@/components/pages/client/cart/mobile-action-bar";
 import OrderInfo from "@/components/pages/client/cart/order-info";
 import SuggestionAndSimilarProducts from "@/components/pages/client/cart/suggestion-and-similar-products";
+import { ggTagTracking } from "@/components/third-parties/utils";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/hooks/use-toast";
@@ -57,7 +58,7 @@ function CartPage() {
     appliedVoucherCodes,
     invalidVouchers,
     ...prices
-  } = cart || {};
+  } = (cart || {}) as CartBuilderRes;
 
   const form = useForm<TOrderInfo>({
     defaultValues: shippingInfo,
@@ -76,6 +77,10 @@ function CartPage() {
             "Xảy ra lỗi bất thường, liên hệ admin. Mã lỗi: 0x01usr09",
         });
       }
+      await new Promise((resolve) => {
+        ggTagTracking(products || [], "", "begin_checkout", prices.finalPrice);
+        setTimeout(resolve, 1000);
+      });
       await updateCart(userId, {
         items,
         shippingInfo: value,
@@ -89,12 +94,19 @@ function CartPage() {
     }),
   });
 
+  const phoneNumber = form.getFieldValue("phoneNumber");
+
   const { data: userVouchers } = useQuery(
-    getUserVouchersQuery(
-      useCustomerStore.getState().customer?._id ||
-        useCustomerStore.getState().userId ||
-        ""
-    )
+    getUserVouchersQuery({
+      ...(phoneNumber
+        ? { phoneNumber }
+        : {
+            userId:
+              useCustomerStore.getState().customer?._id ||
+              useCustomerStore.getState().userId ||
+              "",
+          }),
+    })
   );
   const { data: coupons } = useQuery(getCouponsQuery());
   const vouchers = [...(userVouchers || []), ...(coupons || [])];

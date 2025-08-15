@@ -59,6 +59,7 @@ export interface QueryGetVoucher {
   name?: string;
   type?: string;
   customerId?: string;
+  phoneNumber?: string;
 }
 
 export interface VoucherWithMeta {

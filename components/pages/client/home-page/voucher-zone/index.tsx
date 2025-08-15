@@ -13,7 +13,9 @@ async function VoucherZone() {
   const userId = await getUserId();
   await Promise.all([
     queryClient.prefetchQuery(getCouponsQuery()),
-    queryClient.prefetchQuery(getUserVouchersQuery(userId)),
+    queryClient.prefetchQuery(getUserVouchersQuery({
+      userId
+    })),
     queryClient.prefetchQuery(getCustomerQuery(userId)),
   ]);
 

@@ -331,7 +331,15 @@ export default function ProductPage({
       form.setFieldValue("finalPriceTotal", matchedProduct.finalPrice);
     }
   }, [cart, product]);
-
+  useEffect(() => {
+    ggTagTracking(
+      [currentProduct!],
+      category?.name || "",
+      "view_item",
+      product?.finalPrice
+    );
+  }, [slug]);
+  
   if (isLoading) return <div>Loading...</div>;
   if (!product) return notFound();
 

@@ -3,13 +3,15 @@
 import { useEffect, useState } from "react";
 
 import { useConfigs } from "@/store/useConfig";
-import { usePathname } from "next/navigation";
+import { useParams, usePathname } from "next/navigation";
 import { pageview } from "../utils";
 
 const FacebookPixel = () => {
   const [loaded, setLoaded] = useState(false);
   const [initialized, setInitialized] = useState(false);
   const pathname = usePathname();
+  const params = useParams();
+  const productSlug = params.productSlug;
   const configs = useConfigs((s) => s.configs);
   const PIXEL_IDS = (configs?.["PIXEL_IDS"] || []) as string[];
 
@@ -39,9 +41,9 @@ const FacebookPixel = () => {
   }
 
   useEffect(() => {
-    if (!loaded || !initialized) return;
+    if (!loaded || !initialized || productSlug) return;
     pageview();
-  }, [pathname, loaded]);
+  }, [pathname, loaded, productSlug]);
 
   useEffect(() => {
     if (loaded) {

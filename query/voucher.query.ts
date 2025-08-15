@@ -15,11 +15,18 @@ export const getAllAvailabeCoupon = {
   },
 };
 
-const getUserVouchers = async (userId: string) => {
-  if (!userId) return [];
+export const getUserVouchers = async ({
+  userId,
+  phoneNumber,
+}: {
+  userId?: string;
+  phoneNumber?: string;
+}) => {
+  if (!userId && !phoneNumber) return [];
   const res = await getVouchers(
     {
       isActive: true,
+      phoneNumber,
       customerId: userId,
       isAvailabe: true,
     },
@@ -55,12 +62,18 @@ export const getCouponsQuery = () => {
   };
 };
 
-export const getUserVouchersQuery = (userId: string) => {
+export const getUserVouchersQuery = ({
+  userId,
+  phoneNumber,
+}: {
+  userId?: string;
+  phoneNumber?: string;
+}) => {
   return {
-    queryKey: ["get-user-vouchers", userId],
+    queryKey: ["get-user-vouchers", userId, phoneNumber],
     queryFn: () => {
-      if (!userId) return [];
-      return getUserVouchers(userId);
+      if (!userId && !phoneNumber) return [];
+      return getUserVouchers({ userId, phoneNumber });
     },
   };
 };
