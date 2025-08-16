@@ -61,7 +61,7 @@ function RenderHTMLFromCMS({
   return (
     <div
       ref={ref}
-      className={cn("prose prose-stone prose-compact max-w-none", className)}
+      className={cn("prose prose-stone prose-compact max-w-none custom-prose", className)}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );

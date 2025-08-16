@@ -345,7 +345,7 @@ export default function ProductPage({
 
   return (
     <>
-      <div className="container mx-auto px-2 sm:py-6 max-sm:mb-[48px]">
+      <div className="container mx-auto px-2 sm:py-6 max-sm:mb-[48px] overflow-hidden">
         <script
           defer
           type="application/ld+json"

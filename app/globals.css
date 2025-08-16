@@ -149,3 +149,15 @@ input {
 .no-spin {
   -moz-appearance: textfield;
 }
+@layer components {
+  .custom-prose table {
+    @apply table-auto w-full border-collapse;
+  }
+  .custom-prose td {
+    @apply align-top;
+  }
+  .custom-prose td:nth-child(1),
+  .custom-prose td:nth-child(2) {
+    @apply w-1/2;
+  }
+}
