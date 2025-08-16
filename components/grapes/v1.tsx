@@ -191,6 +191,8 @@ export default function GrapesStudio({
             swiperComponent.init({
               /* Plugin options: https://app.grapesjs.com/docs-sdk/plugins/components/swiper */
               licenseKey: process.env.NEXT_PUBLIC_GRAPES_API_KEY || "",
+              cdnScript: "https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js",
+              cdnStyle: "https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css",
             }),
             iconifyComponent.init({
               /* Plugin options: https://app.grapesjs.com/docs-sdk/plugins/components/iconify */
