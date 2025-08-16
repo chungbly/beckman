@@ -77,7 +77,11 @@ export default async function RootLayout({
   await queryClient.prefetchQuery(getUserAdminQuery);
 
   const configs = await getGlobalConfig();
-
+  Object.defineProperty(window.location, "hostname", {
+    get: function () {
+      return "localhost"; // giả làm localhost
+    },
+  });
   return (
     <div
       className={cn(
