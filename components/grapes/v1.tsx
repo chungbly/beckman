@@ -179,15 +179,18 @@ export default function GrapesStudio({
           plugins: [
             tableComponent.init({
               /* Plugin options: https://app.grapesjs.com/docs-sdk/plugins/components/table */
+              licenseKey: process.env.NEXT_PUBLIC_GRAPES_API_KEY || "",
             }),
             listPagesComponent.init({
               /* Plugin options: https://app.grapesjs.com/docs-sdk/plugins/components/listPages */
             }),
             lightGalleryComponent.init({
               /* Plugin options: https://app.grapesjs.com/docs-sdk/plugins/components/lightGallery */
+              licenseKey: process.env.NEXT_PUBLIC_GRAPES_API_KEY || "",
             }),
             swiperComponent.init({
               /* Plugin options: https://app.grapesjs.com/docs-sdk/plugins/components/swiper */
+              licenseKey: process.env.NEXT_PUBLIC_GRAPES_API_KEY || "",
             }),
             iconifyComponent.init({
               /* Plugin options: https://app.grapesjs.com/docs-sdk/plugins/components/iconify */
@@ -206,6 +209,7 @@ export default function GrapesStudio({
             }),
             layoutSidebarButtons.init({
               /* Plugin options: https://app.grapesjs.com/docs-sdk/plugins/layout/sidebar-buttons */
+              licenseKey: process.env.NEXT_PUBLIC_GRAPES_API_KEY || "",
             }),
             youtubeAssetProvider.init({
               /* Plugin options: https://app.grapesjs.com/docs-sdk/plugins/asset-providers/youtube-asset-provider */
