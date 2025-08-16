@@ -46,6 +46,31 @@ function useSidebar() {
 
   return context;
 }
+function patchLicenseResponse(data: any) {
+  // duyệt qua tất cả các key
+  function traverse(obj: any) {
+    if (obj && typeof obj === "object") {
+      for (const key of Object.keys(obj)) {
+        if (key.toLowerCase() === "category") {
+          obj[key] = "pro"; // ép category thành pro
+        }
+        if (key.toLowerCase() === "poweredby") {
+          obj[key] = false; // tắt poweredBy
+        }
+        if (key.toLowerCase() === "enabled") {
+          obj[key] = true; // ép enabled
+        }
+        if (key.toLowerCase() === "planId") {
+          obj[key] = "startup"; // ép enabled
+        }
+        traverse(obj[key]); // đệ quy tiếp
+      }
+    }
+  }
+
+  traverse(data);
+  return data;
+}
 
 const SidebarProvider = React.forwardRef<
   HTMLDivElement,
@@ -134,16 +159,12 @@ const SidebarProvider = React.forwardRef<
       window.fetch = async (...args) => {
         const res = await origFetch(...args);
         //@ts-ignore
-        if (args[0].includes("d=160.250.247.71&pn=tableComponent")) {
-          return new Response(
-            JSON.stringify({
-              result: {
-                plan: { poweredBy: false, category: "pro" },
-                license: { enabled: true },
-              },
-            }),
-            { status: 200 }
-          );
+        if (args[0].includes("d=160.250.247.71&pn=")) {
+          console.log("patched", args[0]);
+
+          const json = await res.json();
+          const patched = patchLicenseResponse(json);
+          return new Response(JSON.stringify(patched), { status: 200 });
         }
         return res;
       };
