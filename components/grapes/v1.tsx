@@ -10,7 +10,6 @@ import {
   layoutSidebarButtons,
   lightGalleryComponent,
   listPagesComponent,
-  swiperComponent,
   tableComponent,
   youtubeAssetProvider,
 } from "@grapesjs/studio-sdk-plugins";
@@ -187,14 +186,6 @@ export default function GrapesStudio({
             lightGalleryComponent.init({
               /* Plugin options: https://app.grapesjs.com/docs-sdk/plugins/components/lightGallery */
               licenseKey: process.env.NEXT_PUBLIC_GRAPES_API_KEY || "",
-            }),
-            swiperComponent.init({
-              /* Plugin options: https://app.grapesjs.com/docs-sdk/plugins/components/swiper */
-              licenseKey: process.env.NEXT_PUBLIC_GRAPES_API_KEY || "",
-              cdnScript:
-                "https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js",
-              cdnStyle:
-                "https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css",
             }),
             iconifyComponent.init({
               /* Plugin options: https://app.grapesjs.com/docs-sdk/plugins/components/iconify */
