@@ -154,22 +154,6 @@ const SidebarProvider = React.forwardRef<
       [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
     );
 
-    React.useEffect(() => {
-      const origFetch = window.fetch;
-      window.fetch = async (...args) => {
-        const res = await origFetch(...args);
-        //@ts-ignore
-        if (args[0].includes("d=160.250.247.71&pn=")) {
-          console.log("patched", args[0]);
-
-          const json = await res.json();
-          const patched = patchLicenseResponse(json);
-          return new Response(JSON.stringify(patched), { status: 200 });
-        }
-        return res;
-      };
-    }, []);
-
     return (
       <SidebarContext.Provider value={contextValue}>
         <TooltipProvider delayDuration={0}>
