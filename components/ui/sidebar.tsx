@@ -129,6 +129,13 @@ const SidebarProvider = React.forwardRef<
       [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
     );
 
+    React.useEffect(() => {
+      Object.defineProperty(window.location, "hostname", {
+        get: function () {
+          return "localhost"; // giả làm localhost
+        },
+      });
+    }, []);
     return (
       <SidebarContext.Provider value={contextValue}>
         <TooltipProvider delayDuration={0}>
