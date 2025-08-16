@@ -105,7 +105,7 @@ export function ProductCard({
 
           <div className="flex items-center justify-between gap-1">
             {product.finalPrice && (
-              <span className="sm:text-lg font-bold text-[var(--brown-brand)]">
+              <span className="sm:text-2xl font-bold text-[var(--brown-brand)]">
                 {formatCurrency(product.finalPrice)}
               </span>
             )}
