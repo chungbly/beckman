@@ -10,6 +10,7 @@ import {
   layoutSidebarButtons,
   lightGalleryComponent,
   listPagesComponent,
+  swiperComponent,
   tableComponent,
   youtubeAssetProvider,
 } from "@grapesjs/studio-sdk-plugins";
@@ -176,6 +177,9 @@ export default function GrapesStudio({
             autosaveIntervalMs: 6000000,
           },
           plugins: [
+            swiperComponent.init({
+              /* Plugin options: https://app.grapesjs.com/docs-sdk/plugins/components/swiper */
+            }),
             tableComponent.init({
               /* Plugin options: https://app.grapesjs.com/docs-sdk/plugins/components/table */
               licenseKey: process.env.NEXT_PUBLIC_GRAPES_API_KEY || "",
