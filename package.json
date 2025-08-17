@@ -81,6 +81,7 @@
     "recharts": "^2.13.3",
     "schema-dts": "^1.1.5",
     "sharp": "^0.33.5",
+    "swiper": "^11.2.10",
     "tailwind-merge": "^2.4.0",
     "tailwindcss-animate": "^1.0.7",
     "uuid": "^11.0.3",

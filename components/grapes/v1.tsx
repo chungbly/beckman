@@ -22,6 +22,7 @@ import StudioEditor, {
 import "@grapesjs/studio-sdk/style";
 import { createRoot } from "react-dom/client";
 import FileManager from "../file-manager";
+import pluginSwiper from "./swiper";
 
 export default function GrapesStudio({
   pages,
@@ -177,6 +178,7 @@ export default function GrapesStudio({
             autosaveIntervalMs: 6000000,
           },
           plugins: [
+            pluginSwiper,
             swiperComponent.init({
               /* Plugin options: https://app.grapesjs.com/docs-sdk/plugins/components/swiper */
             }),
