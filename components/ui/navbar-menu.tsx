@@ -44,10 +44,9 @@ export const MenuItem = ({
         {menuTrigger}
       </motion.p>
       {active === item && (
-        <div className="h-10 absolute top-[100%] left-0 w-screen translate-x-[-50%] bg-transparent" />
-
+        <div className="fixed top-10 left-0 right-0 h-10 w-screen max-w-[100vw]" />
       )}
-      <div className="fixed top-20 left-0 right-0 w-screen bg-white">
+      <div className="fixed top-20 left-0 right-0 w-screen max-w-[100vw] bg-white">
         {active !== null && (
           <motion.div
             initial={{ opacity: 0, scale: 0.85, y: 10 }}
