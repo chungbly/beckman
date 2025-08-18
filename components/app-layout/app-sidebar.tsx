@@ -69,10 +69,6 @@ export function AppSidebar({
         icon: Palette,
         items: [
           {
-            title: "Carousel",
-            url: "/admin/ui/carousel",
-          },
-          {
             title: "Trang tuỳ chỉnh",
             url: "/admin/ui/layout-editor",
           },
@@ -109,10 +105,6 @@ export function AppSidebar({
           {
             title: "Liên hệ",
             url: "/admin/contact",
-          },
-          {
-            title: "Giới thiệu",
-            url: "/admin/about",
           },
         ],
       },
