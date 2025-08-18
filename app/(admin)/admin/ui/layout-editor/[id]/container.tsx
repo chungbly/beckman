@@ -34,12 +34,21 @@ function AboutPageBuilder(props: {
       });
     }
   };
+
+  const value = (() => {
+    try {
+      return page?.project ? JSON.parse(page?.project) : {};
+    } catch (error) {
+      return {};
+    }
+  })();
+
   return (
     <Card className="shadow-lg h-full">
       <PageBreadCrumb breadcrumbs={[{ name: page.title }]} />
       <div className="h-full">
         <GrapesStudio
-          value={page.project ? JSON.parse(page.project) : {}}
+          value={value}
           pages={{
             add: false,
             remove: false,

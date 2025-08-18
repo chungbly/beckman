@@ -444,26 +444,30 @@ export default function CategoryForm(props: {
       </div>
       <form.Field name="header">
         {(field) => {
+          const value = (() => {
+            try {
+              return category?.header?.project
+                ? JSON.parse(category?.header?.project)
+                : {};
+            } catch (error) {
+              return {};
+            }
+          })();
           return (
             <GrapesStudio
-              value={
-                category?.header?.project
-                  ? JSON.parse(category?.header?.project)
-                  : {
-                      project: {
-                        pages: [
-                          {
-                            name: category?.name,
-                            component: "<h1>New project</h1>",
-                          },
-                        ],
-                      },
-                    }
-              }
+              value={value}
               pages={{
                 add: false,
                 duplicate: false,
                 remove: false,
+              }}
+              project={{
+                type: "web",
+                default: {
+                  pages: [
+                    { name: category?.name, compoment: "<div>New page</div>" },
+                  ],
+                },
               }}
               onSave={(data) => {
                 field.handleChange(data);
