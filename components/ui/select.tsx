@@ -31,11 +31,11 @@ const SelectTrigger = React.forwardRef<
         {/* <ChevronDown className="h-4 w-4 opacity-50" />
          */}
         <Image
-          src={"/icons/drop-down.svg"}
-          alt={"drop-down"}
+          src="/icons/drop-down.svg"
+          alt="chevron-down"
           width={10}
           height={6}
-          className="ml-2"
+          className="ml-2 h-[10px] w-[6px]"
         />
       </SelectPrimitive.Icon>
     </>
