@@ -113,7 +113,7 @@ export function HeaderMenu({ categories }: { categories: Category[] }) {
               </Link>
             }
             className={cn(
-              "grid grid-cols-5 w-screen container mx-auto h-[460px] items-center py-[40px]"
+              "grid grid-cols-5 w-screen container mx-auto h-auto items-center !p-[20px]"
             )}
           >
             <div className="col-span-3 flex self-start gap-[20px]">
@@ -227,8 +227,8 @@ export function HeaderMenu({ categories }: { categories: Category[] }) {
                 </Link>
               )}
             </div>
-            <div className="col-span-2 relative h-[350px]">
-              {category.desktopBanner && (
+            {category.desktopBanner && (
+              <div className="col-span-2 relative h-[350px]">
                 <Image
                   src={category.desktopBanner}
                   alt={category.name}
@@ -236,8 +236,8 @@ export function HeaderMenu({ categories }: { categories: Category[] }) {
                   sizes="800px"
                   priority
                 />
-              )}
-            </div>
+              </div>
+            )}
           </MenuItem>
         );
       })}
