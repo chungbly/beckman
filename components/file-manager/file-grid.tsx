@@ -22,7 +22,13 @@ import { CloudinaryFile } from "@/types/cloudinary";
 import { bytesToSize } from "@/utils";
 import { IconFile } from "@tabler/icons-react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { ClipboardPaste, FileUp, Folder, FolderPlus } from "lucide-react";
+import {
+  ClipboardPaste,
+  FileUp,
+  Folder,
+  FolderPlus,
+  VideoIcon,
+} from "lucide-react";
 import moment from "moment";
 import dynamic from "next/dynamic";
 import Image from "next/image";
@@ -42,6 +48,18 @@ export const getFileIcon = (file: CloudinaryFile) => {
           alt={file.display_name}
           className="object-cover rounded-sm"
         />
+      );
+    case "video":
+      return (
+        <div className="absolute top-0 left-0 w-full h-full">
+          <video
+            src={file.secure_url}
+            className="object-cover rounded-sm absolute top-0 left-0 w-full h-full"
+          />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/50 rounded-full p-2 text-white">
+            <VideoIcon />
+          </div>
+        </div>
       );
     default:
       return <IconFile className="h-8 w-8 text-blue-500" />;
@@ -66,7 +84,6 @@ export default function FileGrid() {
   );
 
   const { toast } = useToast();
-
   return (
     <ContextMenu modal={false}>
       <ContextMenuTrigger>
@@ -251,7 +268,7 @@ export default function FileGrid() {
             const input = document.createElement("input");
             input.type = "file";
             input.multiple = true;
-            input.accept = "image/*";
+            input.accept = "image/*,video/*";
             input.click();
             input.addEventListener("change", async (e) => {
               const files = (e.target as HTMLInputElement).files;

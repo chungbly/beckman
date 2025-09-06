@@ -3,25 +3,15 @@
 import { APIStatus } from "@/client/callAPI";
 import { createFolder, moveFiles } from "@/client/cloudinary.client";
 import { getFileLinks, renameFile } from "@/client/storage.client";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { setCurrentFolderPath as setCurrentFolderPathCookie } from "@/lib/cookies";
-import { cn } from "@/lib/utils";
 import {
   FileManagerContextProps,
   FileManagerData,
 } from "@/types/drive-storage";
 import { useForm } from "@tanstack/react-form";
 import { useQueryClient } from "@tanstack/react-query";
-import {
-  AlignJustify,
-  Check,
-  Files,
-  Grid2x2,
-  Scissors,
-  Trash2,
-  X,
-} from "lucide-react";
+import { Check, Files, Scissors, Trash2, X } from "lucide-react";
 import { createContext, Fragment, useContext, useState } from "react";
 import PageBreadCrumb from "../app-layout/page-breadcrumb";
 import {
@@ -119,6 +109,7 @@ export default function FileManager({
 
   const handleOpenFolder = async (path: string) => {
     setCurrentFolderPath(path);
+    form.setFieldValue("search", "");
     await setCurrentFolderPathCookie(path);
   };
 
