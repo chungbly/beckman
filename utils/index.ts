@@ -71,3 +71,7 @@ export function escapeHtml(str: string = "") {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
+
+export function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}

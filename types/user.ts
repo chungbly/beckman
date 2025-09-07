@@ -3,6 +3,7 @@ export interface AdminUser {
   deletedAt: string;
   fullName: string;
   email: string;
+  password: string;
   phoneNumber: string;
   status: string;
   dateOfBirth?: string;

@@ -22,15 +22,16 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
+import { getUserAdminQuery } from "@/query/auth.admin.query";
 import { useConfigs } from "@/store/useConfig";
 import { AdminUser } from "@/types/user";
+import { getDirtyData, sleep } from "@/utils";
 import { useForm } from "@tanstack/react-form";
 import { useQuery } from "@tanstack/react-query";
 import moment from "moment";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { UserProfileSkeleton } from "./user-skeleton";
-import { getDirtyData } from "@/utils";
 
 export default function AccountDetails(props: {
   params: Promise<{
@@ -41,7 +42,6 @@ export default function AccountDetails(props: {
   const configs = useConfigs((s) => s.configs);
   const { id } = params;
   const PERMISSIONS = configs?.["PERMISSIONS"] as Record<string, string>;
-
   const { toast } = useToast();
   const router = useRouter();
   const { data: user, isLoading } = useQuery({
@@ -53,6 +53,7 @@ export default function AccountDetails(props: {
       return res.data;
     },
   });
+  const { data: loggedUser } = useQuery(getUserAdminQuery);
 
   const form = useForm<Omit<AdminUser, "deletedAt">>({
     defaultValues: user
@@ -63,29 +64,37 @@ export default function AccountDetails(props: {
           email: "",
           facebookId: "",
           telegramId: "",
+          password: "",
           fullName: "",
           quote: "",
           dateOfBirth: moment().format("DD/MM/YYYY"),
-          gender: "female",
+          gender: "MALE",
           status: "ACTIVE",
           permissions: [],
           photo: "",
         },
     onSubmit: async ({ value }) => {
- 
       if (id === "new" || !id) {
         // create new user
-        const res = await createUser(value);
+        const { _id, ...valueWithoutId } = value;
+        const res = await createUser(valueWithoutId);
         if (res.status === APIStatus.OK && res.data) {
           toast({
             title: "Tạo tài khoản thành công",
             description: `Tài khoản  đã được tạo thành công!`,
           });
+          await sleep(2000);
           router.push(`/admin/users/${res.data._id}`);
+        } else {
+          toast({
+            title: "Tạo tài khoản thất bại",
+            description: res.message,
+            variant: "error",
+          });
         }
       } else {
         // update user
-        const dirtyData = getDirtyData(user,value)
+        const dirtyData = getDirtyData(user, value);
         const res = await updateUser(id, value);
         if (res.status === APIStatus.OK && res.data) {
           toast({
@@ -105,7 +114,8 @@ export default function AccountDetails(props: {
   });
 
   if (isLoading) return <UserProfileSkeleton />;
-
+  const isAllowChangePassword =
+    loggedUser?.permissions?.includes("ADMIN_UPDATE");
   return (
     <Card className="m-2 sm:m-6">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7">
@@ -146,20 +156,45 @@ export default function AccountDetails(props: {
                 </div>
               )}
             />
-
-            <form.Field
-              name="email"
-              children={(field) => (
-                <div className="space-y-2">
-                  <Label>Email</Label>
-                  <Input
-                    disabled={!!id && id !== "new"}
-                    value={field.state.value || ""}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                  />
-                </div>
+            <div
+              className={cn(
+                "grid gap-4 md:grid-cols-2",
+                !id || id === "new" ? "md:grid-cols-2" : "md:grid-cols-1"
               )}
-            />
+            >
+              <form.Field
+                name="email"
+                children={(field) => (
+                  <div className="space-y-2">
+                    <Label>Email</Label>
+                    <Input
+                      disabled={!!id && id !== "new"}
+                      value={field.state.value || ""}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                    />
+                  </div>
+                )}
+              />
+              <form.Field
+                name="password"
+                children={(field) => (
+                  <div
+                    className={cn(
+                      "space-y-2",
+                      !id || isAllowChangePassword || id === "new"
+                        ? "block"
+                        : "hidden"
+                    )}
+                  >
+                    <Label>Mật khẩu</Label>
+                    <Input
+                      value={field.state.value || ""}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                    />
+                  </div>
+                )}
+              />
+            </div>
 
             <div className="grid gap-4 md:grid-cols-2">
               <form.Field
@@ -263,7 +298,7 @@ export default function AccountDetails(props: {
             <div className="space-y-2">
               <Label>Quote</Label>
               <Textarea
-                value={field.state.value || ''}
+                value={field.state.value || ""}
                 onChange={(e) => field.handleChange(e.target.value)}
               />
             </div>
@@ -288,7 +323,7 @@ export default function AccountDetails(props: {
                     value: key,
                     label: PERMISSIONS[key],
                   }))}
-                  onChange={(p) => field.handleChange(p.map(p=>p.value))}
+                  onChange={(p) => field.handleChange(p.map((p) => p.value))}
                   placeholder="Chọn quyền"
                   hideClearAllButton
                   hidePlaceholderWhenSelected
@@ -362,7 +397,7 @@ export default function AccountDetails(props: {
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="MALE" id="male" />
-                    <label htmlFor="male">Name</label>
+                    <label htmlFor="male">Nam</label>
                   </div>
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="OTHER" id="other" />
