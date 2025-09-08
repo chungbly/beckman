@@ -162,8 +162,15 @@ input {
   }
 }
 
+.jodit-wysiwyg,
+.jodit__preview-box {
+  @apply prose;
+  @apply custom-prose;
+  @apply prose-compact;
+  max-width: none;
+}
 /* Reset paragraph và heading trong editor, nhưng bỏ qua .jodit-group-products */
-.jodit-wysiwyg p:not(.jodit-group-products *),
+/* .jodit-wysiwyg p:not(.jodit-group-products *),
 .jodit-wysiwyg h1:not(.jodit-group-products *),
 .jodit-wysiwyg h2:not(.jodit-group-products *),
 .jodit-wysiwyg h3:not(.jodit-group-products *),
@@ -181,4 +188,4 @@ input {
 .jodit__preview-box h5:not(.jodit-group-products *),
 .jodit__preview-box h6:not(.jodit-group-products *) {
   all: revert;
-}
+} */

@@ -170,9 +170,9 @@ const JoditEditor = ({
       placeholder: placeholder || "",
       height: 500,
       // iframe: true,
-      iframeStyle: `
-      @import "https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css";`,
-      iframeCSSLinks: ["/editor.css"], // chỉ dành cho ProductScrollAbleList
+      // iframeStyle: `
+      // @import "https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css";`,
+      // iframeCSSLinks: ["/editor.css"], // chỉ dành cho ProductScrollAbleList
       extraButtons: [
         {
           iconURL: "/icons/image-manager.svg",
