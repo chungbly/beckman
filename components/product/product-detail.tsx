@@ -390,7 +390,7 @@ export default function ProductPage({
               {({ basePrice, finalPrice }) => {
                 return (
                   <>
-                    {product.finalPrice < product.basePrice && (
+                    {finalPrice < basePrice && (
                       <p className="line-through text-xl sm:text-2xl decoration-[var(--brown-brand)]">
                         {formatCurrency(basePrice)}
                       </p>
