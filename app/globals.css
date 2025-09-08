@@ -5,15 +5,15 @@
 @layer base {
   :root {
     --light-beige: #f9f5f1;
-    --gray-beige: #B9A68E;
-    --rose-beige: #DFD4CE;
+    --gray-beige: #b9a68e;
+    --rose-beige: #dfd4ce;
     --header-height: 60px;
     --header-menu-height: 40px;
     --header-mobile-height: 60px;
     --header-color: #171718;
     --red-brand: #7c1d19;
     --red-brand-disabled: #c6706c;
-    --brown-brand: #4F2C1E;
+    --brown-brand: #4f2c1e;
     --background: 0 0% 100%;
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
@@ -162,6 +162,23 @@ input {
   }
 }
 
-.jodit-wysiwyg *:not(.jodit-group-products):not(.jodit-group-products *) {
+/* Reset paragraph và heading trong editor, nhưng bỏ qua .jodit-group-products */
+.jodit-wysiwyg p:not(.jodit-group-products *),
+.jodit-wysiwyg h1:not(.jodit-group-products *),
+.jodit-wysiwyg h2:not(.jodit-group-products *),
+.jodit-wysiwyg h3:not(.jodit-group-products *),
+.jodit-wysiwyg h4:not(.jodit-group-products *),
+.jodit-wysiwyg h5:not(.jodit-group-products *),
+.jodit-wysiwyg h6:not(.jodit-group-products *) {
+  all: revert;
+}
+
+.jodit__preview-box p:not(.jodit-group-products *),
+.jodit__preview-box h1:not(.jodit-group-products *),
+.jodit__preview-box h2:not(.jodit-group-products *),
+.jodit__preview-box h3:not(.jodit-group-products *),
+.jodit__preview-box h4:not(.jodit-group-products *),
+.jodit__preview-box h5:not(.jodit-group-products *),
+.jodit__preview-box h6:not(.jodit-group-products *) {
   all: revert;
 }
