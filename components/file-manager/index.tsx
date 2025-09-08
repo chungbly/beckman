@@ -83,7 +83,7 @@ export default function FileManager({
   const breadcrumbPaths = currentFolderPath
     .split("/")
     .reduce((acc, cur, index) => {
-      return [...acc, [acc[index - 1], cur].join("/")];
+      return [...acc, [acc[index - 1], cur].join("/").replace("//", "/")];
     }, [] as string[]);
 
   const handleCreateFolder = async (name: string) => {
@@ -110,11 +110,12 @@ export default function FileManager({
   };
 
   const handleOpenFolder = async (path: string) => {
+    if (path === currentFolderPath) return;
+    form.setFieldValue("search", "");
     if (path[0] === "/") {
-      path = path.slice(1);
+      path = path.replace("/", "");
     }
     setCurrentFolderPath(path);
-    form.setFieldValue("search", "");
     await setCurrentFolderPathCookie(path);
   };
 

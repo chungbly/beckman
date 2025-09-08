@@ -302,7 +302,7 @@ const JoditEditor = ({
       ?.split(";")
       .find((v) => v.includes("currentFolderPath"))
       ?.replace("currentFolderPath=", "") || ""
-  );
+  )?.trim();
 
   return (
     <>
