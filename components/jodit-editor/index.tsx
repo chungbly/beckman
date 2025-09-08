@@ -5,8 +5,9 @@ import { getProducts } from "@/client/product.client";
 import { useToast } from "@/hooks/use-toast";
 // import Jodit from "jodit-react";
 import type { IJodit } from "jodit/esm/types/jodit";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 // import ReactDOM from "react-dom/client";
+import { debounce } from "@/utils/debounce";
 import { useForm } from "@tanstack/react-form";
 import { Edit, Trash } from "lucide-react";
 import dynamic from "next/dynamic";
@@ -17,6 +18,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import SelectProductModal from "./SelectProductModal";
 import ProductScrollAbleList from "./product-scrollable-list";
 import "./style.css";
+
 const Jodit = dynamic(() => import("jodit-react"), { ssr: false });
 const getProductList = async (ids: number[]) => {
   const res = await getProducts(
@@ -167,8 +169,10 @@ const JoditEditor = ({
       readonly: false, // all options from https://xdsoft.net/jodit/docs/,
       placeholder: placeholder || "",
       height: 500,
+      // iframe: true,
       iframeStyle: `
       @import "https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css";`,
+      iframeCSSLinks: ["/editor.css"], // chỉ dành cho ProductScrollAbleList
       extraButtons: [
         {
           iconURL: "/icons/image-manager.svg",
@@ -237,6 +241,15 @@ const JoditEditor = ({
     [placeholder, toast]
   );
 
+  const handleUpdate = useCallback(
+    debounce((newContent) => {
+      if (newContent === value || newContent === content) return;
+      setContent(newContent);
+      onChange?.(newContent);
+    }, 500),
+    []
+  );
+
   const handleSelectImage = (images: string[]) => {
     if (!editor.current || !editor.current?.selection) {
       return toast({
@@ -261,6 +274,7 @@ const JoditEditor = ({
         const elements = div.querySelectorAll(
           '[data-type="product-scrollable"]'
         );
+        if (!elements.length) return;
         for (let i = 0; i < elements.length; i++) {
           const el = elements[i];
           const ids = JSON.parse(el.getAttribute("data-ids") || "[]");
@@ -275,11 +289,20 @@ const JoditEditor = ({
           el.innerHTML = html;
         }
         const html = div.innerHTML;
-        setContent(html);
+        if (html !== content) {
+          setContent(html);
+        }
         return;
       })();
     }
   }, [value]);
+
+  const currentFolderPath = decodeURIComponent(
+    document?.cookie
+      ?.split(";")
+      .find((v) => v.includes("currentFolderPath"))
+      ?.replace("currentFolderPath=", "") || ""
+  );
 
   return (
     <>
@@ -288,17 +311,24 @@ const JoditEditor = ({
         value={content}
         config={config}
         className={className}
-        onBlur={(newContent) => setContent(newContent)} // preferred to use only this option to update the content for performance reasons
-        onChange={(newContent) => {
-          onChange?.(newContent);
-        }}
+        onBlur={(newContent) => {
+          setContent(newContent);
+        }} // preferred to use only this option to update the content for performance reasons
+        onChange={handleUpdate}
       />
-      <Dialog open={isOpenLibrary} onOpenChange={() => setIsOpenLibrary(false)}>
+      <Dialog
+        modal={false}
+        open={isOpenLibrary}
+        onOpenChange={() => setIsOpenLibrary(false)}
+      >
         <DialogContent className="max-w-[90vw]">
           <DialogHeader>
             <DialogTitle>Thư viện ảnh</DialogTitle>
           </DialogHeader>
-          <FileManager onSelect={handleSelectImage} />
+          <FileManager
+            currentFolderPath={currentFolderPath}
+            onSelect={handleSelectImage}
+          />
         </DialogContent>
       </Dialog>
       <form.Subscribe

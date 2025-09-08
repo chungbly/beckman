@@ -28,7 +28,7 @@ function ProductScrollAbleList({
   };
 
   return (
-    <div className={cn("relative group/flash-deal", className)}>
+    <div className={cn("jodit-group-products relative group/flash-deal", className)}>
       <div
         ref={scrollContainerRef}
         className="flex gap-4 overflow-x-auto scrollbar-hide pb-2"

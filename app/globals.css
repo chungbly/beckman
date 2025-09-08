@@ -161,3 +161,7 @@ input {
     @apply w-1/2;
   }
 }
+
+.jodit-wysiwyg *:not(.jodit-group-products):not(.jodit-group-products *) {
+  all: revert;
+}
