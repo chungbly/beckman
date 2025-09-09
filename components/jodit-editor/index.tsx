@@ -275,10 +275,20 @@ const JoditEditor = ({
           '[data-type="product-scrollable"]'
         );
         if (!elements.length) return;
+        let count = 0;
         for (let i = 0; i < elements.length; i++) {
           const el = elements[i];
           const ids = JSON.parse(el.getAttribute("data-ids") || "[]");
-          if (!ids?.length) return;
+          if (!ids?.length) continue;
+
+          // Check: nếu đã có data-rendered cho ids này thì bỏ qua
+          const prevKey = el.getAttribute("data-rendered-ids");
+          const key = JSON.stringify(ids);
+          if (prevKey === key) {
+            count++;
+            continue; // không thay đổi → bỏ qua
+          }
+
           const products = await getProductList(ids);
           const html = ReactDOMServer.renderToStaticMarkup(
             <ProductScrollAbleList
@@ -286,10 +296,12 @@ const JoditEditor = ({
               products={products}
             />
           );
+
           el.innerHTML = html;
+          el.setAttribute("data-rendered-ids", key);
         }
         const html = div.innerHTML;
-        if (html !== content) {
+        if (html !== content && count !== elements.length) {
           setContent(html);
         }
         return;
