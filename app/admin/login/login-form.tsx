@@ -19,6 +19,8 @@ export default function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const { pending } = useFormStatus();
   const { toast } = useToast();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("url");
   const form = useForm({
     defaultValues: {
       email: "",
@@ -47,7 +49,7 @@ export default function LoginForm() {
         refreshToken: string;
       }> = await json.json();
       if (res.status === APIStatus.OK && res.data?.accessToken) {
-        window.location.replace("/admin/products");
+        window.location.replace(callbackUrl || "/admin/products");
       } else {
         setIsLoading(false);
 
@@ -88,7 +90,9 @@ export default function LoginForm() {
                 <Input
                   id="email"
                   value={field.state.value || ""}
-                  onChange={(e) => field.handleChange(escapeHtml(e.target.value))}
+                  onChange={(e) =>
+                    field.handleChange(escapeHtml(e.target.value))
+                  }
                   name="email"
                   type="email"
                   required

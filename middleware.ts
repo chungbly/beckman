@@ -32,10 +32,10 @@ export async function middleware(request: NextRequest) {
     if (accessToken?.value) {
       const res = await getUser();
       if (res.status !== APIStatus.OK || !res?.data) {
-        return NextResponse.redirect(new URL("/admin/login", request.url));
+        return NextResponse.redirect(new URL(`/admin/login?url=${pathname}`, request.url));
       }
     } else {
-      return NextResponse.redirect(new URL("/admin/login", request.url));
+      return NextResponse.redirect(new URL(`/admin/login?url=${pathname}`, request.url));
     }
 
     return NextResponse.next({
