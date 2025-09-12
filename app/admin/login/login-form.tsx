@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { escapeHtml } from "@/utils";
 import { useForm } from "@tanstack/react-form";
 import { Eye, EyeOff, Loader, Lock, Mail } from "lucide-react";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useFormStatus } from "react-dom";
 import { v4 } from "uuid";
