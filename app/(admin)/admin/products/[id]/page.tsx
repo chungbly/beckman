@@ -35,11 +35,11 @@ import {
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import EditableText from "./editable-text";
 import { ProductComments } from "./product-comment";
 import ProductDetailSkeleton from "./skeleton";
-import Link from "next/link";
 const JoditEditor = dynamic(() => import("@/components/jodit-editor"), {
   ssr: false,
 });
@@ -726,18 +726,17 @@ export default function Product(props: {
                             })
                           }
                         />
-                        <div>
-                          Full Link:{" "}
-                          <Link
-                          href={`https://r8ckie.com/${
+                        <Link
+                          className="underline text-sky-500"
+                          target="_blank"
+                          href={`https://beckman.com.vn/${
                             field.state.value?.slug || ""
                           }`}
-                          >
-                          {`https://r8ckie.com/${
+                        >
+                          {`https://beckman.com.vn/${
                             field.state.value?.slug || ""
                           }`}
-                          </Link>
-                        </div>
+                        </Link>
                       </div>
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
