@@ -6,6 +6,7 @@ import { getProduct, updateProduct } from "@/client/product.client";
 import PageBreadCrumb from "@/components/app-layout/page-breadcrumb";
 import CategorySelector from "@/components/category-selector";
 import FileManagerDialog from "@/components/file-manager/file-manager-dialog";
+import InputTags from "@/components/pages/admin/ui/input-tags";
 import ProductSelector, {
   ArrayChipProduct,
 } from "@/components/selectors/product-selector";
@@ -38,7 +39,7 @@ import { notFound } from "next/navigation";
 import EditableText from "./editable-text";
 import { ProductComments } from "./product-comment";
 import ProductDetailSkeleton from "./skeleton";
-import InputTags from "@/components/pages/admin/ui/input-tags";
+import Link from "next/link";
 const JoditEditor = dynamic(() => import("@/components/jodit-editor"), {
   ssr: false,
 });
@@ -725,6 +726,18 @@ export default function Product(props: {
                             })
                           }
                         />
+                        <div>
+                          Full Link:{" "}
+                          <Link
+                          href={`https://r8ckie.com/${
+                            field.state.value?.slug || ""
+                          }`}
+                          >
+                          {`https://r8ckie.com/${
+                            field.state.value?.slug || ""
+                          }`}
+                          </Link>
+                        </div>
                       </div>
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
