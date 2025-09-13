@@ -118,7 +118,7 @@ export default function CategoryForm(props: {
         return;
       }
       const dirtyData = getDirtyData(category, value);
-
+      delete dirtyData?.updatedAt;
       const res = await updateCategory(category?._id, dirtyData);
       if (res.status === APIStatus.OK) {
         toast({

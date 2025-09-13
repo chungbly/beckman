@@ -2,7 +2,6 @@
 import { APIStatus } from "@/client/callAPI";
 import { updateCustomer } from "@/client/customer.client";
 import { calculatePrices } from "@/client/order.client";
-import { useIsMobile } from "@/hooks/use-mobile";
 // import LoginDialog from "@/components/app-layout/login-form-dialog";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -53,6 +52,12 @@ export default function VoucherCard({
     const items = useCartStore.getState().items;
     const shippingInfo = useCartStore.getState().info;
     const { provinceCode } = shippingInfo;
+    if (!items.length || items.every((i) => !i.isSelected)) {
+      return {
+        isValid: false,
+        reason: "Chưa có sản phẩm nào trong giỏ hàng",
+      };
+    }
     const res = await calculatePrices(
       items.map((i) => ({
         productId: i.productId,
@@ -136,9 +141,7 @@ export default function VoucherCard({
         className
       )}
     >
-      <div
-        className="w-full h-full flex"
-      >
+      <div className="w-full h-full flex">
         <div className="flex-1 bg-[#dcc7b6] flex flex-col justify-start p-3 py-1">
           <h3 className="font-bold text-sm">{voucher.name}</h3>
           <p className="text-sm line-clamp-2 overflow-ellipsis">
@@ -163,9 +166,6 @@ export default function VoucherCard({
                 : "bg-white",
               autoAppliedVouchers.includes(voucher.code) && "cursor-not-allowed"
             )}
-            onClick={() => {
-              handleApplyVoucher(voucher);
-            }}
           >
             {voucher.discount.type === "free-shipping" ? (
               <div className="flex flex-col items-center justify-center">
@@ -179,7 +179,12 @@ export default function VoucherCard({
                   <span>ÁP DỤNG</span>
                 </>
               ) : (
-                <div className="flex flex-col justify-center items-center">
+                <div
+                  className="flex flex-col justify-center items-center"
+                  onClick={() => {
+                    handleApplyVoucher(voucher);
+                  }}
+                >
                   <span>ÁP</span>
                   <span>DỤNG</span>
                 </div>
