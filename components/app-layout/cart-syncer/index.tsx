@@ -14,8 +14,8 @@ export function CartSyncer() {
     if (!data) return;
     const { originalCart } = data;
     useCartStore.setState({
-      items: originalCart.items || [],
-      info: originalCart.shippingInfo || {
+      items: originalCart?.items || [],
+      info: originalCart?.shippingInfo || {
         fullName: customer?.name || "",
         phoneNumber: customer?.phoneNumbers?.[0] || "",
         provinceCode: 0,
