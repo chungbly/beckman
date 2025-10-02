@@ -1,16 +1,15 @@
 //@ts-nocheck
 "use client";
 import { APIStatus } from "@/client/callAPI";
-import { updateConfig } from "@/client/configs.client";
-import { updatePost } from "@/client/post.client";
+import { createPost, updatePost } from "@/client/post.client";
 import FileManagerDialog from "@/components/file-manager/file-manager-dialog";
 import { restoreShortcodesFromPreview } from "@/components/jodit-editor";
 import SumbitButton from "@/components/submit-button";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -20,8 +19,8 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
-import { TooltipWrap } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 import { getPostByIdQuery } from "@/query/post.query";
 import { useConfigs } from "@/store/useConfig";
 import { getDirtyData } from "@/utils";
@@ -33,15 +32,16 @@ import {
   ImagePlus,
   Image as ImageUpscale,
   LinkIcon,
-  Pin,
   Tag,
   X,
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
 import { v4 } from "uuid";
+import { z } from "zod";
 
 const SeoMetrics = dynamic(
   () => import("@/components/app-layout/seo-metrics"),
@@ -53,38 +53,83 @@ const JoditEditor = dynamic(() => import("@/components/jodit-editor"), {
   ssr: false,
 });
 
+const schema = z.object({
+  title: z.string("Tiêu đề không được để trống").trim().min(1, "Tiêu đề không được để trống"),
+  seo: z.object({
+    title: z.string().trim().min(1, "Tiêu đề không được để trống"),
+    slug: z.string().trim().min(1, "Slug không được để trống"),
+  }),
+});
+
 export default function MagazineEditor() {
   const params = useParams();
   const { toast } = useToast();
+  const router = useRouter();
   const configs = useConfigs((s) => s.configs);
   const MAGAZINE_CATEGORIES =
     (configs?.["MAGAZINE_CATEGORIES"] as string[]) || [];
-  const PINNED_POST_ID = configs?.["PINNED_POST_ID"] as string;
-
   const id = params.id as string;
   const { data } = useQuery(getPostByIdQuery(id));
   const [copied, setCopied] = useState(false);
+  const defaultValues =
+    id === "new"
+      ? {
+          isMagazine: true,
+          seo: {
+            title: "",
+            description: "",
+            keywords: "",
+            slug: "",
+            thumbnail: "",
+          },
+          content: "",
+          isSlide: false,
+          isOutStanding: false,
+          isShow: true,
+          tags: [],
+        }
+      : data!;
 
   const form = useForm({
-    defaultValues: data!,
+    defaultValues,
+    validators: {
+      onSubmit: schema,
+    },
     onSubmit: async ({ value }) => {
-      const dirtyData = getDirtyData(data!, value);
-
-      if (dirtyData.content) {
-        dirtyData.content = restoreShortcodesFromPreview(dirtyData.content);
-      }
-      const res = await updatePost(id, dirtyData);
-      if (res.status === APIStatus.OK) {
-        toast({
-          title: "Cập nhật thành công",
-          variant: "success",
-        });
+      if (id === "new") {
+        const res = await createPost(value);
+        if (res.status === APIStatus.OK) {
+          toast({
+            title: "Tạo bài viết thành công",
+            variant: "success",
+          });
+          router.push(`/admin/magazines/${res.data?._id}`);
+        } else {
+          toast({
+            title: "Tạo bài viết thất bại",
+            variant: "error",
+            description: res.erros ? JSON.stringify(res.errors) : res.message,
+          });
+        }
       } else {
-        toast({
-          title: "Cập nhật thất bại",
-          variant: "error",
-          description: res.message,
-        });
+        const dirtyData = getDirtyData(defaultValues, value);
+        if (dirtyData.content) {
+          dirtyData.content = restoreShortcodesFromPreview(dirtyData.content);
+        }
+        delete dirtyData.updatedAt;
+        const res = await updatePost(id, dirtyData);
+        if (res.status === APIStatus.OK) {
+          toast({
+            title: "Cập nhật thành công",
+            variant: "success",
+          });
+        } else {
+          toast({
+            title: "Cập nhật thất bại",
+            variant: "error",
+            description: res.erros ? JSON.stringify(res.errors) : res.message,
+          });
+        }
       }
     },
   });
@@ -95,38 +140,19 @@ export default function MagazineEditor() {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handlePinPost = async () => {
-    const res = await updateConfig("PINNED_POST_ID", id);
-
-    if (res.status === APIStatus.OK) {
-      toast({
-        title: "Ghim bài viết thành công",
-        variant: "success",
-      });
-      window.location.reload();
-    } else {
-      toast({
-        title: "Ghim bài viết thất bại",
-        variant: "error",
-        description: res.message,
-      });
-    }
-  };
-
   return (
     <div className=" p-6">
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content Area */}
         <div className="col-span-full flex items-center justify-between mb-6">
           <div>
-            <form.Field
-              name="title"
-              children={(field) => (
+            <form.Field name="title">
+              {(field) => (
                 <h1 className="text-2xl font-bold tracking-tight">
                   {field.state.value}
                 </h1>
               )}
-            />
+            </form.Field>
             <p className="text-muted-foreground">Magazine ID: {id}</p>
           </div>
           <form.Subscribe
@@ -144,26 +170,37 @@ export default function MagazineEditor() {
             <CardContent className="p-6">
               <div className="space-y-6">
                 <div>
-                  <div className="flex items-center justify-between text-lg font-semibold mb-4">
-                    <span>1. Thông tin cơ bản</span>
-                    {id !== "new" && (
-                      <TooltipWrap
-                        content={
-                          PINNED_POST_ID === id ? "Bỏ ghim" : "Ghim bài viết"
-                        }
-                      >
-                        <Button onClick={handlePinPost} variant="ghost">
-                          <Pin
-                            className={
-                              PINNED_POST_ID === id ? "text-primary" : ""
-                            }
-                          />
-                        </Button>
-                      </TooltipWrap>
-                    )}
-                  </div>
+                  <h2 className="text-lg font-semibold mb-4">
+                    1. Thông tin cơ bản
+                  </h2>
 
                   <div className="space-y-4">
+                    <div>
+                      <Label>Loại bài viết</Label>
+
+                      <form.Field
+                        name="isMagazine"
+                        children={(field) => (
+                          <RadioGroup
+                            value={field.state.value ? "magazine" : "about"}
+                            onValueChange={(v) => {
+                              field.handleChange(v === "magazine");
+                            }}
+                            className="flex gap-2 items-center mt-2"
+                          >
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="magazine" id="magazine" />
+                              <Label htmlFor="magazine">Magazine</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="about" id="about" />
+                              <Label htmlFor="about">Giới thiệu</Label>
+                            </div>
+                          </RadioGroup>
+                        )}
+                      />
+                    </div>
+
                     <div className="flex items-center justify-between">
                       <div className="space-y-0.5">
                         <Label>Hiển thị</Label>
@@ -181,37 +218,102 @@ export default function MagazineEditor() {
                         )}
                       />
                     </div>
+                    <form.Field name="isMagazine">
+                      {(field) => {
+                        const isMagainze = field.state.value;
+                        if (isMagainze) {
+                          return (
+                            <>
+                              <div className="flex items-center justify-between">
+                                <div className="space-y-0.5">
+                                  <Label>Cách hiển thị</Label>
+                                  <p className="text-sm text-muted-foreground">
+                                    Hiển thị ở dạng carousel (slide)
+                                  </p>
+                                </div>
+                                <form.Field
+                                  name="isSlide"
+                                  children={(field) => (
+                                    <Switch
+                                      checked={field.state.value ?? true}
+                                      onCheckedChange={field.handleChange}
+                                    />
+                                  )}
+                                />
+                              </div>
 
-                    <div className="flex items-center justify-between">
-                      <div className="space-y-0.5">
-                        <Label>Bài viết nổi bật</Label>
-                        <p className="text-sm text-muted-foreground">
-                          Đánh dấu là bài viết nổi bật, hiển thị ở mục bài viết
-                          nổi bật
-                        </p>
-                      </div>
-                      <form.Field
-                        name="isOutStanding"
-                        children={(field) => (
-                          <Switch
-                            checked={field.state.value ?? true}
-                            onCheckedChange={field.handleChange}
-                          />
-                        )}
-                      />
-                    </div>
+                              <div className="flex items-center justify-between">
+                                <div className="space-y-0.5">
+                                  <Label>Bài viết nổi bật</Label>
+                                  <p className="text-sm text-muted-foreground">
+                                    Đánh dấu là bài viết nổi bật, hiển thị ở mục
+                                    bài viết nổi bật
+                                  </p>
+                                </div>
+                                <form.Field
+                                  name="isOutStanding"
+                                  children={(field) => (
+                                    <Switch
+                                      checked={field.state.value ?? true}
+                                      onCheckedChange={field.handleChange}
+                                    />
+                                  )}
+                                />
+                              </div>
+                            </>
+                          );
+                        }
+                        return (
+                          <div className="flex items-center justify-between">
+                            <div className="space-y-0.5">
+                              <Label>Kích thước</Label>
+                              <p className="text-sm text-muted-foreground">
+                                Là bài viết lớn, chiếm đầy màn hình
+                              </p>
+                            </div>
+                            <form.Field
+                              name="isOutStanding"
+                              children={(field) => (
+                                <Switch
+                                  checked={field.state.value ?? true}
+                                  onCheckedChange={field.handleChange}
+                                />
+                              )}
+                            />
+                          </div>
+                        );
+                      }}
+                    </form.Field>
+
                     <div>
                       <Label htmlFor="title">Tiêu đề bài viết</Label>
                       <form.Field
                         name="title"
-                        children={(field) => (
-                          <Input
-                            id="title"
-                            value={field.state.value ?? ""}
-                            onChange={(e) => field.handleChange(e.target.value)}
-                            className="mt-1.5"
-                          />
-                        )}
+                        children={(field) => {
+                          return (
+                            <>
+                              <Input
+                                id="title"
+                                value={field.state.value || ""}
+                                onChange={(e) =>
+                                  field.handleChange(e.target.value)
+                                }
+                                className={cn(
+                                  "mt-1.5",
+                                  !!field?.state?.meta?.errors?.length
+                                    ? "border-red-500"
+                                    : ""
+                                )}
+                              />
+                              {field.state.meta.isTouched &&
+                                field.state.meta.errors.length > 0 && (
+                                  <p className="text-xs text-red-500 mt-1">
+                                    {field.state.meta.errors[0]?.message}
+                                  </p>
+                                )}
+                            </>
+                          );
+                        }}
                       />
                     </div>
 
@@ -236,68 +338,79 @@ export default function MagazineEditor() {
                         )}
                       />
                     </div>
-                    <div>
-                      <Label>Tags</Label>
-                      <div className="flex gap-2 mt-1.5 flex-wrap">
-                        <form.Field name="tags">
-                          {(field) => {
-                            return (
-                              <>
-                                {field.state.value?.map((tag, index) => (
-                                  <Badge
-                                    key={index}
-                                    variant="secondary"
-                                    className="px-3 py-1"
-                                  >
-                                    {tag}
-                                    <X
-                                      onClick={() => {
-                                        field.handleChange(
-                                          (field.state.value ?? []).filter(
-                                            (t) => t !== tag
+                    <form.Field name="isMagazine">
+                      {(field) => {
+                        const isMagainze = field.state.value;
+                        if (isMagainze)
+                          return (
+                            <div>
+                              <Label>Tags</Label>
+                              <div className="flex gap-2 mt-1.5 flex-wrap">
+                                <form.Field name="tags">
+                                  {(field) => {
+                                    return (
+                                      <>
+                                        {field.state.value?.map(
+                                          (tag, index) => (
+                                            <Badge
+                                              key={index}
+                                              variant="secondary"
+                                              className="px-3 py-1"
+                                            >
+                                              {tag}
+                                              <X
+                                                onClick={() => {
+                                                  field.handleChange(
+                                                    (
+                                                      field.state.value ?? []
+                                                    ).filter((t) => t !== tag)
+                                                  );
+                                                }}
+                                                className="ml-2 cursor-pointer text-muted-foreground"
+                                              />
+                                            </Badge>
                                           )
-                                        );
-                                      }}
-                                      className="ml-2 cursor-pointer text-muted-foreground"
-                                    />
-                                  </Badge>
-                                ))}
-                                <Select
-                                  onValueChange={(v) =>
-                                    field.handleChange([
-                                      ...(field.state.value ?? []),
-                                      v,
-                                    ])
-                                  }
-                                >
-                                  <SelectTrigger className="w-[180px]">
-                                    + Thêm Tags
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    {MAGAZINE_CATEGORIES.map(
-                                      (category, index) => (
-                                        <SelectItem
-                                          key={index}
-                                          value={category}
-                                          disabled={(
-                                            field.state.value ?? []
-                                          ).includes(category)}
+                                        )}
+                                        <Select
+                                          onValueChange={(v) =>
+                                            field.handleChange([
+                                              ...(field.state.value ?? []),
+                                              v,
+                                            ])
+                                          }
                                         >
-                                          <div className="flex items-center gap-2">
-                                            <Tag className="h-4 w-4" />
-                                            {category}
-                                          </div>
-                                        </SelectItem>
-                                      )
-                                    )}
-                                  </SelectContent>
-                                </Select>
-                              </>
-                            );
-                          }}
-                        </form.Field>
-                      </div>
-                    </div>
+                                          <SelectTrigger className="w-[180px]">
+                                            + Thêm Tags
+                                          </SelectTrigger>
+                                          <SelectContent>
+                                            {MAGAZINE_CATEGORIES.map(
+                                              (category, index) => (
+                                                <SelectItem
+                                                  key={index}
+                                                  value={category}
+                                                  disabled={(
+                                                    field.state.value ?? []
+                                                  ).includes(category)}
+                                                >
+                                                  <div className="flex items-center gap-2">
+                                                    <Tag className="h-4 w-4" />
+                                                    {category}
+                                                  </div>
+                                                </SelectItem>
+                                              )
+                                            )}
+                                          </SelectContent>
+                                        </Select>
+                                      </>
+                                    );
+                                  }}
+                                </form.Field>
+                              </div>
+                            </div>
+                          );
+                        return null;
+                      }}
+                    </form.Field>
                     <form.Field name="images">
                       {(field) => {
                         const images = field.state.value || [];
@@ -305,7 +418,6 @@ export default function MagazineEditor() {
                           <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-6 xl:grid-cols-8 gap-4">
                             <FileManagerDialog
                               onSelect={(values) => {
-                                console.log("values", values);
                                 field.handleChange([...images, ...values]);
                               }}
                             >
@@ -315,7 +427,7 @@ export default function MagazineEditor() {
                             </FileManagerDialog>
 
                             {images?.map((src, index) => (
-                              <div key={v4()} className="relative group">
+                              <div key={src + index} className="relative group">
                                 <Image
                                   src={src}
                                   alt={`Image ${index + 1}`}
@@ -431,22 +543,48 @@ export default function MagazineEditor() {
                           }
                         />
                       </div>
-                      <div className="space-y-2">
-                        <div className="flex items-center gap-2">
-                          <LinkIcon className="h-4 w-4" />
-                          <Label htmlFor="url-alias">URL Alias</Label>
-                        </div>
-                        <Input
-                          id="url-alias"
-                          value={field.state.value?.slug}
-                          onChange={(e) =>
-                            field.handleChange({
-                              ...field.state.value,
-                              slug: e.target.value,
-                            })
-                          }
-                        />
-                      </div>
+                      <form.Field name="seo.slug">
+                        {(subfield) => {
+                          return (
+                            <div className="space-y-2">
+                              <div className="flex items-center gap-2">
+                                <LinkIcon className="h-4 w-4" />
+                                <Label htmlFor="meta-keywords">Slug</Label>
+                              </div>
+                              <Input
+                                id="url-alias"
+                                className={cn(
+                                  "",
+                                  !!subfield?.state?.meta?.errors?.length
+                                    ? "border-red-500"
+                                    : ""
+                                )}
+                                value={subfield?.state?.value || ""}
+                                onChange={(e) =>
+                                  subfield.handleChange(e.target.value)
+                                }
+                              />
+                              {!!subfield?.state?.meta?.errors?.length && (
+                                <div className="text-red-500 text-sm">
+                                  {subfield?.state?.meta?.errors?.[0].message}
+                                </div>
+                              )}
+                              <div className="text-sm">
+                                Url:
+                                <Link
+                                  className="underline text-blue-400"
+                                  href={`/magazine/${
+                                    subfield?.state?.value || ""
+                                  }`}
+                                >
+                                  magazine/{subfield?.state?.value || ""}
+                                </Link>
+                              </div>
+                            </div>
+                          );
+                        }}
+                      </form.Field>
+
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
                           <IconSquareKey className="h-4 w-4" />

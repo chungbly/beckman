@@ -1,25 +1,23 @@
-//@ts-nocheck
 "use client";
 
-import { getProducts } from "@/client/product.client";
 import { useToast } from "@/hooks/use-toast";
 // import Jodit from "jodit-react";
 import type { IJodit } from "jodit/esm/types/jodit";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useMemo, useRef, useState } from "react";
 // import ReactDOM from "react-dom/client";
+import { getProducts } from "@/client/product.client";
 import { debounce } from "@/utils/debounce";
 import { useForm } from "@tanstack/react-form";
 import { Edit, Trash } from "lucide-react";
-import dynamic from "next/dynamic";
 import ReactDOMServer from "react-dom/server";
 import FileManager from "../file-manager";
 import { Button } from "../ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import SelectProductModal from "./SelectProductModal";
+import JoditEditorFixed from "./jodit-fixed";
 import ProductScrollAbleList from "./product-scrollable-list";
 import "./style.css";
 
-const Jodit = dynamic(() => import("jodit-react"), { ssr: false });
 const getProductList = async (ids: number[]) => {
   const res = await getProducts(
     {
@@ -33,7 +31,6 @@ const getProductList = async (ids: number[]) => {
   }
   return res.data;
 };
-
 type FormValues = {
   isOpenSelectorProductModal: boolean;
   productIds: number[];
@@ -65,9 +62,7 @@ const JoditEditor = ({
   className?: string;
 }) => {
   const editor = useRef<IJodit>(null);
-  const hiddenEleRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
-  const [content, setContent] = useState(value || "");
   const [isOpenLibrary, setIsOpenLibrary] = useState(false);
   const defaultValues: FormValues = {
     isOpenSelectorProductModal: false,
@@ -238,13 +233,12 @@ const JoditEditor = ({
         },
       },
     }),
-    [placeholder, toast]
+    []
   );
 
   const handleUpdate = useCallback(
     debounce((newContent) => {
-      if (newContent === value || newContent === content) return;
-      setContent(newContent);
+      if (newContent === value) return;
       onChange?.(newContent);
     }, 500),
     []
@@ -266,49 +260,6 @@ const JoditEditor = ({
     });
   };
 
-  useEffect(() => {
-    if (value) {
-      (async () => {
-        const div = document.createElement("div");
-        div.innerHTML = value;
-        const elements = div.querySelectorAll(
-          '[data-type="product-scrollable"]'
-        );
-        if (!elements.length) return;
-        let count = 0;
-        for (let i = 0; i < elements.length; i++) {
-          const el = elements[i];
-          const ids = JSON.parse(el.getAttribute("data-ids") || "[]");
-          if (!ids?.length) continue;
-
-          // Check: nếu đã có data-rendered cho ids này thì bỏ qua
-          const prevKey = el.getAttribute("data-rendered-ids");
-          const key = JSON.stringify(ids);
-          if (prevKey === key) {
-            count++;
-            continue; // không thay đổi → bỏ qua
-          }
-
-          const products = await getProductList(ids);
-          const html = ReactDOMServer.renderToStaticMarkup(
-            <ProductScrollAbleList
-              className="bg-[var(--rose-beige)] p-2 pt-4"
-              products={products}
-            />
-          );
-
-          el.innerHTML = html;
-          el.setAttribute("data-rendered-ids", key);
-        }
-        const html = div.innerHTML;
-        if (html !== content && count !== elements.length) {
-          setContent(html);
-        }
-        return;
-      })();
-    }
-  }, [value]);
-
   const currentFolderPath = decodeURIComponent(
     document?.cookie
       ?.split(";")
@@ -318,15 +269,13 @@ const JoditEditor = ({
 
   return (
     <>
-      <Jodit
+      <JoditEditorFixed
         ref={editor}
-        value={content}
+        value={value}
         config={config}
         className={className}
-        onBlur={(newContent) => {
-          setContent(newContent);
-        }} // preferred to use only this option to update the content for performance reasons
-        onChange={handleUpdate}
+        // onBlur={handleUpdate} // preferred to use only this option to update the content for performance reasons
+        onChange={onChange}
       />
       <Dialog
         modal={false}
@@ -424,4 +373,4 @@ const JoditEditor = ({
   );
 };
 
-export default JoditEditor;
+export default memo(JoditEditor);

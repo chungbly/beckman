@@ -39,6 +39,7 @@ function RenderHTMLFromCMS({
     const div = ref.current as HTMLDivElement;
     (async () => {
       const elements = div.querySelectorAll('[data-type="product-scrollable"]');
+      if (!elements.length) return;
       for (let i = 0; i < elements.length; i++) {
         const el = elements[i];
         const ids = JSON.parse(el.getAttribute("data-ids") || "[]");
@@ -55,13 +56,32 @@ function RenderHTMLFromCMS({
         );
       }
     })();
+    div.querySelectorAll("img[alt]").forEach((img) => {
+      const captionText = img.getAttribute("alt");
+      if (!captionText) return;
+
+      const wrapper = document.createElement("figure");
+      const caption = document.createElement("figcaption");
+      caption.textContent = captionText;
+      caption.style.textAlign = "right";
+      caption.style.fontStyle = "italic";
+
+      if (img.parentNode) {
+        img.parentNode.insertBefore(wrapper, img);
+        wrapper.appendChild(img);
+        wrapper.appendChild(caption);
+      }
+    });
   }, []);
 
   if (!html) return null;
   return (
     <div
       ref={ref}
-      className={cn("prose prose-stone prose-compact max-w-none custom-prose", className)}
+      className={cn(
+        "prose prose-stone prose-compact max-w-none custom-prose",
+        className
+      )}
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );

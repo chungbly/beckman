@@ -385,7 +385,7 @@ export default function CategoryForm(props: {
                         </div>
                         {!!field.state.meta.errors?.length && (
                           <div className="text-red-500 text-sm">
-                            {field.state.meta?.errors?.[0]}
+                            {field.state.meta?.errors?.[0].message}
                           </div>
                         )}
                       </>
