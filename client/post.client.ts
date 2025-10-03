@@ -83,3 +83,10 @@ export const updatePost = (id: string, data: Partial<Post>) => {
     body: JSON.stringify(data),
   });
 };
+
+export const createPost = (data: Post) => {
+  return callAPI<Post>(`/api/posts`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+};

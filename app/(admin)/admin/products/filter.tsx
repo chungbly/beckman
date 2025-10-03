@@ -41,7 +41,7 @@ type Filter = {
 function ProductTableFilter() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const form = useForm<Filter>({
+  const form = useForm({
     defaultValues: {
       name: searchParams.get("name") ?? "",
       code: searchParams.get("code") ?? "",

@@ -83,7 +83,7 @@ export default function ContactInfo({
 }) {
   const { toast } = useToast();
   const contact = configs["CONTACTS"] as Contact;
-  const form = useForm<Contact>({
+  const form = useForm({
     defaultValues: {
       locations: contact.locations || ([] as Location[]),
       socialLinks: contact.socialLinks || ([] as SocialLink[]),
@@ -106,7 +106,7 @@ export default function ContactInfo({
     },
   });
 
-  const locationForm = useForm<Location>({
+  const locationForm = useForm({
     defaultValues: {
       name: "",
       address: "",
@@ -116,7 +116,7 @@ export default function ContactInfo({
     },
   });
 
-  const socialLinkForm = useForm<SocialLink>({
+  const socialLinkForm = useForm({
     defaultValues: {
       name: "",
       url: "",
@@ -146,10 +146,10 @@ export default function ContactInfo({
             <form.Field name="locations">
               {(field) => {
                 // @ts-ignore
-                const locations = field.state.value;
+                const locations = field.state.value as Location[];
                 return (
                   <div>
-                    {field.state.value.map((location, i) => (
+                    {locations.map((location, i) => (
                       <div key={i} className="space-y-4">
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex items-start gap-3">
@@ -359,7 +359,7 @@ export default function ContactInfo({
             <form.Field name="socialLinks" mode="array">
               {(field) => {
                 // @ts-ignore
-                const socialLinks = field.state.value;
+                const socialLinks = field.state.value as SocialLink[];
                 return socialLinks.map((link, index) => (
                   <div key={v4()} className="flex items-center justify-between">
                     <Button

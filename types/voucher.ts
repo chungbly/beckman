@@ -34,6 +34,7 @@ export interface Voucher {
   _id: string;
   isCoupon: boolean;
   isActive: boolean;
+  isPrivate: boolean;
   code: string;
   name: string;
   description: string;
@@ -44,6 +45,8 @@ export interface Voucher {
   validTo: string;
   quantity: number;
   used: number;
+  allowStacking: boolean;
+  link?: string;
   createdBy: string;
   updatedBy: string;
   createdAt: string;

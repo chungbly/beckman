@@ -124,7 +124,7 @@ export const WardSelector = ({
 
 function OrderFilter() {
   const router = useRouter();
-  const form = useForm<Filter>({
+  const form = useForm({
     defaultValues: {
       customerName: "",
       status: "all",

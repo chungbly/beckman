@@ -66,3 +66,15 @@ export const updateCustomer = async (
     body: JSON.stringify(customer),
   });
 };
+
+export const addVoucherToCustomer = async (
+  id: string,
+  voucherCodes: string[]
+) => {
+  return await callAPI<Customer>(`/api/customers/add-voucher/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify({
+      voucherCodes,
+    }),
+  });
+};

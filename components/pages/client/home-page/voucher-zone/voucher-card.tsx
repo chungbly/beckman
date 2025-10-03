@@ -1,122 +1,193 @@
 "use client";
 import { APIStatus } from "@/client/callAPI";
-import { updateCustomer } from "@/client/customer.client";
-import { calculatePrices } from "@/client/order.client";
-// import LoginDialog from "@/components/app-layout/login-form-dialog";
+import { updateCart } from "@/client/cart.client";
+import { addVoucherToCustomer } from "@/client/customer.client";
+import { buildCart } from "@/client/order.client";
 import { useToast } from "@/hooks/use-toast";
+import { getUserId } from "@/lib/cookies";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/useCart";
 import useStore from "@/store/useStore";
 import { Customer } from "@/types/customer";
+import { CartBuilderRes } from "@/types/order";
 import { Voucher } from "@/types/voucher";
-import { useQueryClient } from "@tanstack/react-query";
-import { Truck } from "lucide-react";
+import { Ticket, Truck } from "lucide-react";
 import dynamic from "next/dynamic";
 import { useParams, usePathname } from "next/navigation";
-import { useId } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { toast as sonner } from "sonner";
 
+// Lazy load LoginDialog component
 const LoginDialog = dynamic(
   () => import("@/components/app-layout/login-form-dialog"),
-  {
-    ssr: false,
-  }
+  { ssr: false }
 );
 
+// Types
+type VoucherCardProps = {
+  voucher: Voucher;
+  className?: string;
+  customer?: Customer | null;
+};
+
+// UI Components
+const VoucherContent = ({
+  name,
+  description,
+}: {
+  name: string;
+  description: string;
+}) => (
+  <div className="flex-1 bg-[#dcc7b6] flex flex-col justify-start p-3 py-1">
+    <h3 className="font-bold text-sm">{name}</h3>
+    <p className="text-sm line-clamp-2 overflow-ellipsis">{description}</p>
+  </div>
+);
+
+const VoucherAction = ({
+  children,
+  className,
+  onClick,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  onClick?: () => void;
+}) => (
+  <div
+    className={cn(
+      "w-[80px] min-w-[80px] aspect-square h-full cursor-pointer flex flex-col items-center justify-center text-[#8B1F18] font-bold text-sm bg-white",
+      className
+    )}
+    onClick={onClick}
+  >
+    {children}
+  </div>
+);
+
+const AppliedStatus = ({ onClick }: { onClick?: () => void }) => (
+  <>
+    <span onClick={onClick}>ĐÃ</span>
+    <span onClick={onClick}>ÁP DỤNG</span>
+  </>
+);
+
+const NotAppliedStatus = ({
+  onClick,
+  className,
+}: {
+  onClick?: () => void;
+  className?: string;
+}) => (
+  <div
+    className={cn("flex flex-col justify-center items-center", className)}
+    onClick={onClick}
+  >
+    <span>CHƯA</span>
+    <span>ÁP DỤNG</span>
+  </div>
+);
+
+const Received = () => (
+  <div className="flex flex-col justify-center items-center">
+    <span>ĐÃ</span>
+    <span>NHẬN</span>
+  </div>
+);
+
+const ClaimButton = ({ onClick }: { onClick: () => void }) => (
+  <div onClick={onClick} className="flex flex-col justify-center items-center">
+    <span>NHẬN</span>
+    <span>NGAY</span>
+  </div>
+);
+
+const LoginButton = ({ onClick }: { onClick?: () => void }) => (
+  <div
+    className="flex flex-col items-center justify-center text-[#8B1F18] font-bold text-sm"
+    onClick={onClick}
+  >
+    <span>ĐĂNG</span>
+    <span>NHẬP</span>
+  </div>
+);
+
+// Main Component
 export default function VoucherCard({
   className,
   voucher,
   customer,
-}: {
-  voucher: Voucher;
-  className?: string;
-  customer?: Customer | null;
-}) {
-  const id = useId();
+}: VoucherCardProps) {
   const { toast } = useToast();
   const params = useParams();
   const pathname = usePathname();
+
+  // Get voucher state from store
   const voucherCodes =
     useStore(useCartStore, (s) => s.userSelectedVouchers) || [];
-  const autoAppliedVouchers =
-    useStore(useCartStore, (s) => s.autoAppliedVouchers) || [];
-  const queryClient = useQueryClient();
+  const appliedVouchers =
+    useStore(useCartStore, (s) => s.appliedVouchers) || [];
 
-  const allowApplyVoucher =
-    ["/gio-hang", "/dat-hang"].includes(pathname) || !!params.productSlug;
-  const isSelected =
-    allowApplyVoucher &&
-    (voucherCodes.includes(voucher.code) ||
-      autoAppliedVouchers.includes(voucher.code));
+  // Derived state
+  const allowApplyVoucher = ["/gio-hang", "/dat-hang"].includes(pathname);
+  const isSelected = appliedVouchers.includes(voucher.code);
+  const isFreeshipping = voucher.discount.type === "free-shipping";
+  const [isCustomerOwned, setIsCustomerOwned] = useState(
+    customer?.voucherCodes?.includes(voucher.code)
+  );
 
-  const handleCheckVoucher = async (vouchers: string[]) => {
-    const items = useCartStore.getState().items;
-    const shippingInfo = useCartStore.getState().info;
-    const { provinceCode } = shippingInfo;
-    if (!items.length || items.every((i) => !i.isSelected)) {
-      return {
-        isValid: false,
-        reason: "Chưa có sản phẩm nào trong giỏ hàng",
-      };
-    }
-    const res = await calculatePrices(
-      items.map((i) => ({
-        productId: i.productId,
-        quantity: i.isSelected ? i.quantity : 0,
-        addons: i.addons || [],
-      })),
-      vouchers,
-      provinceCode
-    );
-    if (res.status !== APIStatus.OK || !res.data)
-      return {
-        isValid: false,
-        reason: res.message,
-      };
-    const { invalidVouchers } = res.data;
-    const invalidVoucher = invalidVouchers.find((v) => v.code === voucher.code);
-    if (invalidVoucher)
-      return {
-        isValid: false,
-        reason: invalidVoucher.reason,
-      };
-    return {
-      isValid: true,
-      reason: "",
-    };
-  };
-
-  const handleApplyVoucher = async (voucher: Voucher) => {
-    if (!allowApplyVoucher) return;
-    if (isSelected) {
-      if (autoAppliedVouchers.includes(voucher.code)) {
-        return;
+  // Apply voucher handler
+  const handleApplyVoucher = useCallback(
+    async (voucher: Voucher) => {
+      // khoong thao tác coupon hoặc voucher private vì đây là loại áp dụng tự động
+      if (isSelected) return;
+      const items = useCartStore.getState().items;
+      const provinceCode = useCartStore.getState().info.provinceCode;
+      const newUserSelectedVouchers = Array.from(
+        new Set([...voucherCodes, voucher.code])
+      );
+      const res = await buildCart(
+        items.map((i) => ({
+          productId: i.productId,
+          quantity: i.isSelected ? i.quantity : 0,
+          addons: i.addons || [],
+        })),
+        newUserSelectedVouchers,
+        [],
+        provinceCode
+      );
+      if (res.status !== APIStatus.OK || !res.data) return {} as CartBuilderRes;
+      const appliedVouchers = res.data.appliedVoucherCodes || [];
+      if (!appliedVouchers.includes(voucher.code)) {
+        return toast({
+          title: "Không thể áp dụng voucher",
+          description: "Giỏ hàng không thể áp dụng voucher này",
+          variant: "error",
+        });
       }
-      useCartStore.setState({
-        userSelectedVouchers: voucherCodes.filter((v) => v !== voucher.code),
-      });
-      return;
-    }
-    const { isValid, reason } = await handleCheckVoucher([
-      ...voucherCodes,
-      voucher.code,
-    ]);
-    if (!isValid) {
-      return toast({
-        title: "Voucher không hợp lệ",
-        description: reason,
-        variant: "error",
-      });
-    }
-    useCartStore.setState({
-      userSelectedVouchers: [...voucherCodes, voucher.code],
-    });
-  };
 
+      // Update cart on server
+      const userId = await getUserId();
+      await updateCart(userId, {
+        items: useCartStore.getState().items,
+        userSelectedVouchers: newUserSelectedVouchers,
+        shippingInfo: useCartStore.getState().info,
+        ignoreVouchers: useCartStore.getState().ignoreVouchers,
+      });
+      // Update applied vouchers state
+      useCartStore.setState({
+        appliedVouchers: appliedVouchers,
+        userSelectedVouchers: newUserSelectedVouchers,
+      });
+    },
+    [isSelected, voucherCodes, toast]
+  );
+
+  // Add voucher to customer account
   const handleAddVoucher = async (voucher: Voucher) => {
-    if (!customer || !customer?.phoneNumbers?.[0]) return;
-    const res = await updateCustomer(customer._id, {
-      voucherCodes: [...(customer.voucherCodes || []), voucher.code],
-    });
+    if (!customer || !customer?.phoneNumbers?.[0] || isCustomerOwned) return;
+
+    const res = await addVoucherToCustomer(customer._id, [voucher.code]);
+
     if (res.status !== APIStatus.OK) {
       return toast({
         title: "Đã có lỗi xảy ra",
@@ -124,16 +195,84 @@ export default function VoucherCard({
         variant: "error",
       });
     }
-    toast({
-      title: "Đã thêm voucher",
-      description: "Voucher đã được thêm vào danh sách voucher của bạn",
-      variant: "success",
-    });
-    queryClient.invalidateQueries({
-      queryKey: ["customer", customer._id],
-    });
+
+    sonner.custom((t) => (
+      <div className="bg-white flex items-center gap-2 border border-[#15374E] rounded-lg text-xs py-[10px] px-[20px]">
+        {isFreeshipping ? (
+          <Truck className="text-[#15374E] min-w-max />" />
+        ) : (
+          <Ticket className="-rotate-45 text-[#15374E] min-w-max" />
+        )}
+        <div className="space-y-2">
+          <p className="font-bold">Thông báo</p>
+          <p>
+            {isFreeshipping
+              ? "Nhận voucher Freeship thành công, Voucher sẽ tự động kích hoạt khi giỏ hàng thoả điều kiện"
+              : `Nhận voucher ${voucher.code} thành công`}
+          </p>
+        </div>
+      </div>
+    ));
+    // Update local state
+    setIsCustomerOwned(true);
   };
 
+  // Render voucher action button based on state
+  const renderVoucherAction = () => {
+    if (!customer) {
+      return (
+        <LoginDialog voucher={voucher}>
+          <LoginButton />
+        </LoginDialog>
+      );
+    }
+    // On cart or checkout page
+    if (allowApplyVoucher) {
+      if (isCustomerOwned || voucher.isCoupon) {
+        if (isSelected) {
+          return <AppliedStatus onClick={() => handleApplyVoucher(voucher)} />;
+        }
+        return (
+          <NotAppliedStatus
+            className={
+              voucher.discount?.type === "free-shipping"
+                ? "opacity-50 pointer-events-none"
+                : ""
+            }
+            onClick={() => handleApplyVoucher(voucher)}
+          />
+        );
+      }
+      return <ClaimButton onClick={() => handleAddVoucher(voucher)} />;
+    }
+    if (isCustomerOwned || voucher.isCoupon) {
+      if (!!params.productSlug) {
+        if (!isSelected) {
+          return <Received />;
+        }
+        return <AppliedStatus onClick={() => handleApplyVoucher(voucher)} />;
+      }
+      return <Ticket className="min-w-8 min-h-8" />;
+    } else {
+      return <ClaimButton onClick={() => handleAddVoucher(voucher)} />;
+    }
+  };
+  // Register global apply voucher function
+  useEffect(() => {
+    if (!handleApplyVoucher || window.applyVoucher) return;
+
+    window.applyVoucher = (voucherCode: string) =>
+      handleApplyVoucher({ code: voucherCode } as Voucher);
+
+    return () => {
+      delete window.applyVoucher;
+    };
+  }, [handleApplyVoucher]);
+
+  useEffect(() => {
+    if (!customer) return;
+    setIsCustomerOwned(customer.voucherCodes?.includes(voucher.code) || false);
+  }, [customer, voucher.code]);
   return (
     <div
       className={cn(
@@ -142,77 +281,16 @@ export default function VoucherCard({
       )}
     >
       <div className="w-full h-full flex">
-        <div className="flex-1 bg-[#dcc7b6] flex flex-col justify-start p-3 py-1">
-          <h3 className="font-bold text-sm">{voucher.name}</h3>
-          <p className="text-sm line-clamp-2 overflow-ellipsis">
-            {voucher.description}
-          </p>
-        </div>
+        <VoucherContent name={voucher.name} description={voucher.description} />
 
         <div className="relative">
           <div
             className={cn(
               "absolute inset-y-0 -left-[1px] border-l border-dashed border-[#8B1F18]",
-              voucher.discount.type === "free-shipping"
-                ? "border-[rgb(21,55,78)]"
-                : ""
+              isFreeshipping && customer ? "border-[rgb(21,55,78)]" : ""
             )}
           />
-          <div
-            className={cn(
-              "w-[80px] min-w-[80px] aspect-square h-full cursor-pointer flex flex-col items-center justify-center text-[#8B1F18] font-bold text-sm",
-              voucher.discount.type === "free-shipping"
-                ? "bg-[#15374E] text-white"
-                : "bg-white",
-              autoAppliedVouchers.includes(voucher.code) && "cursor-not-allowed"
-            )}
-          >
-            {voucher.discount.type === "free-shipping" ? (
-              <div className="flex flex-col items-center justify-center">
-                <Truck size={28} />
-                <i>Freeship</i>
-              </div>
-            ) : allowApplyVoucher ? (
-              isSelected ? (
-                <>
-                  <span>ĐÃ</span>
-                  <span>ÁP DỤNG</span>
-                </>
-              ) : (
-                <div
-                  className="flex flex-col justify-center items-center"
-                  onClick={() => {
-                    handleApplyVoucher(voucher);
-                  }}
-                >
-                  <span>ÁP</span>
-                  <span>DỤNG</span>
-                </div>
-              )
-            ) : customer ? (
-              customer?.voucherCodes?.includes(voucher.code) ? (
-                <div className="flex flex-col justify-center items-center">
-                  <span>ĐÃ</span>
-                  <span>NHẬN</span>
-                </div>
-              ) : (
-                <div
-                  onClick={() => handleAddVoucher(voucher)}
-                  className="flex flex-col justify-center items-center"
-                >
-                  <span>NHẬN</span>
-                  <span>NGAY</span>
-                </div>
-              )
-            ) : (
-              <LoginDialog voucher={voucher}>
-                <div className="flex flex-col justify-center items-center">
-                  <span>NHẬN</span>
-                  <span>NGAY</span>
-                </div>
-              </LoginDialog>
-            )}
-          </div>
+          <VoucherAction>{renderVoucherAction()}</VoucherAction>
         </div>
       </div>
     </div>

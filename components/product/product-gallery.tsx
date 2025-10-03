@@ -5,7 +5,6 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
 import { useConfigs } from "@/store/useConfig";
 import { Product } from "@/types/product";
-import { ReactFormExtendedApi } from "@tanstack/react-form";
 import {
   ChevronLeft,
   ChevronRight,
@@ -13,7 +12,7 @@ import {
   PlayCircle,
 } from "lucide-react";
 import Image from "next/image";
-import { forwardRef, Ref, useEffect, useState } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import {
   Carousel,
   CarouselApi,
@@ -23,34 +22,14 @@ import {
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "../ui/dialog";
 import { ScrollArea } from "../ui/scroll-area";
 
-export type ProductDetailFormValue = ReactFormExtendedApi<
-  {
-    kvId: number | undefined;
-    size: string | undefined;
-    color: string | undefined;
-    addons: number[];
-    kvCode: string | undefined;
-    name: string | undefined;
-
-    basePriceTotal: number;
-    finalPriceTotal: number;
-  },
-  undefined
->;
-
 interface ProductGalleryProps {
   product: Product;
   className?: string;
-  form: ProductDetailFormValue;
-  style?: React.CSSProperties;
 }
 
 const videoExtensions = ["mp4", "wmv", "mkv", "flv", "mpeg"];
 
-function ProductGallery(
-  { product, className, form, style }: ProductGalleryProps,
-  ref: Ref<HTMLDivElement>
-) {
+function ProductGallery({ product, className }: ProductGalleryProps) {
   const isMobile = useIsMobile();
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);

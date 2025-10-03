@@ -48,9 +48,7 @@ function Page() {
   const { toast } = useToast();
   const { setAlert, closeAlert } = useAlert();
   const frames = (configs?.["FRAMES"] as Frame[]) ?? [];
-  const form = useForm<{
-    frames: Frame[];
-  }>({
+  const form = useForm({
     defaultValues: {
       frames,
     },

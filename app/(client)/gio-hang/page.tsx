@@ -20,7 +20,7 @@ import { getUserId } from "@/lib/cookies";
 import { buildCartQuery } from "@/query/order.query";
 import { getCouponsQuery, getUserVouchersQuery } from "@/query/voucher.query";
 import { useCustomerStore } from "@/store/useCustomer";
-import { formSchema, TOrderInfo } from "@/types/cart";
+import { formSchema } from "@/types/cart";
 import { CartBuilderRes } from "@/types/order";
 import { useForm } from "@tanstack/react-form";
 import { LoaderCircle } from "lucide-react";
@@ -33,11 +33,9 @@ function CartPage() {
   const isMobile = useIsMobile();
   const items = useStore(useCartStore, (state) => state.items);
   const voucherCodes = useStore(useCartStore, (s) => s.userSelectedVouchers);
-  const ignoreVouchers = useStore(
-    useCartStore,
-    (s) => s.userDeselectedAutoAppliedVouchers
-  );
+  const ignoreVouchers = useStore(useCartStore, (s) => s.ignoreVouchers);
   const shippingInfo = useStore(useCartStore, (s) => s.info);
+  const customer = useCustomerStore((s) => s.customer);
   const productIds = items.map((item) => item.productId);
   const totalSelected = items.reduce(
     (sum, item) => sum + (item.isSelected ? 1 : 0),
@@ -49,7 +47,8 @@ function CartPage() {
       items,
       voucherCodes,
       ignoreVouchers,
-      shippingInfo?.provinceCode
+      shippingInfo?.provinceCode,
+      shippingInfo?.phoneNumber
     )
   );
 
@@ -60,7 +59,7 @@ function CartPage() {
     ...prices
   } = (cart || {}) as CartBuilderRes;
 
-  const form = useForm<TOrderInfo>({
+  const form = useForm({
     defaultValues: shippingInfo,
     onSubmit: async ({ value }) => {
       if (!totalSelected) return;
@@ -69,6 +68,7 @@ function CartPage() {
         (await getUserId()) ||
         useCustomerStore.getState().customer?._id ||
         useCustomerStore.getState().userId;
+
       if (!userId) {
         return toast({
           variant: "error",
@@ -83,6 +83,8 @@ function CartPage() {
       });
       await updateCart(userId, {
         items,
+        userSelectedVouchers: voucherCodes,
+        ignoreVouchers,
         shippingInfo: value,
       });
       router.push("/dat-hang");
@@ -93,7 +95,6 @@ function CartPage() {
       },
     }),
   });
-
   const phoneNumber = form.getFieldValue("phoneNumber");
 
   const { data: userVouchers } = useQuery(
@@ -109,7 +110,17 @@ function CartPage() {
     })
   );
   const { data: coupons } = useQuery(getCouponsQuery());
-  const vouchers = [...(userVouchers || []), ...(coupons || [])];
+  const vouchers = Array.from(
+    new Set(
+      [...(userVouchers || []), ...(coupons || [])].filter((v) => {
+        if (!v.isCoupon) {
+          if (!v.isPrivate) return true;
+          return v.isPrivate && customer?.voucherCodes?.includes(v.code);
+        }
+        return appliedVoucherCodes?.includes(v.code);
+      })
+    )
+  );
 
   const isLoadingPrice = (isLoading || !prices) && !!items.length;
 
@@ -121,8 +132,8 @@ function CartPage() {
     );
   });
 
-  const { finalPrice, totalPrice, shippingFee, totalSaved } = (prices ||
-    {}) as CartBuilderRes;
+  const { finalPrice, totalPrice, shippingFee, totalSaved, cartFixedDiscount } =
+    (prices || {}) as CartBuilderRes;
 
   const toggleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -147,26 +158,15 @@ function CartPage() {
 
   useEffect(() => {
     useCartStore.getState().setAutoAppliedVouchers(appliedVoucherCodes || []);
+    useCartStore.setState({
+      userSelectedVouchers: voucherCodes.filter(
+        (v) => !appliedVoucherCodes.includes(v)
+      ),
+    });
   }, [appliedVoucherCodes]);
 
-  useEffect(() => {
-    if (invalidVouchers?.length) {
-      toast({
-        title: "Voucher không hợp lệ",
-        description: `${invalidVouchers
-          .map((v) => v.code)
-          .join(", ")}. Hệ thống sẽ tự động loại bỏ voucher này.`,
-        variant: "error",
-      });
-
-      invalidVouchers.forEach((v) => {
-        useCartStore.getState().removeVoucher(v.code);
-      });
-    }
-  }, [invalidVouchers]);
-
   return (
-    <div className="bg-transparent min-h-screen max-sm:mb-[56px]">
+    <div className="bg-white min-h-screen max-sm:mb-[56px]">
       <div className="container py-6 max-sm:px-0">
         <h1 className="text-2xl font-bold mb-6 max-sm:px-2">Giỏ hàng</h1>
 
@@ -187,7 +187,7 @@ function CartPage() {
                     key={item.productId + index}
                     product={product}
                     shoesCareProducts={product.addons}
-                    vouchers={product.vouchers || []}
+                    vouchers={product.couponsEligible || []}
                     voucherAppliedProducts={product.appliedProducts || []}
                     item={item}
                     items={items}
@@ -195,68 +195,92 @@ function CartPage() {
                 );
               })
             )}
-            <div className="hidden z-[51] bg-[var(--light-beige)] w-full sm:grid grid-cols-9 gap-4 p-4">
-              <div className="col-span-3 flex items-center gap-2">
-                <Checkbox
-                  checked={isSelectedAll}
-                  onCheckedChange={toggleSelectAll}
-                  className="rounded-full border-[var(--red-brand)] data-[state=checked]:bg-[var(--red-brand)]"
-                />
-                <span>Tất cả</span>
-              </div>
-              <div className="col-span-6 grid grid-cols-8 gap-4 ">
-                <div className="col-span-3" />
-                <div className="col-span-3 justify-self-end">
-                  <p className="text-xs flex items-center gap-1">
-                    Tổng tiền:{" "}
-                    {isLoadingPrice ? (
-                      <LoaderCircle
-                        size={18}
-                        className="animate-spin text-[var(--brown-brand)]"
-                      />
-                    ) : (
-                      <span className="font-bold text-base text-[var(--red-brand)]">
-                        {formatCurrency(finalPrice - shippingFee)}
-                      </span>
-                    )}
+            <div className="max-sm:hidden z-[51] space-y-1">
+              {!!cartFixedDiscount && (
+                <div className="bg-[var(--light-beige)] w-full sm:grid grid-cols-9 gap-4 p-4">
+                  <p className="col-span-3 flex items-center gap-2 font-bold text-[var(--red-brand)]">
+                    Giá trị giảm thêm
                   </p>
-                  <p className="text-xs flex items-center gap-1">
-                    Tiết kiệm:{" "}
-                    {isLoadingPrice ? (
-                      <LoaderCircle
-                        size={18}
-                        className="animate-spin text-[var(--brown-brand)]"
-                      />
-                    ) : (
-                      <span className="text-xs text-[var(--red-brand)]">
-                        {formatCurrency(totalSaved)}
-                      </span>
-                    )}
-                  </p>
+                  <div className="col-span-6 grid grid-cols-8 gap-4 ">
+                    <div className="col-span-3" />
+                    <div className="col-span-3 justify-self-end">
+                      {isLoadingPrice ? (
+                        <LoaderCircle
+                          size={18}
+                          className="animate-spin text-[var(--brown-brand)]"
+                        />
+                      ) : (
+                        <span className="font-bold  text-[var(--red-brand)]">
+                          {formatCurrency(cartFixedDiscount)}
+                        </span>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <form.Subscribe
-                  selector={(state) => [state.isSubmitting]}
-                  children={([isSubmitting]) => (
-                    <Button
-                      variant="ghost"
-                      disabled={
-                        !totalSelected ||
-                        !prices ||
-                        !Object.keys(prices).length ||
-                        isSubmitting
-                      }
-                      className="col-span-2 rounded-none bg-[var(--red-brand)] text-white "
-                      onClick={form.handleSubmit}
-                    >
-                      {isSubmitting ? "Đang xử lý..." : "Mua hàng"}
-                    </Button>
-                  )}
-                />
+              )}
+              <div className="bg-[var(--light-beige)] w-full sm:grid grid-cols-9 gap-4 p-4">
+                <div className="col-span-3 flex items-center gap-2">
+                  <Checkbox
+                    checked={isSelectedAll}
+                    onCheckedChange={toggleSelectAll}
+                    className="rounded-full border-[var(--red-brand)] data-[state=checked]:bg-[var(--red-brand)]"
+                  />
+                  <span>Tất cả</span>
+                </div>
+                <div className="col-span-6 grid grid-cols-8 gap-4 ">
+                  <div className="col-span-3" />
+                  <div className="col-span-3 justify-self-end">
+                    <p className="text-xs flex items-center gap-1">
+                      Tổng tiền:{" "}
+                      {isLoadingPrice ? (
+                        <LoaderCircle
+                          size={18}
+                          className="animate-spin text-[var(--brown-brand)]"
+                        />
+                      ) : (
+                        <span className="font-bold text-base text-[var(--red-brand)]">
+                          {formatCurrency(finalPrice - shippingFee)}
+                        </span>
+                      )}
+                    </p>
+                    <p className="text-xs flex items-center gap-1">
+                      Tiết kiệm:{" "}
+                      {isLoadingPrice ? (
+                        <LoaderCircle
+                          size={18}
+                          className="animate-spin text-[var(--brown-brand)]"
+                        />
+                      ) : (
+                        <span className="text-xs text-[var(--red-brand)]">
+                          {formatCurrency(totalSaved)}
+                        </span>
+                      )}
+                    </p>
+                  </div>
+                  <form.Subscribe
+                    selector={(state) => [state.isSubmitting]}
+                    children={([isSubmitting]) => (
+                      <Button
+                        variant="ghost"
+                        disabled={
+                          !totalSelected ||
+                          !prices ||
+                          !Object.keys(prices).length ||
+                          isSubmitting
+                        }
+                        className="col-span-2 rounded-none bg-[var(--red-brand)] text-white "
+                        onClick={form.handleSubmit}
+                      >
+                        {isSubmitting ? "Đang xử lý..." : "Mua hàng"}
+                      </Button>
+                    )}
+                  />
+                </div>
               </div>
             </div>
           </div>
 
-          <OrderInfo vouchers={vouchers || []} form={form} />
+          <OrderInfo vouchers={vouchers || []} form={form as any} />
         </div>
         <SuggestionAndSimilarProducts ids={productIds} />
       </div>

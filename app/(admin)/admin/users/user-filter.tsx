@@ -40,7 +40,7 @@ type UserQuery = {
 function UserFilter() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const form = useForm<UserQuery>({
+  const form = useForm({
     defaultValues: {
       fullName: searchParams.get("fullName") || "",
       status: searchParams.get("status") || "ACTIVE",

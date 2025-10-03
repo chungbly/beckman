@@ -8,7 +8,8 @@ export const buildCartQuery = (
   items: CartItem[],
   voucherCodes: string[] = [],
   ignoreVoucherCodes: string[] = [],
-  provinceCode: number = 0
+  provinceCode: number = 0,
+  phoneNumber: string = ""
 ) => {
   return {
     queryKey: [
@@ -17,6 +18,7 @@ export const buildCartQuery = (
       voucherCodes,
       ignoreVoucherCodes,
       provinceCode,
+      phoneNumber,
     ],
     queryFn: async () => {
       if (!items.length) return {} as CartBuilderRes;
@@ -28,7 +30,8 @@ export const buildCartQuery = (
         })),
         voucherCodes,
         ignoreVoucherCodes,
-        provinceCode
+        provinceCode,
+        phoneNumber
       );
       if (res.status !== APIStatus.OK || !res.data) return {} as CartBuilderRes;
       return res.data;

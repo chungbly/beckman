@@ -1,7 +1,7 @@
 import { Meta } from "@/types/api-response";
 import { Product } from "@/types/product";
 import { callAPI } from "./callAPI";
-import { TProductPopulated } from "@/app/(admin)/admin/products/[id]/page";
+import { TProductPopulated } from "@/app/(admin)/admin/products/[id]/container";
 
 export interface ProductWithMeta {
   items: Product[];

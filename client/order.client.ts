@@ -88,7 +88,8 @@ export const buildCart = (
   }[],
   voucherCodes?: string[],
   ignoreVoucherCodes?: string[],
-  provinceCode?: number
+  provinceCode?: number,
+  phoneNumber?: string
 ) => {
   return callAPI<CartBuilderRes>(`/api/orders/build-cart`, {
     method: "POST",
@@ -97,6 +98,7 @@ export const buildCart = (
       ignoreVoucherCodes,
       voucherCodes,
       provinceCode,
+      phoneNumber,
     }),
   });
 };

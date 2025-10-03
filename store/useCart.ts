@@ -6,13 +6,14 @@ export type CartItem = {
   productId: number;
   quantity: number;
   addons?: number[]; // sản phẩm mua kèm, ví dụ như giày thì có sp kèm là xi đánh giày
+  gifts?: number[];
 };
 
 type CartState = {
   items: CartItem[];
-  autoAppliedVouchers: string[];
+  appliedVouchers: string[];
   userSelectedVouchers: string[];
-  userDeselectedAutoAppliedVouchers: string[];
+  ignoreVouchers: string[];
   info: TOrderInfo;
   addItem: (productId: number, addons?: number[]) => void;
   addAddons: (productId: number, addons?: number[]) => void;
@@ -33,8 +34,8 @@ type CartState = {
 export const useCartStore = create<CartState>()((set, get) => ({
   items: [],
   userSelectedVouchers: [],
-  userDeselectedAutoAppliedVouchers: [],
-  autoAppliedVouchers: [],
+  ignoreVouchers: [],
+  appliedVouchers: [],
   info: {
     fullName: "",
     phoneNumber: "",
@@ -161,9 +162,9 @@ export const useCartStore = create<CartState>()((set, get) => ({
     });
   },
   setAutoAppliedVouchers: (vouchers: string[]) => {
-    set({ autoAppliedVouchers: vouchers });
+    set({ appliedVouchers: vouchers });
   },
   setUserDeselectedAutoAppliedVouchers: (vouchers: string[]) => {
-    set({ userDeselectedAutoAppliedVouchers: vouchers });
+    set({ ignoreVouchers: vouchers });
   },
 }));

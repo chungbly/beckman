@@ -40,7 +40,6 @@ function ProductScrollAbleList({
           >
             <ProductCard
               product={product}
-              soldClassName="hidden sm:flex"
               ratingClassName="hidden sm:flex"
             />
           </div>

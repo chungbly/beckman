@@ -41,7 +41,7 @@ type Filter = {
 
 function MagazineFilter({ query }: { query: Filter }) {
   const router = useRouter();
-  const form = useForm<Filter>({
+  const form = useForm({
     defaultValues: {
       title: query.title || "",
       isMagazine: query.isMagazine,

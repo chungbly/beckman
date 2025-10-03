@@ -55,7 +55,7 @@ export default function AccountDetails(props: {
   });
   const { data: loggedUser } = useQuery(getUserAdminQuery);
 
-  const form = useForm<Omit<AdminUser, "deletedAt">>({
+  const form = useForm({
     defaultValues: user
       ? user
       : {

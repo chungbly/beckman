@@ -31,7 +31,7 @@ type UserQuery = {
 function RedirectsFilter() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const form = useForm<UserQuery>({
+  const form = useForm({
     defaultValues: {
       rootUrl: searchParams.get("rootUrl") ?? "",
       destinationUrl: searchParams.get("destinationUrl") ?? "",

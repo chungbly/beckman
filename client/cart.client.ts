@@ -5,9 +5,9 @@ import { callAPI } from "./callAPI";
 type CartUpdateDTO = {
   items: CartItem[];
   userId: string;
-  autoAppliedVouchers: string[];
+  appliedVouchers: string[];
   userSelectedVouchers: string[];
-  userDeselectedAutoAppliedVouchers: string[];
+  ignoreVouchers: string[];
   shippingInfo?: ShippingInfo | null;
 };
 export const getCart = async (id: string) => {

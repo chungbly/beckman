@@ -12,12 +12,20 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { AutosizeTextarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/useCart";
+import { useCustomerStore } from "@/store/useCustomer";
 import { TOrderInfo } from "@/types/cart";
 import { Voucher } from "@/types/voucher";
 import { escapeHtml } from "@/utils";
-import { ReactFormExtendedApi } from "@tanstack/react-form";
+import { debounce } from "@/utils/debounce";
+import "@fontsource/road-rage/latin.css";
+import {
+  FormAsyncValidateOrFn,
+  FormValidateOrFn,
+  ReactFormExtendedApi,
+} from "@tanstack/react-form";
 import { useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
+import { useCallback } from "react";
 import VoucherCard from "../home-page/voucher-zone/voucher-card";
 
 function OrderInfo({
@@ -26,7 +34,20 @@ function OrderInfo({
   vouchers,
 }: {
   className?: string;
-  form: ReactFormExtendedApi<TOrderInfo>;
+  form: ReactFormExtendedApi<
+    TOrderInfo,
+    FormValidateOrFn<TOrderInfo> | undefined,
+    FormValidateOrFn<TOrderInfo> | undefined,
+    FormAsyncValidateOrFn<TOrderInfo> | undefined,
+    FormValidateOrFn<TOrderInfo> | undefined,
+    FormAsyncValidateOrFn<TOrderInfo> | undefined,
+    FormValidateOrFn<TOrderInfo> | undefined,
+    FormAsyncValidateOrFn<TOrderInfo> | undefined,
+    FormValidateOrFn<TOrderInfo> | undefined,
+    FormAsyncValidateOrFn<TOrderInfo> | undefined,
+    FormAsyncValidateOrFn<TOrderInfo> | undefined,
+    unknown
+  >;
   vouchers: Voucher[];
 }) {
   const { data: provinces, isLoading } = useQuery({
@@ -41,6 +62,18 @@ function OrderInfo({
     },
   });
 
+  const updatePhoneNumber = useCallback(
+    debounce((phoneNumber: string) => {
+      useCartStore.setState({
+        info: {
+          ...useCartStore.getState().info,
+          phoneNumber,
+        },
+      });
+    }, 300),
+    []
+  );
+
   return (
     <div
       className={cn(
@@ -52,7 +85,67 @@ function OrderInfo({
         <h2 className="text-base sm:text-lg font-bold mb-4">
           Thông tin mua hàng
         </h2>
-        <div className="space-y-3">
+        <div className="mt-6 pt-4 border-t max-sm:hidden">
+          <div className="p-4 px-8  bg-[url('/icons/voucher-bg.svg')] bg-no-repeat bg-[var(--red-brand)]">
+            <h2 className="text-3xl sm:text-[calc(3rem+2px)] font-bold text-white mb-4 font-road-rage ">
+              Voucher Zone
+            </h2>
+            <form.Field name="phoneNumber">
+              {(field) => (
+                <div className="relative">
+                  <Input
+                    placeholder="Nhập số điện thoại để hiển thị voucher"
+                    defaultValue={field.state.value}
+                    onChange={(e) => {
+                      updatePhoneNumber(e.target.value);
+                    }}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        const value = (e.target as HTMLInputElement).value;
+                        field.handleChange(escapeHtml(value));
+
+                        useCartStore.setState({
+                          userSelectedVouchers: [],
+                          ignoreVouchers: [],
+                          info: {
+                            ...useCartStore.getState().info,
+                            phoneNumber: field.state.value,
+                          },
+                        });
+                      }
+                    }}
+                    onBlur={(e) => {
+                      field.handleChange(escapeHtml(e.target.value));
+                      useCartStore.setState({
+                        userSelectedVouchers: [],
+                        ignoreVouchers: [],
+                      });
+                    }}
+                    className="rounded-none"
+                  />
+                  <Search className="absolute top-1/2 right-2 -translate-y-1/2" />
+                </div>
+              )}
+            </form.Field>
+
+            {!!vouchers?.length && (
+              <ScrollArea
+                className="flex h-[300px] mt-2 "
+                viewportClassName="p-0"
+              >
+                {vouchers.map((voucher, index) => (
+                  <VoucherCard
+                    voucher={voucher}
+                    className="my-2 w-full"
+                    key={index}
+                    customer={useCustomerStore.getState().customer}
+                  />
+                ))}
+              </ScrollArea>
+            )}
+          </div>
+        </div>
+        <div className="space-y-3 mt-3">
           <form.Field name="fullName">
             {(field) => (
               <div>
@@ -63,9 +156,9 @@ function OrderInfo({
                     field.handleChange(escapeHtml(e.target.value))
                   }
                 />
-                {field.state.meta.errors && (
+                {(field.state.meta.errors?.[0] as any)?.message && (
                   <p className="text-red-500 text-xs mt-1">
-                    {field.state.meta.errors.join(", ")}
+                    {(field.state.meta.errors[0] as any)?.message}
                   </p>
                 )}
               </div>
@@ -78,17 +171,24 @@ function OrderInfo({
                 <Input
                   placeholder="Số điện thoại"
                   defaultValue={field.state.value}
+                  onChange={(e) => {
+                    updatePhoneNumber(e.target.value);
+                  }}
                   onBlur={(e) => {
                     field.handleChange(escapeHtml(e.target.value));
                     useCartStore.setState({
                       userSelectedVouchers: [],
-                      userDeselectedAutoAppliedVouchers: [],
+                      ignoreVouchers: [],
+                      info: {
+                        ...useCartStore.getState().info,
+                        phoneNumber: field.state.value,
+                      },
                     });
                   }}
                 />
-                {field.state.meta.errors && (
+                {(field.state.meta.errors?.[0] as any)?.message && (
                   <p className="text-red-500 text-xs mt-1">
-                    {field.state.meta.errors.join(", ")}
+                    {(field.state.meta.errors[0] as any)?.message}
                   </p>
                 )}
               </div>
@@ -97,35 +197,39 @@ function OrderInfo({
 
           <form.Field
             name="provinceCode"
-            children={(field) => (
-              <>
-                <AutoComplete
-                  value={
-                    provinces?.filter((p) => p.value === +field.state.value)[0]
-                  }
-                  options={provinces ?? []}
-                  isLoading={isLoading}
-                  placeholder="Chọn Tỉnh/Thành phố"
-                  onChange={(v) => {
-                    field.handleChange(v?.value || 0);
-                    form.setFieldValue("districtCode", 0);
-                    form.setFieldValue("wardCode", 0);
-                    useCartStore.setState({
-                      info: {
-                        ...useCartStore.getState().info,
-                        provinceCode: v?.value || 0,
-                      },
-                    });
-                  }}
-                />
+            children={(field) => {
+              return (
+                <>
+                  <AutoComplete
+                    value={
+                      provinces?.filter(
+                        (p) => p.value === +field.state.value
+                      )[0]
+                    }
+                    options={provinces ?? []}
+                    isLoading={isLoading}
+                    placeholder="Chọn Tỉnh/Thành phố"
+                    onChange={(v) => {
+                      field.handleChange(v?.value || 0);
+                      form.setFieldValue("districtCode", 0);
+                      form.setFieldValue("wardCode", 0);
+                      useCartStore.setState({
+                        info: {
+                          ...useCartStore.getState().info,
+                          provinceCode: v?.value || 0,
+                        },
+                      });
+                    }}
+                  />
 
-                {field.state.meta.errors && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {field.state.meta.errors.join(", ")}
-                  </p>
-                )}
-              </>
-            )}
+                  {(field.state.meta.errors?.[0] as any)?.message && (
+                    <p className="text-red-500 text-xs mt-1">
+                      {(field.state.meta.errors[0] as any)?.message}
+                    </p>
+                  )}
+                </>
+              );
+            }}
           />
 
           <form.Field
@@ -141,13 +245,19 @@ function OrderInfo({
                       onChange={(v) => {
                         field.handleChange(v.value);
                         form.setFieldValue("wardCode", 0);
+                        useCartStore.setState({
+                          info: {
+                            ...useCartStore.getState().info,
+                            districtCode: v.value || 0,
+                          },
+                        });
                       }}
                     />
                   )}
                 />
-                {field.state.meta.errors && (
+                {(field.state.meta.errors?.[0] as any)?.message && (
                   <p className="text-red-500 text-xs mt-1">
-                    {field.state.meta.errors.join(", ")}
+                    {(field.state.meta.errors[0] as any)?.message}
                   </p>
                 )}
               </>
@@ -168,9 +278,9 @@ function OrderInfo({
                         field.handleChange(+v.value || 0);
                       }}
                     />
-                    {field.state.meta.errors && (
+                    {(field.state.meta.errors?.[0] as any)?.message && (
                       <p className="text-red-500 text-xs mt-1">
-                        {field.state.meta.errors.join(", ")}
+                        {(field.state.meta.errors[0] as any)?.message}
                       </p>
                     )}
                   </>
@@ -189,9 +299,9 @@ function OrderInfo({
                     field.handleChange(escapeHtml(e.target.value))
                   }
                 />
-                {field.state.meta.errors && (
+                {(field.state.meta.errors?.[0] as any)?.message && (
                   <p className="text-red-500 text-xs mt-1">
-                    {field.state.meta.errors.join(", ")}
+                    {(field.state.meta.errors[0] as any)?.message}
                   </p>
                 )}
               </div>
@@ -213,55 +323,6 @@ function OrderInfo({
               </div>
             )}
           </form.Field>
-        </div>
-
-        <div className="mt-6 pt-4 border-t max-sm:hidden">
-          <div className="p-4 px-8  bg-[url('/icons/voucher-bg.svg')] bg-no-repeat bg-[var(--red-brand)]">
-            <form.Field name="phoneNumber">
-              {(field) => (
-                <div className="relative">
-                  <Input
-                    placeholder="Nhập số điện thoại để hiển thị voucher"
-                    defaultValue={field.state.value}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        const value = (e.target as HTMLInputElement).value;
-                        field.handleChange(escapeHtml(value));
-                        useCartStore.setState({
-                          userSelectedVouchers: [],
-                          userDeselectedAutoAppliedVouchers: [],
-                        });
-                      }
-                    }}
-                    onBlur={(e) => {
-                      field.handleChange(escapeHtml(e.target.value));
-                      useCartStore.setState({
-                        userSelectedVouchers: [],
-                        userDeselectedAutoAppliedVouchers: [],
-                      });
-                    }}
-                    className="rounded-none"
-                  />
-                  <Search className="absolute top-1/2 right-2 -translate-y-1/2" />
-                </div>
-              )}
-            </form.Field>
-
-            {!!vouchers?.length && (
-              <ScrollArea
-                className="flex h-[300px] mt-2 "
-                viewportClassName="p-0"
-              >
-                {vouchers.map((voucher, index) => (
-                  <VoucherCard
-                    voucher={voucher}
-                    className="my-2 w-full"
-                    key={index}
-                  />
-                ))}
-              </ScrollArea>
-            )}
-          </div>
         </div>
       </div>
     </div>

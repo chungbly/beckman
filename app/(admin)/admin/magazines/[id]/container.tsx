@@ -40,7 +40,6 @@ import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { v4 } from "uuid";
 import { z } from "zod";
 
 const SeoMetrics = dynamic(
@@ -54,7 +53,10 @@ const JoditEditor = dynamic(() => import("@/components/jodit-editor"), {
 });
 
 const schema = z.object({
-  title: z.string("Tiêu đề không được để trống").trim().min(1, "Tiêu đề không được để trống"),
+  title: z
+    .string("Tiêu đề không được để trống")
+    .trim()
+    .min(1, "Tiêu đề không được để trống"),
   seo: z.object({
     title: z.string().trim().min(1, "Tiêu đề không được để trống"),
     slug: z.string().trim().min(1, "Slug không được để trống"),
@@ -117,6 +119,7 @@ export default function MagazineEditor() {
           dirtyData.content = restoreShortcodesFromPreview(dirtyData.content);
         }
         delete dirtyData.updatedAt;
+        delete dirtyData.view;
         const res = await updatePost(id, dirtyData);
         if (res.status === APIStatus.OK) {
           toast({

@@ -57,26 +57,26 @@ export default function FileManager({
   );
   const { toast } = useToast();
   const queryClient = useQueryClient();
-
-  const form = useForm<FileManagerData>({
+  const defaultValues: FileManagerData = {
+    imageToViewUrl: "",
+    selectedFiles: [],
+    selectedFileId: "",
+    deleteFileIds: [],
+    deleteFolderIds: [],
+    renameFolderId: "",
+    copyFileIds: [],
+    moveFileIds: [],
+    isCreatingFolder: false,
+    uploadingFiles: null,
+    uploadingStatus: null,
+    layout: "grid",
+    search: "",
+  };
+  const form = useForm({
+    defaultValues,
     onSubmit: async ({ value }) => {
       const selectedFileUlrs = value?.selectedFiles?.map((f) => f.url);
       onSelect?.(selectedFileUlrs || []);
-    },
-    defaultValues: {
-      imageToViewUrl: "",
-      selectedFiles: [],
-      selectedFileId: "",
-      deleteFileIds: [],
-      deleteFolderIds: [],
-      renameFolderId: "",
-      copyFileIds: [],
-      moveFileIds: [],
-      isCreatingFolder: false,
-      uploadingFiles: null,
-      uploadingStatus: null,
-      layout: "grid",
-      search: "",
     },
   });
 

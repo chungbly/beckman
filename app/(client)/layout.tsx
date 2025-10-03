@@ -7,6 +7,7 @@ import GoogleTagManagers from "@/components/third-parties/google";
 import { cn } from "@/lib/utils";
 import { Metadata } from "next";
 import DynamicClientScript from "../dynamic-client-script";
+import { Toaster } from "@/components/ui/sonner";
 
 const oswald = Oswald({
   weight: ["300", "400", "500", "700"],
@@ -45,6 +46,12 @@ export default async function RootLayout({
       <FacebookPixel />
       <DynamicClientScript />
       <GoogleTagManagers />
+      <Toaster
+        duration={10000}
+        position="top-right"
+        expand
+        className="bg-transparent min-w-auto"
+      />
     </div>
   );
 }

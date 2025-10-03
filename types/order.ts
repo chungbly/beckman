@@ -61,18 +61,19 @@ export interface CalculateOrderRes {
   }[];
 }
 
-interface CartBuilderItem extends Product {
+export interface CartBuilderItem extends Product {
   quantity: number;
   totalPrice: number;
   addons: (Product & {
     quantity: number;
   })[];
-  vouchers: Voucher[];
+  couponsEligible: Voucher[];
   appliedProducts: (Product & {
     quantity: number;
     discount: number;
     voucherCode: string;
   })[];
+  vouchersApplied: string[];
 }
 export interface CartBuilderRes {
   cart: CartBuilderItem[];
@@ -83,6 +84,7 @@ export interface CartBuilderRes {
   finalPrice: number;
   shippingFee: number;
   discount: number;
+  cartFixedDiscount: number;
   appliedVoucherCodes: string[];
   invalidVouchers: {
     code: string;

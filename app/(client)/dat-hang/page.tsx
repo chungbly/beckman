@@ -62,10 +62,7 @@ function PurchasePage() {
   const shippingInfo = useStore(useCartStore, (s) => s.info);
   const voucherCodes = useStore(useCartStore, (s) => s.userSelectedVouchers);
   const customer = useCustomerStore((s) => s.customer);
-  const ignoreVouchers = useStore(
-    useCartStore,
-    (s) => s.userDeselectedAutoAppliedVouchers
-  );
+  const ignoreVouchers = useStore(useCartStore, (s) => s.ignoreVouchers);
   const totalSelected = items.reduce(
     (sum, item) => sum + (item.isSelected ? 1 : 0),
     0
@@ -76,7 +73,8 @@ function PurchasePage() {
       items,
       voucherCodes,
       ignoreVouchers,
-      shippingInfo?.provinceCode
+      shippingInfo?.provinceCode,
+      shippingInfo?.phoneNumber
     )
   );
 
@@ -112,10 +110,10 @@ function PurchasePage() {
     return `${address}, ${ward.WardName}, ${district.DistrictName}, ${province.ProvinceName}`;
   };
 
-  const form = useForm<TOrderInfo>({
-    defaultValues: {
-      ...shippingInfo,
-    },
+  const defaultValues = shippingInfo as TOrderInfo;
+
+  const form = useForm({
+    defaultValues,
     onSubmit: async ({ value }) => {
       if (!totalSelected) return;
       useCartStore.getState().setInfo(value);
@@ -141,6 +139,7 @@ function PurchasePage() {
         (await getUserId()) ||
         useCustomerStore.getState().customer?._id ||
         useCustomerStore.getState().userId;
+      const isAnonymous = !userId || userId?.includes("-");
       if (!userId) {
         return toast({
           variant: "error",
@@ -150,14 +149,16 @@ function PurchasePage() {
         });
       }
       const payload = {
-        items: items.map((i) => ({
-          productId: i.productId,
-          quantity: i.quantity,
-          addons: i.addons || [],
-        })),
+        items: items
+          .filter((i) => i.quantity > 0 && i.isSelected)
+          .map((i) => ({
+            productId: i.productId,
+            quantity: i.quantity,
+            addons: i.addons || [],
+          })),
         shippingInfo,
         note,
-        ...(customer ? { customerId: userId } : {}),
+        ...(customer && !isAnonymous ? { customerId: userId } : {}),
         voucherCodes,
       };
 
@@ -176,7 +177,6 @@ function PurchasePage() {
       });
       const order = res.data;
       const orderCode = order?.code;
-
       if (process.env.NODE_ENV === "production") {
         useCartStore.getState().clearCart();
         useCartStore.getState().setInfo({
@@ -186,6 +186,8 @@ function PurchasePage() {
         await updateCart(userId, {
           items: [],
           shippingInfo,
+          userSelectedVouchers: [],
+          ignoreVouchers: [],
         });
       }
 
@@ -211,7 +213,17 @@ function PurchasePage() {
     })
   );
   const { data: coupons } = useQuery(getCouponsQuery());
-  const vouchers = [...(userVouchers || []), ...(coupons || [])];
+  const vouchers = Array.from(
+    new Set(
+      [...(userVouchers || []), ...(coupons || [])].filter((v) => {
+        if (!v.isCoupon) {
+          if (!v.isPrivate) return true;
+          return v.isPrivate && customer?.voucherCodes?.includes(v.code);
+        }
+        return appliedVoucherCodes?.includes(v.code);
+      })
+    )
+  );
 
   const isLoadingPrice = (isLoading || !prices) && !!items.length;
 
@@ -222,6 +234,7 @@ function PurchasePage() {
     shippingFee,
     totalPrice,
     discount,
+    cartFixedDiscount,
     saved,
     totalSaved,
     totalSalePrice,
@@ -236,23 +249,12 @@ function PurchasePage() {
 
   useEffect(() => {
     useCartStore.getState().setAutoAppliedVouchers(appliedVoucherCodes || []);
+    useCartStore.setState({
+      userSelectedVouchers: voucherCodes.filter(
+        (v) => !appliedVoucherCodes.includes(v)
+      ),
+    });
   }, [appliedVoucherCodes]);
-
-  useEffect(() => {
-    if (invalidVouchers?.length) {
-      toast({
-        title: "Voucher không hợp lệ",
-        description: `${invalidVouchers
-          .map((v) => v.code)
-          .join(", ")}. Hệ thống sẽ tự động loại bỏ voucher này.`,
-        variant: "error",
-      });
-
-      invalidVouchers.forEach((v) => {
-        useCartStore.getState().removeVoucher(v.code);
-      });
-    }
-  }, [invalidVouchers]);
 
   return (
     <div className="bg-white min-h-screen max-sm:mb-[56px]">
@@ -270,7 +272,11 @@ function PurchasePage() {
             ) : (
               items.map((item, index) => {
                 const product = products.find((p) => p.kvId === item.productId);
+                if (item.quantity === 0) return null;
                 if (!product) return null;
+                const appliedProducts = (product.appliedProducts || []).filter(
+                  (p) => p.quantity
+                );
                 return (
                   <CartProductItem
                     className="border-none bg-[var(--light-beige)]"
@@ -278,8 +284,8 @@ function PurchasePage() {
                     product={product}
                     isEditable={false}
                     shoesCareProducts={product.addons || []}
-                    vouchers={product.vouchers || []}
-                    voucherAppliedProducts={product.appliedProducts || []}
+                    vouchers={product.couponsEligible || []}
+                    voucherAppliedProducts={appliedProducts}
                     item={item}
                     items={items}
                   />
@@ -457,7 +463,7 @@ function PurchasePage() {
           </div>
 
           <OrderInfo
-            form={form}
+            form={form as any}
             vouchers={vouchers || []}
             className="block max-sm:order-1"
           />

@@ -30,11 +30,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { TooltipWrap } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { Voucher, VoucherType } from "@/types/voucher";
 import { getDirtyData } from "@/utils";
 import { formatCurrency } from "@/utils/number";
-import { CirclePlus, Trash } from "lucide-react";
+import { CirclePlus, Info, Trash } from "lucide-react";
 import moment from "moment-timezone";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -75,11 +76,13 @@ export default function VoucherForm({
   const { toast } = useToast();
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const form = useForm<Partial<Voucher>>({
-    defaultValues: voucher || {
+  const defaultValues: Partial<Voucher> =
+    voucher ||
+    ({
       isActive: true,
       isCoupon: true,
+      allowStacking: false,
+      isPrivate: false,
       code: "",
       name: "",
       description: "",
@@ -96,7 +99,9 @@ export default function VoucherForm({
       validTo: "",
       quantity: 0,
       used: 0,
-    },
+    } as Partial<Voucher>);
+  const form = useForm({
+    defaultValues,
     onSubmit: async ({ value }) => {
       setIsSubmitting(true);
       if (!id || id !== "new") {
@@ -200,6 +205,23 @@ export default function VoucherForm({
                 )}
               />
             </div>
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label>Stacking Voucher</Label>
+                <p className="text-sm text-muted-foreground">
+                  Cho phép áp dụng chồng lên voucher khác
+                </p>
+              </div>
+              <form.Field
+                name="allowStacking"
+                children={(field) => (
+                  <Switch
+                    checked={field.state.value ?? false}
+                    onCheckedChange={field.handleChange}
+                  />
+                )}
+              />
+            </div>
             <div>
               <Label>Loại phiếu</Label>
               <form.Field
@@ -210,6 +232,9 @@ export default function VoucherForm({
                       value={field.state.value ? "coupon" : "voucher"}
                       onValueChange={(v) => {
                         field.handleChange(v === "coupon");
+                        if (v === "coupon") {
+                          form.setFieldValue("isPrivate", false);
+                        }
                       }}
                       className="flex gap-2 items-center mt-2"
                     >
@@ -226,12 +251,40 @@ export default function VoucherForm({
                       {" "}
                       {field.state.value
                         ? "Coupon dùng cho tất cả đối tượng khách hàng"
-                        : "Voucher chỉ áp dụng cho khách hàng đã là thành viên của Beckman"}
+                        : "Voucher chỉ áp dụng cho khách hàng đã là thành viên của R8ckie"}
                     </p>
                   </>
                 )}
               />
             </div>
+            <form.Field
+              name="isCoupon"
+              children={(field) => {
+                if (field.state.value) {
+                  return null;
+                }
+                return (
+                  <div className="flex items-center justify-between">
+                    <div className="space-y-0.5">
+                      <Label>Private Voucher</Label>
+                      <p className="text-sm text-muted-foreground">
+                        Voucher không thể nhận, chỉ có thể gán bởi quản trị viên
+                      </p>
+                    </div>
+                    <form.Field
+                      name="isPrivate"
+                      children={(field) => (
+                        <Switch
+                          checked={field.state.value ?? false}
+                          onCheckedChange={field.handleChange}
+                        />
+                      )}
+                    />
+                  </div>
+                );
+              }}
+            />
+
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
               <form.Field
                 name="name"
@@ -242,7 +295,9 @@ export default function VoucherForm({
                       id={field.name}
                       placeholder="Giảm thêm 20%"
                       value={field.state.value}
-                      onChange={(e) => field.handleChange(e.target.value)}
+                      onChange={(e) =>
+                        field.handleChange(e.target.value?.toUpperCase())
+                      }
                       onBlur={field.handleBlur}
                     />
                     {field.state.meta.isTouched &&
@@ -484,6 +539,35 @@ export default function VoucherForm({
                     onChange={(e) => field.handleChange(e.target.value)}
                     onBlur={field.handleBlur}
                   />
+                  {field.state.meta.isTouched &&
+                    field.state.meta.errors.length > 0 && (
+                      <p className="text-xs text-red-500">
+                        {field.state.meta.errors.join(", ")}
+                      </p>
+                    )}
+                </div>
+              )}
+            />
+            <form.Field
+              name="link"
+              children={(field) => (
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Label htmlFor={field.name}>Đường dẫn</Label>
+                    <TooltipWrap content="Đường dẫn để xem danh sách sản phẩm được giảm giá khi bấm vào đường link trong giỏ hàng">
+                      <Info size={16} className="text-blue-500" />
+                    </TooltipWrap>
+                  </div>
+                  <Input
+                    id={field.name}
+                    placeholder="Nhập đường dẫn xem voucher"
+                    value={field.state.value}
+                    onChange={(e) => field.handleChange(e.target.value)}
+                    onBlur={field.handleBlur}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    https://www.r8ckie.com/{field.state.value}
+                  </p>
                   {field.state.meta.isTouched &&
                     field.state.meta.errors.length > 0 && (
                       <p className="text-xs text-red-500">

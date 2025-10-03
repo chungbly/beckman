@@ -29,9 +29,7 @@ export default function CollectionsMenu({
 }) {
   const { toast } = useToast();
   const menus = configs["COLLECTIONS_MENU"] as CollectionMenu[];
-  const form = useForm<{
-    menus: CollectionMenu[];
-  }>({
+  const form = useForm({
     defaultValues: {
       menus: menus,
     },

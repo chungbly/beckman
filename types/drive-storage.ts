@@ -1,4 +1,8 @@
-import { ReactFormExtendedApi } from "@tanstack/react-form";
+import {
+  FormAsyncValidateOrFn,
+  FormValidateOrFn,
+  ReactFormExtendedApi,
+} from "@tanstack/react-form";
 import { CloudinaryFile } from "./cloudinary";
 
 export interface TreeItem {
@@ -68,6 +72,21 @@ export type FileManagerContextProps = {
   handleDrop: (e: React.DragEvent<HTMLButtonElement>, targetId: string) => void;
   handleRename: (id: string, name: string) => void;
   handleGetUrl: (fileId: string) => void;
-  form: ReactFormExtendedApi<FileManagerData, undefined>;
+  form: ReactFormExtendedApi<
+    FileManagerData,
+    FormValidateOrFn<FileManagerData> | undefined,
+    FormValidateOrFn<FileManagerData> | undefined,
+    FormAsyncValidateOrFn<FileManagerData> | undefined,
+    FormValidateOrFn<FileManagerData> | undefined,
+    FormAsyncValidateOrFn<FileManagerData> | undefined,
+    FormValidateOrFn<FileManagerData> | undefined,
+    FormAsyncValidateOrFn<FileManagerData> | undefined,
+    FormValidateOrFn<FileManagerData> | undefined,
+    FormAsyncValidateOrFn<FileManagerData> | undefined,
+    FormAsyncValidateOrFn<FileManagerData> | undefined,
+    unknown
+  >;
+  // form1: ReactFormExtendedApi<   TOnServer extends undefined | FormAsyncValidateOrFn<TFormData>, TSubmitMeta>;
+
   singleSelect: boolean;
 };

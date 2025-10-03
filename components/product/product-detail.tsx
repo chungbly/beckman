@@ -3,7 +3,11 @@
 import { APIStatus } from "@/client/callAPI";
 import { updateCart } from "@/client/cart.client";
 import { getComments } from "@/client/comment.client";
-import { getProducts, getVariants } from "@/client/product.client";
+import {
+  getProducts,
+  getSuggestionProducts,
+  getVariants,
+} from "@/client/product.client";
 import ProductGallery from "@/components/product/product-gallery";
 import { SizeSelector } from "@/components/product/size-selector";
 import { Button } from "@/components/ui/button";
@@ -15,7 +19,6 @@ import { cn } from "@/lib/utils";
 import { buildCartQuery } from "@/query/order.query";
 import { useCartStore } from "@/store/useCart";
 import { useCustomerStore } from "@/store/useCustomer";
-import { Category } from "@/types/category";
 import { formatCurrency } from "@/utils/number";
 import { useForm } from "@tanstack/react-form";
 import { useQuery } from "@tanstack/react-query";
@@ -32,13 +35,22 @@ import {
 import { MouseEvent, useEffect, useMemo, useRef } from "react";
 import { Product, WithContext } from "schema-dts";
 import { useStore } from "zustand";
-import RenderHTMLFromCMS from "../app-layout/render-html-from-cms";
-import MobileSizeSelector from "../pages/client/product/mobile-size-selector";
+import MobileActionBar from "../pages/client/product/mobile-footer-actionbar";
 import ProductReviews from "../pages/client/product/review";
 import { fbTracking, ggTagTracking } from "../third-parties/utils";
-import { ScrollArea } from "../ui/scroll-area";
 import ProductDescription from "./product-description";
 import SizeSelectionGuide from "./size-guide-selection";
+import StarRating from "./star-rating";
+export type ProductDetailForm = {
+  name: string | undefined;
+  kvId: number | undefined;
+  size: string | undefined;
+  color: string | undefined;
+  kvCode: string | undefined;
+  basePriceTotal: number;
+  finalPriceTotal: number;
+  addons: number[];
+};
 
 export default function ProductPage({
   slug,
@@ -66,7 +78,9 @@ export default function ProductPage({
       return res.data[0];
     },
   });
-  const category = product?.categories[0] as unknown as Category;
+  const categories = product?.categories;
+  const category = categories?.[0];
+
   const { data: variants } = useQuery({
     queryKey: ["get-product-variants", slug, userId],
     queryFn: async () => {
@@ -96,13 +110,25 @@ export default function ProductPage({
     },
   });
 
+  const { data: shoecareProducts } = useQuery({
+    queryKey: ["get-shoes-care", slug],
+    queryFn: async () => {
+      if (!slug) return null;
+      const res = await getSuggestionProducts({
+        slug: slug,
+        status: true,
+        suggestionCategoryIds: [configs["SHOECARE_CATEGORY_ID"] as string],
+      });
+      if (res.status !== APIStatus.OK || !res.data || !res.data?.length)
+        return null;
+      return res.data;
+    },
+  });
+
   const items = useStore(useCartStore, (state) => state.items);
   const shippingInfo = useStore(useCartStore, (s) => s.info);
   const voucherCodes = useStore(useCartStore, (s) => s.userSelectedVouchers);
-  const ignoreVouchers = useStore(
-    useCartStore,
-    (s) => s.userDeselectedAutoAppliedVouchers
-  );
+  const ignoreVouchers = useStore(useCartStore, (s) => s.ignoreVouchers);
 
   const { data: cart } = useQuery(
     buildCartQuery(
@@ -140,17 +166,20 @@ export default function ProductPage({
     if (!variants || !variants.length) return product;
     return variants.find((p) => p.size == size && p.color === color) || product;
   }, [product, variants, searchParams]);
+
+  const defaultValues: ProductDetailForm = {
+    name: currentProduct?.name,
+    kvId: currentProduct?.kvId,
+    size: currentProduct?.size,
+    color: currentProduct?.color,
+    kvCode: currentProduct?.kvCode,
+    basePriceTotal: currentProduct?.basePrice || 0,
+    finalPriceTotal: currentProduct?.finalPrice || 0,
+    addons: [] as number[],
+  };
+
   const form = useForm({
-    defaultValues: {
-      kvId: currentProduct?.kvId,
-      size: currentProduct?.size,
-      color: currentProduct?.color,
-      kvCode: currentProduct?.kvCode,
-      name: currentProduct?.name,
-      basePriceTotal: currentProduct?.basePrice || 0,
-      finalPriceTotal: currentProduct?.finalPrice || 0,
-      addons: [] as number[],
-    },
+    defaultValues,
     onSubmit: async ({ value }) => {
       if (!value.kvId) return;
       const userId =
@@ -217,7 +246,7 @@ export default function ProductPage({
     },
     offers: {
       "@type": "Offer",
-      url: `https://Beckman.com/${product?.seo?.slug}`,
+      url: `https://r8ckie.com/${product?.seo?.slug}`,
       priceCurrency: "VND",
       price: product?.finalPrice,
       availability: product?.stock ? "InStock" : "OutOfStock",
@@ -271,9 +300,7 @@ export default function ProductPage({
       form.setFieldValue("color", product?.color);
       form.setFieldValue("kvId", product?.kvId);
       form.setFieldValue("kvCode", product?.kvCode);
-      router.push(`${pathname}?size=${product.size}`, {
-        scroll: false,
-      });
+      router.push(`${pathname}?size=${product.size}`);
 
       return;
     }
@@ -292,7 +319,7 @@ export default function ProductPage({
     form.setFieldValue("color", currentColor);
     form.setFieldValue("kvId", childProduct?.kvId);
     form.setFieldValue("kvCode", childProduct?.kvCode);
-    router.push(`${pathname}?size=${childProduct.size}`, { scroll: false });
+    router.push(`${pathname}?size=${childProduct.size}`);
   };
 
   const handleChangeColor = (color: string) => {
@@ -320,6 +347,33 @@ export default function ProductPage({
     router.push(`/${childProduct.seo.slug}`);
   };
 
+  const handleChangeAddons = (id: number) => {
+    const currentAddons = form.getFieldValue("addons");
+    let newAddons = currentAddons;
+    if (currentAddons.includes(id)) {
+      newAddons = currentAddons.filter((a: number) => a !== id);
+    } else {
+      newAddons = [...currentAddons, id];
+    }
+    const shoecares =
+      shoecareProducts?.filter((p) => newAddons.includes(p.kvId)) || [];
+    const basePriceTotal = shoecares.reduce(
+      (acc, cur) => acc + cur.basePrice,
+      0
+    );
+    const finalPriceTotal = shoecares.reduce(
+      (acc, cur) => acc + cur.finalPrice,
+      0
+    );
+    const currentFinalPrice = form.getFieldValue("finalPriceTotal");
+    form.setFieldValue(
+      "basePriceTotal",
+      (product?.basePrice || 0) + basePriceTotal
+    );
+    form.setFieldValue("finalPriceTotal", currentFinalPrice + finalPriceTotal);
+    form.setFieldValue("addons", newAddons);
+  };
+
   useEffect(() => {
     const items = cart?.cart;
     if (!items || !items.length || !product) return;
@@ -331,21 +385,13 @@ export default function ProductPage({
       form.setFieldValue("finalPriceTotal", matchedProduct.finalPrice);
     }
   }, [cart, product]);
-  useEffect(() => {
-    ggTagTracking(
-      [currentProduct!],
-      category?.name || "",
-      "view_item",
-      product?.finalPrice
-    );
-  }, [slug]);
-  
+
   if (isLoading) return <div>Loading...</div>;
   if (!product) return notFound();
 
   return (
     <>
-      <div className="container mx-auto px-2 sm:py-6 max-sm:mb-[48px] overflow-hidden">
+      <div className="container mx-auto px-0 sm:py-6 max-sm:mb-[48px]">
         <script
           defer
           type="application/ld+json"
@@ -353,32 +399,30 @@ export default function ProductPage({
         />
         <div className={cn("grid grid-cols-1 sm:grid-cols-2 gap-[20px]")}>
           <ProductGallery
-            ref={ref}
             product={product!}
-            form={form}
             className="col-span-1 sm:col-span-1"
           />
           <div
             className={cn(
-              "space-y-3 sm:col-span-1 ",
-              "h-full sm:h-[1200px] md:h-[1400px] xl:h-[1700px] relative",
-              !!product.recommendedProducts?.length
-                ? "xl:h-[1700px]"
-                : "md:h-[1000px] xl:h-[1000px]"
+              "hidden sm:block space-y-3 min-[920px]:col-span-4 min-[1120px]:col-span-5 xl:col-span-1 h-[880px] overflow-auto",
+              "h-full sm:h-[734px] min-[920px]:h-[750px] min-[1120px]:h-[868px] xl:h-[967px] 2xl:min-h-[880px]"
             )}
           >
+            {/* <h1 className="text-2xl font-bold mb-2">
+            {product?.name || product?.kvFullName}
+          </h1> */}
             <form.Field name="kvCode">
               {(field) => (
-                <div className="text-base xl:text-xl text-muted-foreground">
+                <div className="text-xl text-muted-foreground">
                   {category?.name} - {field.state.value}
                 </div>
               )}
             </form.Field>
             <form.Field name="name">
               {(field) => (
-                <h1 className="uppercase font-bold text-[#36454F] text-2xl xl:text-4xl">
+                <div className="uppercase font-bold text-[#36454F] text-4xl">
                   {field.state.value}
-                </h1>
+                </div>
               )}
             </form.Field>
             <form.Subscribe
@@ -390,12 +434,12 @@ export default function ProductPage({
               {({ basePrice, finalPrice }) => {
                 return (
                   <>
-                    {finalPrice < basePrice && (
-                      <p className="line-through text-xl sm:text-2xl decoration-[var(--brown-brand)]">
+                    {product.finalPrice < product.basePrice && (
+                      <p className="line-through text-2xl decoration-[var(--brown-brand)]">
                         {formatCurrency(basePrice)}
                       </p>
                     )}
-                    <p className="text-[var(--brown-brand)] font-bold text-2xl sm:text-4xl">
+                    <p className="text-[var(--brown-brand)] font-bold text-4xl">
                       {formatCurrency(finalPrice)}
                     </p>
                   </>
@@ -411,27 +455,13 @@ export default function ProductPage({
                   })}
                 >
                   {({ color, size }) => (
-                    <>
-                      <SizeSelector
-                        variants={variants || []}
-                        sizes={product.sizeTags || []}
-                        selectedSize={size}
-                        selectedColor={color}
-                        onSelect={handleChangeSize}
-                      />
-                      <MobileSizeSelector
-                        variants={variants || []}
-                        sizes={product.sizeTags || []}
-                        selectedSize={size}
-                        selectedColor={color}
-                        onSelect={handleChangeSize}
-                        controls={controls}
-                        handleAddToCart={(e: MouseEvent<HTMLButtonElement>) =>
-                          handleAddToCart(e, controls)
-                        }
-                        product={product}
-                      />
-                    </>
+                    <SizeSelector
+                      variants={variants || []}
+                      sizes={product.sizeTags || []}
+                      selectedSize={size}
+                      selectedColor={color}
+                      onSelect={handleChangeSize}
+                    />
                   )}
                 </form.Subscribe>
                 {category?.sizeSelectionGuide && (
@@ -439,38 +469,6 @@ export default function ProductPage({
                 )}
               </>
             )}
-            {!!product.similarProducts?.length && (
-              <>
-                <div className="text-2xl">Sản phẩm tương tự</div>
-                <ScrollArea>
-                  <div className="flex items-center gap-6 mb-4">
-                    {product.similarProducts.map((p) => {
-                      const image = p.images.find((i) => i.color === p.color);
-                      const colorThumbnail = image?.thumbnail;
-                      const altName = image?.altName || image?.color;
-                      if (!altName) return null;
-
-                      return (
-                        <div key={p._id} className="flex items-center gap-2">
-                          <Image
-                            src={colorThumbnail || p.seo?.thumbnail || ""}
-                            alt={p.name}
-                            sizes="100px"
-                            width={50}
-                            height={50}
-                            className="object-cover rounded-full w-[50px] h-[50px]"
-                          />
-                          <p className="text-xl hover:underline cursor-pointer">
-                            {altName}
-                          </p>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </ScrollArea>
-              </>
-            )}
-
             <div className="grid grid-cols-2 gap-4">
               <Button
                 className="bg-[#36454F] hover:bg-[#36454F] hover:shadow-[0_5px_5px_rgba(54,69,79,0.25)] rounded-none transition-shadow"
@@ -493,16 +491,20 @@ export default function ProductPage({
                   </motion.div>
                 )}
               </Button>
-              <Button
-                className="flex-1 bg-[#CD7F32] hover:bg-[#CD7F32] hover:shadow-[0_5px_5px_rgba(54,69,79,0.25)] rounded-none"
-                onClick={async (e) => {
-                  const isOK = await handleAddToCart(e, controls);
-                  if (!isOK) return;
-                  router.push("/gio-hang");
-                }}
-              >
-                MUA NGAY
-              </Button>
+              <form.Field name="finalPriceTotal">
+                {(field) => (
+                  <Button
+                    className="flex-1 bg-[#CD7F32] hover:bg-[#CD7F32] hover:shadow-[0_5px_5px_rgba(54,69,79,0.25)] rounded-none"
+                    onClick={async (e) => {
+                      const isOK = await handleAddToCart(e, controls);
+                      if (!isOK) return;
+                      router.push("/gio-hang");
+                    }}
+                  >
+                    MUA NGAY
+                  </Button>
+                )}
+              </form.Field>
             </div>
             <div className="flex items-center border p-3 border-[var(--gray-beige)]">
               <Image
@@ -518,28 +520,27 @@ export default function ProductPage({
                 </b>
               </div>
             </div>
-            <p>{product?.subDescription}</p>
 
             <Tabs
               defaultValue="product-details"
-              className="w-full border-t border-t-[var(--gray-beige)] sm:p-4 pt-2"
+              className="w-full border-t border-t-[var(--gray-beige)] p-4"
             >
               <TabsList className="grid w-full grid-cols-3 bg-transparent p-0 h-auto">
                 <TabsTrigger
                   value="product-details"
-                  className="text-black/50 data-[state=active]:text-[var(--brown-brand)] data-[state=active]:bg-transparent   data-[state=active]:rounded-none data-[state=active]:shadow-none text-base xl:text-2xl font-normal"
+                  className="text-black/50 data-[state=active]:text-[var(--brown-brand)] data-[state=active]:bg-transparent   data-[state=active]:rounded-none data-[state=active]:shadow-none text-2xl font-normal"
                 >
                   Chi tiết sản phẩm
                 </TabsTrigger>
                 <TabsTrigger
                   value="warranty-policy"
-                  className="text-black/50 data-[state=active]:text-[var(--brown-brand)] data-[state=active]:bg-transparent border-l border-r border-[var(--brown-brand)] rounded-none data-[state=active]:shadow-none text-base xl:text-2xl font-normal"
+                  className="text-black/50 data-[state=active]:text-[var(--brown-brand)] data-[state=active]:bg-transparent border-l border-r border-[var(--brown-brand)] rounded-none data-[state=active]:shadow-none text-2xl font-normal"
                 >
                   Chính sách bảo hành
                 </TabsTrigger>
                 <TabsTrigger
                   value="care-guide"
-                  className="text-black/50 data-[state=active]:text-[var(--brown-brand)] data-[state=active]:bg-transparent   data-[state=active]:rounded-none data-[state=active]:shadow-none text-base xl:text-2xl font-normal"
+                  className="text-black/50 data-[state=active]:text-[var(--brown-brand)] data-[state=active]:bg-transparent   data-[state=active]:rounded-none data-[state=active]:shadow-none text-2xl font-normal"
                 >
                   Hướng dẫn bảo quản
                 </TabsTrigger>
@@ -548,109 +549,96 @@ export default function ProductPage({
                 <div>
                   {product.discribles.map((item, index) => (
                     <div
-                      key={index}
+                      key={item.title}
                       className={cn(
                         "grid grid-cols-4 p-2",
                         index % 2 === 0 && "bg-[#FFECD9]"
                       )}
                     >
-                      <p className="max-sm:text-sm col-span-1 text-[#36454F]">
-                        {item.title}
-                      </p>
-                      <p className="max-sm:text-sm col-span-3">
-                        {item.content}
-                      </p>
+                      <p className="col-span-1  text-[#36454F]">{item.title}</p>
+                      <p className="col-span-3">{item.content}</p>
                     </div>
                   ))}
                 </div>
               </TabsContent>
               <TabsContent value="warranty-policy" className="mt-4">
-                <RenderHTMLFromCMS
-                  className="max-sm:text-sm"
-                  html={product.warrantyPolicy}
-                />
+                <div className="space-y-3">
+                  <p className="text-gray-700">
+                    Chúng tôi cam kết bảo hành sản phẩm trong vòng 12 tháng kể
+                    từ ngày mua hàng với các điều kiện sau:
+                  </p>
+                  <ul className="list-disc pl-5 space-y-1 text-gray-600">
+                    <li>Bảo hành miễn phí đối với các lỗi từ nhà sản xuất</li>
+                    <li>
+                      Sửa chữa hoặc thay thế phần bị lỗi (đế, mũi giày, gót
+                      giày)
+                    </li>
+                    <li>
+                      Bảo hành không áp dụng cho các trường hợp hao mòn tự nhiên
+                      do sử dụng
+                    </li>
+                    <li>
+                      Sản phẩm phải còn nguyên tem, nhãn mác và hóa đơn mua hàng
+                    </li>
+                  </ul>
+                </div>
               </TabsContent>
               <TabsContent value="care-guide" className="mt-4">
-                <RenderHTMLFromCMS
-                  className="max-sm:text-sm"
-                  html={product.careInstructions}
-                />
+                <div className="space-y-3">
+                  <p className="text-gray-700">
+                    Để giữ cho đôi giày luôn đẹp và bền, vui lòng tuân thủ các
+                    hướng dẫn sau:
+                  </p>
+                  <ul className="list-disc pl-5 space-y-1 text-gray-600">
+                    <li>Sử dụng xi đánh giày chuyên dụng cho da bò</li>
+                    <li>
+                      Tránh tiếp xúc trực tiếp với nước, nếu bị ướt cần lau khô
+                      ngay
+                    </li>
+                    <li>
+                      Để giày ở nơi khô ráo, thoáng mát, tránh ánh nắng trực
+                      tiếp
+                    </li>
+                    <li>
+                      Sử dụng cây giữ form khi không sử dụng để giữ dáng giày
+                    </li>
+                    <li>Vệ sinh giày định kỳ 2-3 tháng/lần</li>
+                  </ul>
+                </div>
               </TabsContent>
             </Tabs>
+          </div>
+        </div>
 
-            {/* Shoes Tree Product List */}
-            {!!product.recommendedProducts?.length && (
-              <ScrollArea className="h-fit sm:h-[750px] absolute bottom-0 border-t border-[#e8e1d7]">
-                <div className="space-y-4  pt-4">
-                  {/* Product 1 */}
-                  {product.recommendedProducts?.map((p) => {
-                    return (
-                      <div
-                        key={p._id}
-                        className="flex border-b border-[#e8e1d7] pb-4"
-                      >
-                        <Image
-                          width={200}
-                          height={200}
-                          src={p.seo?.thumbnail || ""}
-                          alt={p.name}
-                          className="aspect-square object-cover w-[200px]"
-                        />
-                        <div className="w-2/3 pl-4 flex flex-col justify-between">
-                          <div className="space-y-[10px]">
-                            <h3 className="text-2xl font-medium text-[#36454F]">
-                              {p.name}
-                            </h3>
-                            <div className="flex items-center mt-1">
-                              {p.finalPrice < p.basePrice && (
-                                <p className="line-through text-xl font-light decoration-[var(--brown-brand)]">
-                                  {formatCurrency(p.basePrice)}
-                                </p>
-                              )}
-                              <p className="text-[var(--brown-brand)] text-2xl">
-                                {formatCurrency(p.finalPrice)}
-                              </p>
-                            </div>
-                            {/* <p className="text-sm text-gray-600 mt-2">
-                            Order with a pair of shoes, and receive 25% off your
-                            pair
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            100% Cedar Wood
-                          </p> */}
-                          </div>
-                          <button
-                            onClick={async () => {
-                              if (p.sizeTags?.length > 1) {
-                                router.push(`/${p.seo?.slug}`);
-                              } else {
-                                addItem(p.kvId);
-                                await updateCart(userId, {
-                                  items: useCartStore.getState().items,
-                                  shippingInfo,
-                                });
-                              }
-                            }}
-                            className="border-[#CD7F32] border  text-[#CD7F32] py-2 px-4 mt-2 hover:bg-[#e8e1d7] transition-colors w-fit"
-                          >
-                            {p.sizeTags?.length > 1
-                              ? "CHỌN LỰA"
-                              : "THÊM VÀO GIỎ"}
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </ScrollArea>
+        <div className="flex items-center justify-between sm:hidden my-4 px-2">
+          <div className="flex gap-1 items-center">
+            <StarRating rating={average} />
+            {comments.length > 0 && (
+              <span className="text-sm text-[var(--gray-beige)]">
+                ({comments.length})
+              </span>
             )}
           </div>
+          <span className="text-sm text-[var(--gray-beige)] ml-2">
+            Đã bán {product.sold}
+          </span>
         </div>
       </div>
       <ProductDescription product={product} />
       <div className="container mx-auto px-0 sm:py-6 max-sm:mb-[48px]">
         <ProductReviews comments={comments} />
       </div>
+      <MobileActionBar
+        product={product}
+        variants={variants || []}
+        shoecareProducts={shoecareProducts}
+        handleChangeColor={handleChangeColor}
+        handleChangeSize={handleChangeSize}
+        handleAddToCart={handleAddToCart}
+        form={form}
+        handleChangeAddons={handleChangeAddons}
+        category={category}
+      />
     </>
   );
 }
