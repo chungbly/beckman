@@ -24,8 +24,7 @@ function ProductReviews({ comments }: { comments: Comment[] }) {
   });
 
   return (
-    <div className="scroll-mt-24 px-2 ">
-      <h2 className="text-xl md:text-2xl font-bold mb-4 text-[var(--brown-brand)]">ĐÁNH GIÁ</h2>
+    <div className="scroll-mt-24 p-2 bg-white">
       <div className="space-y-6">
         {/* Review Summary */}
         <div className="flex flex-col md:flex-row gap-8 p-4 sm:p-6 bg-secondary/50 rounded-lg">
@@ -39,7 +38,7 @@ function ProductReviews({ comments }: { comments: Comment[] }) {
             </div>
           </div>
           <div className="flex-1">
-            {distribution.reverse().map((dist,index) => (
+            {distribution.reverse().map((dist, index) => (
               <div
                 key={index}
                 className="flex items-center gap-4 mb-2 cursor-pointer"

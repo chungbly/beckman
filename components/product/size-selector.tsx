@@ -40,7 +40,7 @@ export function SizeSelector({
   };
   return (
     <div className="space-y-2">
-      <div className="flex items-center justify-between">
+      {/* <div className="flex items-center justify-between">
         <span className="text-sm">Lựa chọn size</span>
         <div className="flex items-center gap-2">
           <div
@@ -66,7 +66,7 @@ export function SizeSelector({
             US
           </div>
         </div>
-      </div>
+      </div> */}
       <div className="flex flex-wrap">
         {sizes
           .sort((a, b) => Number(a) - Number(b))
@@ -85,7 +85,7 @@ export function SizeSelector({
                 variant="outline"
                 disabled={!isAvailable}
                 className={cn(
-                  "h-[60px] w-[95px] text-2xl rounded-none font-normal px-4 max-sm:hover:bg-[#FFECD9] hover:border-[#CD7F32] border-x-[2px] border-y-[2px] bg-white text-black",
+                  "max-sm:flex-1 sm:h-[60px] sm:w-[95px] sm:text-2xl rounded-none font-normal px-4 max-sm:hover:bg-[#FFECD9] hover:border-[#CD7F32] border-x-[2px] border-y-[2px] bg-white text-black",
                   selectedSize == size && "bg-[#FFECD9]"
                 )}
                 onClick={() => onSelect(size)}

@@ -32,15 +32,17 @@ import {
   useRouter,
   useSearchParams,
 } from "next/navigation";
-import { MouseEvent, useEffect, useMemo, useRef } from "react";
+import { MouseEvent, useEffect, useMemo, useRef, useState } from "react";
 import { Product, WithContext } from "schema-dts";
 import { useStore } from "zustand";
+import RenderHTMLFromCMS from "../app-layout/render-html-from-cms";
 import MobileActionBar from "../pages/client/product/mobile-footer-actionbar";
+import MobileSizeSelector from "../pages/client/product/mobile-size-selector";
 import ProductReviews from "../pages/client/product/review";
 import { fbTracking, ggTagTracking } from "../third-parties/utils";
-import ProductDescription from "./product-description";
+import ReadMore from "../ui/read-more";
+import { ScrollArea } from "../ui/scroll-area";
 import SizeSelectionGuide from "./size-guide-selection";
-import StarRating from "./star-rating";
 export type ProductDetailForm = {
   name: string | undefined;
   kvId: number | undefined;
@@ -50,6 +52,31 @@ export type ProductDetailForm = {
   basePriceTotal: number;
   finalPriceTotal: number;
   addons: number[];
+};
+const sections = [
+  { id: "product-info", label: "Thông tin" },
+  { id: "product-details", label: "Chi tiết" },
+  { id: "warranty-policy", label: "Bảo hành" },
+  { id: "care-guide", label: "Bảo quản" },
+  { id: "review", label: "Đánh giá" },
+];
+
+const MobileInfoSection = ({
+  children,
+  title,
+  id,
+}: {
+  children: React.ReactNode;
+  title: string;
+  id: string;
+}) => {
+  return (
+    <div id={id} className="space-y-[10px] mx-2 sm:hidden">
+      <div className="text-xl">{title}</div>
+      <div className="block w-full h-[4px] bg-[var(--brown-brand)]"></div>
+      {children}
+    </div>
+  );
 };
 
 export default function ProductPage({
@@ -124,11 +151,13 @@ export default function ProductPage({
       return res.data;
     },
   });
-
   const items = useStore(useCartStore, (state) => state.items);
   const shippingInfo = useStore(useCartStore, (s) => s.info);
   const voucherCodes = useStore(useCartStore, (s) => s.userSelectedVouchers);
   const ignoreVouchers = useStore(useCartStore, (s) => s.ignoreVouchers);
+  const [active, setActive] = useState("product-info");
+  const listRef = useRef<HTMLDivElement>(null);
+  const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
 
   const { data: cart } = useQuery(
     buildCartQuery(
@@ -246,7 +275,7 @@ export default function ProductPage({
     },
     offers: {
       "@type": "Offer",
-      url: `https://r8ckie.com/${product?.seo?.slug}`,
+      url: `https://beckman.com/${product?.seo?.slug}`,
       priceCurrency: "VND",
       price: product?.finalPrice,
       availability: product?.stock ? "InStock" : "OutOfStock",
@@ -300,7 +329,9 @@ export default function ProductPage({
       form.setFieldValue("color", product?.color);
       form.setFieldValue("kvId", product?.kvId);
       form.setFieldValue("kvCode", product?.kvCode);
-      router.push(`${pathname}?size=${product.size}`);
+      router.push(`${pathname}?size=${product.size}`, {
+        scroll: false,
+      });
 
       return;
     }
@@ -319,7 +350,7 @@ export default function ProductPage({
     form.setFieldValue("color", currentColor);
     form.setFieldValue("kvId", childProduct?.kvId);
     form.setFieldValue("kvCode", childProduct?.kvCode);
-    router.push(`${pathname}?size=${childProduct.size}`);
+    router.push(`${pathname}?size=${childProduct.size}`, { scroll: false });
   };
 
   const handleChangeColor = (color: string) => {
@@ -374,6 +405,64 @@ export default function ProductPage({
     form.setFieldValue("addons", newAddons);
   };
 
+  const [isScrollingByClick, setIsScrollingByClick] = useState(false);
+  const scrollTargetRef = useRef<number | null>(null);
+
+  const handleScrollToTab = (id: string) => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    const tabList = document.querySelector('[role="tablist"]') as HTMLElement;
+    const header = document.querySelector("header") as HTMLElement;
+    const offset = (tabList?.offsetHeight || 0) + (header?.offsetHeight || 0);
+    const targetY = el.getBoundingClientRect().top + window.scrollY - offset;
+
+    setIsScrollingByClick(true);
+    scrollTargetRef.current = targetY;
+
+    window.scrollTo({
+      top: targetY,
+      behavior: "smooth",
+    });
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      // Nếu đang scroll bằng click → kiểm tra khi nào tới nơi thì unlock
+      if (isScrollingByClick && scrollTargetRef.current !== null) {
+        const currentY = window.scrollY;
+        const diff = Math.abs(currentY - scrollTargetRef.current);
+
+        // Khi tới gần target (ví dụ < 3px) thì coi như scroll xong
+        if (diff < 3) {
+          setIsScrollingByClick(false);
+          scrollTargetRef.current = null;
+        }
+        return; // 🚨 bỏ qua tracking khi đang auto scroll
+      }
+
+      // Scroll tracking khi user tự cuộn
+      const tabList = document.querySelector('[role="tablist"]') as HTMLElement;
+      const header = document.querySelector("header") as HTMLElement;
+      const offset = (tabList?.offsetHeight || 0) + (header?.offsetHeight || 0);
+      let currentSection = sections[0].id;
+      for (const s of sections) {
+        const el = document.getElementById(s.id);
+        if (el) {
+          const top = el.getBoundingClientRect().top - offset;
+          if (top <= 3) {
+            currentSection = s.id;
+          } else {
+            break;
+          }
+        }
+      }
+      setActive(currentSection);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [isScrollingByClick, sections]);
+
   useEffect(() => {
     const items = cart?.cart;
     if (!items || !items.length || !product) return;
@@ -386,12 +475,35 @@ export default function ProductPage({
     }
   }, [cart, product]);
 
+  useEffect(() => {
+    ggTagTracking(
+      [currentProduct!],
+      category?.name || "",
+      "view_item",
+      product?.finalPrice
+    );
+  }, [slug]);
+
+  useEffect(() => {
+    const listEl = listRef.current;
+    if (!listEl) return;
+
+    const activeEl = listEl.querySelector(
+      `[data-value="${active}"]`
+    ) as HTMLElement;
+    if (activeEl) {
+      setIndicatorStyle({
+        left: activeEl.offsetLeft,
+        width: activeEl.offsetWidth,
+      });
+    }
+  }, [active]);
   if (isLoading) return <div>Loading...</div>;
   if (!product) return notFound();
 
   return (
     <>
-      <div className="container mx-auto px-0 sm:py-6 max-sm:mb-[48px]">
+      <div className="container mx-auto px-2 sm:px-0 sm:py-6 max-sm:mb-[48px] max-sm:mt-[36px]">
         <script
           defer
           type="application/ld+json"
@@ -400,52 +512,59 @@ export default function ProductPage({
         <div className={cn("grid grid-cols-1 sm:grid-cols-2 gap-[20px]")}>
           <ProductGallery
             product={product!}
-            className="col-span-1 sm:col-span-1"
+            className="col-span-1 sm:col-span-1 max-sm:-mx-2"
           />
           <div
             className={cn(
-              "hidden sm:block space-y-3 min-[920px]:col-span-4 min-[1120px]:col-span-5 xl:col-span-1 h-[880px] overflow-auto",
-              "h-full sm:h-[734px] min-[920px]:h-[750px] min-[1120px]:h-[868px] xl:h-[967px] 2xl:min-h-[880px]"
+              "space-y-3 sm:col-span-1 ",
+              "h-full sm:h-[1200px] md:h-[1200px] xl:h-[1200px] relative",
+              !!product.recommendedProducts?.length
+                ? "xl:h-[1200px]"
+                : "md:h-[1000px] xl:h-[1000px]"
             )}
           >
-            {/* <h1 className="text-2xl font-bold mb-2">
-            {product?.name || product?.kvFullName}
-          </h1> */}
             <form.Field name="kvCode">
               {(field) => (
-                <div className="text-xl text-muted-foreground">
+                <div className="text-xs xl:text-xl text-muted-foreground">
                   {category?.name} - {field.state.value}
                 </div>
               )}
             </form.Field>
             <form.Field name="name">
               {(field) => (
-                <div className="uppercase font-bold text-[#36454F] text-4xl">
+                <div className="uppercase font-bold text-[#36454F] text-2xl sm:text-4xl">
                   {field.state.value}
                 </div>
               )}
             </form.Field>
-            <form.Subscribe
-              selector={(state) => ({
-                basePrice: state.values.basePriceTotal,
-                finalPrice: state.values.finalPriceTotal,
-              })}
-            >
-              {({ basePrice, finalPrice }) => {
-                return (
-                  <>
-                    {product.finalPrice < product.basePrice && (
-                      <p className="line-through text-2xl decoration-[var(--brown-brand)]">
-                        {formatCurrency(basePrice)}
+            <div className="text-xs xl:text-xl text-muted-foreground">
+              {currentProduct?.subName}
+            </div>
+            <div className="flex items-center justify-between">
+              <form.Subscribe
+                selector={(state) => ({
+                  basePrice: state.values.basePriceTotal,
+                  finalPrice: state.values.finalPriceTotal,
+                })}
+              >
+                {({ basePrice, finalPrice }) => {
+                  return (
+                    <div className="flex items-center gap-2">
+                      {product.finalPrice < product.basePrice && (
+                        <p className="line-through sm:text-2xl decoration-[var(--brown-brand)] text-black/50">
+                          {formatCurrency(basePrice)}
+                        </p>
+                      )}
+                      <p className="text-[var(--brown-brand)] font-bold text-2xl sm:text-4xl">
+                        {formatCurrency(finalPrice)}
                       </p>
-                    )}
-                    <p className="text-[var(--brown-brand)] font-bold text-4xl">
-                      {formatCurrency(finalPrice)}
-                    </p>
-                  </>
-                );
-              }}
-            </form.Subscribe>
+                    </div>
+                  );
+                }}
+              </form.Subscribe>
+              <p className="sm:text-lg underline">Hướng dẫn chọn size</p>
+            </div>
+
             {product.sizeTags?.length > 1 && (
               <>
                 <form.Subscribe
@@ -455,13 +574,27 @@ export default function ProductPage({
                   })}
                 >
                   {({ color, size }) => (
-                    <SizeSelector
-                      variants={variants || []}
-                      sizes={product.sizeTags || []}
-                      selectedSize={size}
-                      selectedColor={color}
-                      onSelect={handleChangeSize}
-                    />
+                    <>
+                      <SizeSelector
+                        variants={variants || []}
+                        sizes={product.sizeTags || []}
+                        selectedSize={size}
+                        selectedColor={color}
+                        onSelect={handleChangeSize}
+                      />
+                      <MobileSizeSelector
+                        variants={variants || []}
+                        sizes={product.sizeTags || []}
+                        selectedSize={size}
+                        selectedColor={color}
+                        onSelect={handleChangeSize}
+                        controls={controls}
+                        handleAddToCart={(e: MouseEvent<HTMLButtonElement>) =>
+                          handleAddToCart(e, controls)
+                        }
+                        product={product}
+                      />
+                    </>
                   )}
                 </form.Subscribe>
                 {category?.sizeSelectionGuide && (
@@ -469,6 +602,38 @@ export default function ProductPage({
                 )}
               </>
             )}
+            {!!product.similarProducts?.length && (
+              <>
+                <div className="sm:text-2xl">Sản phẩm tương tự</div>
+                <ScrollArea>
+                  <div className="flex items-center gap-6 mb-4">
+                    {product.similarProducts.map((p) => {
+                      const image = p.images.find((i) => i.color === p.color);
+                      const colorThumbnail = image?.thumbnail;
+                      const altName = image?.altName || image?.color;
+                      if (!altName) return null;
+
+                      return (
+                        <div key={p._id} className="flex items-center gap-2">
+                          <Image
+                            src={colorThumbnail || p.seo?.thumbnail || ""}
+                            alt={p.name}
+                            sizes="100px"
+                            width={50}
+                            height={50}
+                            className="object-cover bg-slate-50 rounded-full w-[30px] h-[30px] sm:w-[50px] sm:h-[50px]"
+                          />
+                          <p className="text-xs sm:text-xl hover:underline cursor-pointer">
+                            {altName}
+                          </p>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </ScrollArea>
+              </>
+            )}
+
             <div className="grid grid-cols-2 gap-4">
               <Button
                 className="bg-[#36454F] hover:bg-[#36454F] hover:shadow-[0_5px_5px_rgba(54,69,79,0.25)] rounded-none transition-shadow"
@@ -491,20 +656,17 @@ export default function ProductPage({
                   </motion.div>
                 )}
               </Button>
-              <form.Field name="finalPriceTotal">
-                {(field) => (
-                  <Button
-                    className="flex-1 bg-[#CD7F32] hover:bg-[#CD7F32] hover:shadow-[0_5px_5px_rgba(54,69,79,0.25)] rounded-none"
-                    onClick={async (e) => {
-                      const isOK = await handleAddToCart(e, controls);
-                      if (!isOK) return;
-                      router.push("/gio-hang");
-                    }}
-                  >
-                    MUA NGAY
-                  </Button>
-                )}
-              </form.Field>
+
+              <Button
+                className="flex-1 bg-[#CD7F32] hover:bg-[#CD7F32] hover:shadow-[0_5px_5px_rgba(54,69,79,0.25)] rounded-none"
+                onClick={async (e) => {
+                  const isOK = await handleAddToCart(e, controls);
+                  if (!isOK) return;
+                  router.push("/gio-hang");
+                }}
+              >
+                MUA NGAY
+              </Button>
             </div>
             <div className="flex items-center border p-3 border-[var(--gray-beige)]">
               <Image
@@ -513,121 +675,253 @@ export default function ProductPage({
                 height={30}
                 alt="Giao hàng miễn phí"
               />
-              <div className="text-[var(--brown-brand)] flex items-center text-xl">
+              <div className="text-[var(--brown-brand)] flex items-center sm:text-xl">
                 <Dot />
                 <b>
                   MIỄN PHÍ giao hàng toàn quốc - thời gian giao từ 5 - 7 ngày
                 </b>
               </div>
             </div>
+            <RenderHTMLFromCMS
+              className="max-sm:text-sm text-black"
+              html={product.subDescription}
+            />
 
-            <Tabs
-              defaultValue="product-details"
-              className="w-full border-t border-t-[var(--gray-beige)] p-4"
-            >
-              <TabsList className="grid w-full grid-cols-3 bg-transparent p-0 h-auto">
-                <TabsTrigger
-                  value="product-details"
-                  className="text-black/50 data-[state=active]:text-[var(--brown-brand)] data-[state=active]:bg-transparent   data-[state=active]:rounded-none data-[state=active]:shadow-none text-2xl font-normal"
-                >
-                  Chi tiết sản phẩm
-                </TabsTrigger>
-                <TabsTrigger
-                  value="warranty-policy"
-                  className="text-black/50 data-[state=active]:text-[var(--brown-brand)] data-[state=active]:bg-transparent border-l border-r border-[var(--brown-brand)] rounded-none data-[state=active]:shadow-none text-2xl font-normal"
-                >
-                  Chính sách bảo hành
-                </TabsTrigger>
-                <TabsTrigger
-                  value="care-guide"
-                  className="text-black/50 data-[state=active]:text-[var(--brown-brand)] data-[state=active]:bg-transparent   data-[state=active]:rounded-none data-[state=active]:shadow-none text-2xl font-normal"
-                >
-                  Hướng dẫn bảo quản
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent value="product-details" className="mt-4">
-                <div>
-                  {product.discribles.map((item, index) => (
-                    <div
-                      key={item.title}
-                      className={cn(
-                        "grid grid-cols-4 p-2",
-                        index % 2 === 0 && "bg-[#FFECD9]"
-                      )}
-                    >
-                      <p className="col-span-1  text-[#36454F]">{item.title}</p>
-                      <p className="col-span-3">{item.content}</p>
-                    </div>
-                  ))}
+            {/* Shoes Tree Product List */}
+            {!!product.recommendedProducts?.length && (
+              <ScrollArea className="h-fit sm:h-[750px] absolute bottom-0 border-t-2 border-black/50">
+                <div className="space-y-4  pt-4">
+                  {/* Product 1 */}
+                  {product.recommendedProducts?.map((p) => {
+                    return (
+                      <div
+                        key={p._id}
+                        className="flex border-b-2 border-black/50 pb-4"
+                      >
+                        <Image
+                          width={200}
+                          height={200}
+                          src={p.seo?.thumbnail || ""}
+                          alt={p.name}
+                          className="aspect-square object-cover w-[140px] h-[140px] sm:w-[200px] sm:h-[200px]"
+                        />
+                        <div className="w-2/3 pl-4 flex flex-col justify-between">
+                          <div className="space-y-[10px]">
+                            <h3 className="sm:text-2xl font-medium text-[#36454F]">
+                              {p.name}
+                            </h3>
+                            <div className="flex items-center mt-1">
+                              {p.finalPrice < p.basePrice && (
+                                <p className="line-through text-xs text-black/50 sm:text-xl font-light decoration-[var(--brown-brand)]">
+                                  {formatCurrency(p.basePrice)}
+                                </p>
+                              )}
+                              <p className="text-[var(--brown-brand)] sm:text-2xl">
+                                {formatCurrency(p.finalPrice)}
+                              </p>
+                            </div>
+                            <p className="text-sm text-gray-600 mt-2">
+                              {p.subDescription}
+                            </p>
+                          </div>
+                          <button
+                            onClick={async () => {
+                              if (p.sizeTags?.length > 1) {
+                                router.push(`/${p.seo?.slug}`);
+                              } else {
+                                addItem(p.kvId);
+                                await updateCart(userId, {
+                                  items: useCartStore.getState().items,
+                                  shippingInfo,
+                                });
+                              }
+                            }}
+                            className="max-sm:w-[160px] border-[#CD7F32] border  text-[#CD7F32] py-2 px-4 mt-2 hover:bg-[#e8e1d7] transition-colors w-fit"
+                          >
+                            {p.sizeTags?.length > 1
+                              ? "CHỌN LỰA"
+                              : "THÊM VÀO GIỎ"}
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              </TabsContent>
-              <TabsContent value="warranty-policy" className="mt-4">
-                <div className="space-y-3">
-                  <p className="text-gray-700">
-                    Chúng tôi cam kết bảo hành sản phẩm trong vòng 12 tháng kể
-                    từ ngày mua hàng với các điều kiện sau:
-                  </p>
-                  <ul className="list-disc pl-5 space-y-1 text-gray-600">
-                    <li>Bảo hành miễn phí đối với các lỗi từ nhà sản xuất</li>
-                    <li>
-                      Sửa chữa hoặc thay thế phần bị lỗi (đế, mũi giày, gót
-                      giày)
-                    </li>
-                    <li>
-                      Bảo hành không áp dụng cho các trường hợp hao mòn tự nhiên
-                      do sử dụng
-                    </li>
-                    <li>
-                      Sản phẩm phải còn nguyên tem, nhãn mác và hóa đơn mua hàng
-                    </li>
-                  </ul>
-                </div>
-              </TabsContent>
-              <TabsContent value="care-guide" className="mt-4">
-                <div className="space-y-3">
-                  <p className="text-gray-700">
-                    Để giữ cho đôi giày luôn đẹp và bền, vui lòng tuân thủ các
-                    hướng dẫn sau:
-                  </p>
-                  <ul className="list-disc pl-5 space-y-1 text-gray-600">
-                    <li>Sử dụng xi đánh giày chuyên dụng cho da bò</li>
-                    <li>
-                      Tránh tiếp xúc trực tiếp với nước, nếu bị ướt cần lau khô
-                      ngay
-                    </li>
-                    <li>
-                      Để giày ở nơi khô ráo, thoáng mát, tránh ánh nắng trực
-                      tiếp
-                    </li>
-                    <li>
-                      Sử dụng cây giữ form khi không sử dụng để giữ dáng giày
-                    </li>
-                    <li>Vệ sinh giày định kỳ 2-3 tháng/lần</li>
-                  </ul>
-                </div>
-              </TabsContent>
-            </Tabs>
-          </div>
-        </div>
-
-        <div className="flex items-center justify-between sm:hidden my-4 px-2">
-          <div className="flex gap-1 items-center">
-            <StarRating rating={average} />
-            {comments.length > 0 && (
-              <span className="text-sm text-[var(--gray-beige)]">
-                ({comments.length})
-              </span>
+              </ScrollArea>
             )}
           </div>
-          <span className="text-sm text-[var(--gray-beige)] ml-2">
-            Đã bán {product.sold}
-          </span>
         </div>
       </div>
-      <ProductDescription product={product} />
-      <div className="container mx-auto px-0 sm:py-6 max-sm:mb-[48px]">
-        <ProductReviews comments={comments} />
+      <div className="bg-[#F0F0F0]">
+        <div className="container mx-auto px-0 max-sm:mb-[48px] ">
+          <Tabs
+            value={active}
+            onValueChange={(value) => {
+              setActive(value);
+              handleScrollToTab(value);
+            }}
+            className="w-full"
+          >
+            <TabsList
+              ref={listRef}
+              className={cn(
+                "relative grid w-full grid-cols-5 bg-white sm:bg-[#F0F0F0] p-0 h-auto",
+                "max-sm:fixed max-sm:top-[60px] max-sm:left-0 max-sm:right-0 max-sm:z-50 rounded-none"
+              )}
+              onClick={() => handleScrollToTab(active)}
+            >
+              <TabsTrigger
+                data-value="product-info"
+                value="product-info"
+                className="text-black data-[state=active]:bg-transparent border-b-4 border-transparent transition-all sm:text-lg font-normal"
+              >
+                Thông tin
+              </TabsTrigger>
+              <TabsTrigger
+                data-value="product-details"
+                value="product-details"
+                className="text-black data-[state=active]:bg-transparent border-b-4 border-transparent transition-all sm:text-lg font-normal"
+              >
+                Chi tiết
+              </TabsTrigger>
+              <TabsTrigger
+                data-value="warranty-policy"
+                value="warranty-policy"
+                className="text-black data-[state=active]:bg-transparent border-b-4 border-transparent transition-all sm:text-lg font-normal"
+              >
+                Bảo hành
+              </TabsTrigger>
+              <TabsTrigger
+                data-value="care-guide"
+                value="care-guide"
+                className="text-black data-[state=active]:bg-transparent border-b-4 border-transparent transition-all sm:text-lg font-normal"
+              >
+                Bảo quản
+              </TabsTrigger>
+              <TabsTrigger
+                data-value="review"
+                value="review"
+                className="text-black data-[state=active]:bg-transparent border-b-4 border-transparent transition-all sm:text-lg font-normal"
+              >
+                Đánh giá
+              </TabsTrigger>
+
+              {/* underline indicator */}
+              <span
+                className="absolute bottom-0 h-[4px] bg-[var(--brown-brand)] transition-all duration-300"
+                style={{
+                  left: indicatorStyle.left,
+                  width: indicatorStyle.width,
+                }}
+              />
+            </TabsList>
+            {isMobile ? (
+              <div className="space-y-[10px]">
+                <MobileInfoSection id="product-info" title="Thông tin">
+                  <RenderHTMLFromCMS
+                    className="max-sm:text-sm"
+                    html={product.description}
+                  />
+                </MobileInfoSection>
+                <MobileInfoSection id="product-details" title="Chi tiết">
+                  <div className="p-2 bg-white">
+                    {product.discribles.map((item, index) => (
+                      <div
+                        key={item.title}
+                        className={cn(
+                          "grid grid-cols-4 p-2",
+                          index % 2 === 0 && "bg-[#FFECD9]"
+                        )}
+                      >
+                        <p className="max-sm:text-sm col-span-1 text-[#36454F]">
+                          {item.title}
+                        </p>
+                        <p className="max-sm:text-sm col-span-3">
+                          {item.content}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </MobileInfoSection>
+                <MobileInfoSection id="warranty-policy" title="Bảo hành">
+                  <RenderHTMLFromCMS
+                    className="max-sm:text-sm"
+                    html={product.warrantyPolicy}
+                  />
+                </MobileInfoSection>
+                <MobileInfoSection id="care-guide" title="Bảo quản">
+                  <RenderHTMLFromCMS
+                    className="max-sm:text-sm"
+                    html={product.careInstructions}
+                  />
+                </MobileInfoSection>
+                <MobileInfoSection id="review" title="Đánh giá">
+                  <ProductReviews comments={comments} />
+                </MobileInfoSection>
+              </div>
+            ) : (
+              <>
+                <TabsContent value="product-info" className="max-sm:px-2 mt-4">
+                  <ReadMore>
+                    <RenderHTMLFromCMS
+                      className="max-sm:text-sm"
+                      html={product.description}
+                    />
+                  </ReadMore>
+                </TabsContent>
+                <TabsContent
+                  value="product-details"
+                  className="max-sm:px-2 mt-4 "
+                >
+                  <div className="p-2 bg-white">
+                    {product.discribles.map((item, index) => (
+                      <div
+                        key={item.title}
+                        className={cn(
+                          "grid grid-cols-4 p-2",
+                          index % 2 === 0 && "bg-[#FFECD9]"
+                        )}
+                      >
+                        <p className="max-sm:text-sm col-span-1 text-[#36454F]">
+                          {item.title}
+                        </p>
+                        <p className="max-sm:text-sm col-span-3">
+                          {item.content}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
+                </TabsContent>
+                <TabsContent
+                  value="warranty-policy"
+                  className="max-sm:px-2 mt-4"
+                >
+                  <ReadMore>
+                    <RenderHTMLFromCMS
+                      className="max-sm:text-sm"
+                      html={product.warrantyPolicy}
+                    />
+                  </ReadMore>
+                </TabsContent>
+                <TabsContent value="care-guide" className="max-sm:px-2 mt-4">
+                  <ReadMore>
+                    <RenderHTMLFromCMS
+                      className="max-sm:text-sm"
+                      html={product.careInstructions}
+                    />
+                  </ReadMore>
+                </TabsContent>
+                <TabsContent value="review" className="max-sm:px-2 mt-4">
+                  <ReadMore>
+                    <ProductReviews comments={comments} />
+                  </ReadMore>
+                </TabsContent>
+              </>
+            )}
+          </Tabs>
+        </div>
       </div>
+
       <MobileActionBar
         product={product}
         variants={variants || []}

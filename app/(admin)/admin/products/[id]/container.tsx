@@ -18,6 +18,7 @@ import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
+import { useAlert } from "@/store/useAlert";
 import { Product, Product as TProduct } from "@/types/product";
 import { getDirtyData } from "@/utils";
 import { formatCurrency } from "@/utils/number";
@@ -37,10 +38,9 @@ import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams } from "next/navigation";
+import { useEffect } from "react";
 import EditableText from "./editable-text";
 import { ProductComments } from "./product-comment";
-import { useAlert } from "@/store/useAlert";
-import { useEffect } from "react";
 
 import {
   DialogDescription,
@@ -116,6 +116,7 @@ export default function ProductEditPage({ product }: { product: Product }) {
           title: "Cập nhật thành công",
           variant: "success",
         });
+        localStorage.removeItem(id!.toString());
       } else {
         toast({
           title: "Cập nhật thất bại",

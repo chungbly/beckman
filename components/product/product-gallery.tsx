@@ -88,7 +88,7 @@ function ProductGallery({ product, className }: ProductGalleryProps) {
   return (
     <div className={cn("max-h-full", className)}>
       {isMobile ? (
-        <Carousel setApi={setApi} className="aspect-square mt-7">
+        <Carousel setApi={setApi} className="aspect-square sm:mt-7">
           <CarouselContent className="ml-0">
             {images.map((image, index) => {
               const isVideo = !!videoExtensions.find((v) => image.includes(v));
@@ -178,11 +178,11 @@ function ProductGallery({ product, className }: ProductGalleryProps) {
           <div
             className={cn(
               "flex flex-wrap gap-[10px]",
-              "h-full max-h-[1700px] ",
+              "h-full max-h-[1400px] ",
               "max-sm:!min-h-[647px]",
               !!product.recommendedProducts?.length
-                ? "md:h-[1400px] xl:h-[1700px]"
-                : "md:h-[1000px] xl:h-[1000px]"
+                ? "md:h-[1400px]"
+                : "md:h-[1000px]"
             )}
           >
             {images.map((image, index) => {

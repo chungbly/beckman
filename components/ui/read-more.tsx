@@ -1,7 +1,7 @@
 "use client";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { ChevronDown } from "lucide-react";
+import { AnimatePresence, motion } from "framer-motion";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 function ReadMore({
@@ -14,62 +14,76 @@ function ReadMore({
   className?: string;
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
-
   const [isOverflowing, setIsOverflowing] = useState(false);
-  const contentRef = useRef(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+
   useEffect(() => {
-    if (contentRef.current) {
-      setIsOverflowing(
-        (contentRef.current as HTMLDivElement).scrollHeight > maxHeight
-      );
+    const el = contentRef.current;
+    if (el) {
+      setIsOverflowing(el.scrollHeight > maxHeight);
     }
-  }, [maxHeight]);
+  }, [children, maxHeight]);
+
   return (
     <div
-      className={cn(
-        "col-span-full relative pb-10",
-        isExpanded ? "pb-10" : "pb-0",
-        className
-      )}
+      className={cn("col-span-full relative", className, isExpanded && "pb-24")}
     >
-      <div
-        className={cn("overflow-hidden", isOverflowing && "mb-8")}
+      <motion.div
         ref={contentRef}
-        style={{
-          maxHeight: isExpanded ? "none" : maxHeight,
+        initial={false}
+        animate={{
+          height: isExpanded ? "auto" : maxHeight,
         }}
+        transition={{
+          type: "spring",
+          stiffness: 120,
+          damping: 20,
+        }}
+        className={cn(
+          "overflow-hidden",
+          !isExpanded && isOverflowing && "mb-8"
+        )}
       >
         {children}
-      </div>
-      <div
-        className={cn(
-          "absolute bottom-0 left-0 right-0 block h-full",
-          isExpanded
-            ? "h-10"
-            : isOverflowing
-            ? "bg-gradient-to-b from-white/10 to-white/100"
-            : ""
-        )}
-      >
+      </motion.div>
+
+      <AnimatePresence>
         {isOverflowing && (
-          <Button
-            variant="ghost"
-            onClick={() => setIsExpanded((prev) => !prev)}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             className={cn(
-              "absolute bg-[var(--light-beige)] bottom-0 left-1/2 -translate-x-1/2 flex flex-col items-center h-auto text-[var(--brown-brand)]"
+              "absolute bottom-0 left-0 right-0",
+              !isExpanded &&
+                "bg-gradient-to-b from-[#F0F0F0]/10 to-[#F0F0F0] h-[400px]"
             )}
           >
-            <ChevronDown
+            <div
+              onClick={() => setIsExpanded((prev) => !prev)}
               className={cn(
-                "transition-transform duration-300 ",
-                isExpanded ? "rotate-180" : "rotate-0"
+                "absolute cursor-pointer uppercase bottom-4 left-1/2 -translate-x-1/2 flex flex-col gap-2 items-center text-[#36454F] text-2xl font-bold px-2"
               )}
-            />
-            {isExpanded ? "Thu gọn" : "Xem thêm"}
-          </Button>
+            >
+              {isExpanded ? "Thu lại" : "Xem thêm"}
+              <motion.div
+                animate={{ rotate: isExpanded ? 180 : 0 }}
+                transition={{ duration: 0.3 }}
+              >
+                <Image
+                  src="/icons/drop-down.svg"
+                  alt="drop-down"
+                  width={20}
+                  height={20}
+                  className="mt-2"
+                />
+              </motion.div>
+            </div>
+          </motion.div>
         )}
-      </div>
+      </AnimatePresence>
     </div>
   );
 }
+
 export default ReadMore;
