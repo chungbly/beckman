@@ -12,7 +12,7 @@ import {
   PlayCircle,
 } from "lucide-react";
 import Image from "next/image";
-import { forwardRef, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Carousel,
   CarouselApi,
@@ -247,4 +247,4 @@ function ProductGallery({ product, className }: ProductGalleryProps) {
   );
 }
 
-export default forwardRef(ProductGallery);
+export default ProductGallery;

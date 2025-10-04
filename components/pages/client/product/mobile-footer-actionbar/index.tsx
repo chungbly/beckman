@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Product } from "@/types/product";
 import { formatCurrency } from "@/utils/number";
 import { AnimationControls, motion, useAnimation } from "framer-motion";
-import { Home, ShoppingCart } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import Link from "next/link";
 
 import ImageCarousel from "@/components/image-carousel";
@@ -65,24 +65,16 @@ const ActionBar = ({
         className
       )}
     >
-      <div className="grid grid-cols-4 gap-1 flex-1">
-        <div className="col-span-1 grid grid-cols-2 gap-1">
-          <Link
-            href="/"
-            className="col-span-1 flex flex-col items-center justify-center p-2"
-          >
-            <Home className="h-5 w-5" />
-          </Link>
-          <Link
-            href="/categories"
-            className="col-span-1 flex flex-col items-center justify-center p-2"
-          >
-            <div className="h-5 w-5 bg-[url(/icons/chat.svg)] bg-contain bg-no-repeat bg-center" />
-          </Link>
-        </div>
-        <div className="col-span-3 grid grid-cols-2 ">
+      <div className="grid grid-cols-[40px_1fr_auto] gap-1 flex-1">
+        <Link
+          href="/categories"
+          className="col-span-1 flex flex-col items-center justify-center p-2"
+        >
+          <div className="h-5 w-5 bg-[url(/icons/chat.svg)] bg-contain bg-no-repeat bg-center" />
+        </Link>
+        <div className="col-span-2 grid grid-cols-2 ">
           <Button
-            className="rounded-none bg-[#15374E] hover:bg-[#15374E]/90 transition-colors text-xs"
+            className="rounded-none bg-[#36454F] hover:bg-[#36454F]/90 transition-colors text-xs font-bold"
             onClick={(e) => {
               if (!isOpen) {
                 return setIsOpen(true);
@@ -91,12 +83,12 @@ const ActionBar = ({
             }}
           >
             <ShoppingCart className="mr-2 w-4 h-4" />
-            Thêm vào giỏ
+            THÊM VÀO GIỎ
           </Button>
           <form.Field name="finalPriceTotal">
             {(field) => (
               <Button
-                className="rounded-none flex-col bg-[#8B1F18] hover:bg-[#6B180F] text-xs"
+                className="rounded-none font-bold flex items-center gap-2 bg-[#CD7F32] hover:bg-[#CD7F32]/90 text-xs"
                 onClick={async (e) => {
                   if (!isOpen) {
                     return setIsOpen(true);
@@ -106,7 +98,7 @@ const ActionBar = ({
                   router.push("/gio-hang");
                 }}
               >
-                Mua ngay
+                MUA NGAY
                 <span>{formatCurrency(field.state.value)}</span>
               </Button>
             )}

@@ -92,7 +92,7 @@ export default function HeaderSearch({ className }: { className?: string }) {
               className
             )}
           />
-          <Search className="w-5 h-5 text-white sm:text-black" />
+          <Search className="w-5 h-5 text-[var(--brown-brand)] sm:text-black" />
         </div>
       </DialogTrigger>
       <DialogContent className="max-sm:h-full max-sm:max-h-full sm:max-w-[600px] p-0 max-h-[700px] flex flex-col overflow-hidden">

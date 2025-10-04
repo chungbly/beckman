@@ -37,7 +37,6 @@ import { Product, WithContext } from "schema-dts";
 import { useStore } from "zustand";
 import RenderHTMLFromCMS from "../app-layout/render-html-from-cms";
 import MobileActionBar from "../pages/client/product/mobile-footer-actionbar";
-import MobileSizeSelector from "../pages/client/product/mobile-size-selector";
 import ProductReviews from "../pages/client/product/review";
 import { fbTracking, ggTagTracking } from "../third-parties/utils";
 import ReadMore from "../ui/read-more";
@@ -462,7 +461,7 @@ export default function ProductPage({
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [isScrollingByClick, sections]);
+  }, [isScrollingByClick, sections, isMobile]);
 
   useEffect(() => {
     const items = cart?.cart;
@@ -575,27 +574,13 @@ export default function ProductPage({
                   })}
                 >
                   {({ color, size }) => (
-                    <>
-                      <SizeSelector
-                        variants={variants || []}
-                        sizes={product.sizeTags || []}
-                        selectedSize={size}
-                        selectedColor={color}
-                        onSelect={handleChangeSize}
-                      />
-                      <MobileSizeSelector
-                        variants={variants || []}
-                        sizes={product.sizeTags || []}
-                        selectedSize={size}
-                        selectedColor={color}
-                        onSelect={handleChangeSize}
-                        controls={controls}
-                        handleAddToCart={(e: MouseEvent<HTMLButtonElement>) =>
-                          handleAddToCart(e, controls)
-                        }
-                        product={product}
-                      />
-                    </>
+                    <SizeSelector
+                      variants={variants || []}
+                      sizes={product.sizeTags || []}
+                      selectedSize={size}
+                      selectedColor={color}
+                      onSelect={handleChangeSize}
+                    />
                   )}
                 </form.Subscribe>
                 {category?.sizeSelectionGuide && (
@@ -926,7 +911,7 @@ export default function ProductPage({
       <MobileActionBar
         product={product}
         variants={variants || []}
-        shoecareProducts={shoecareProducts}
+        shoecareProducts={product.recommendedProducts}
         handleChangeColor={handleChangeColor}
         handleChangeSize={handleChangeSize}
         handleAddToCart={handleAddToCart}
