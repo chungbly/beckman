@@ -15,12 +15,15 @@ function ReadMore({
 }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isOverflowing, setIsOverflowing] = useState(false);
+  const [contentHeight, setContentHeight] = useState(0);
   const contentRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const el = contentRef.current;
     if (el) {
-      setIsOverflowing(el.scrollHeight > maxHeight);
+      const scrollH = el.scrollHeight;
+      setContentHeight(scrollH);
+      setIsOverflowing(scrollH > maxHeight);
     }
   }, [children, maxHeight]);
 
@@ -32,7 +35,11 @@ function ReadMore({
         ref={contentRef}
         initial={false}
         animate={{
-          height: isExpanded ? "auto" : maxHeight,
+          height: isExpanded
+            ? "auto"
+            : isOverflowing
+            ? maxHeight
+            : contentHeight, // 👈 Nếu nội dung nhỏ hơn maxHeight → auto fit
         }}
         transition={{
           type: "spring",

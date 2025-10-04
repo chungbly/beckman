@@ -426,6 +426,7 @@ export default function ProductPage({
   };
 
   useEffect(() => {
+    if (!isMobile) return;
     const handleScroll = () => {
       // Nếu đang scroll bằng click → kiểm tra khi nào tới nơi thì unlock
       if (isScrollingByClick && scrollTargetRef.current !== null) {
