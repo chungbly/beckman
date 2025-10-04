@@ -1,4 +1,3 @@
-import { ChevronRight } from "lucide-react";
 import Image from "next/image";
 import {
   Dialog,
@@ -12,10 +11,9 @@ function SizeSelectionGuide({ src }: { src: string }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <div className="cursor-pointer flex items-center justify-between hover:underline">
-          <p className="text-sm">Hướng dẫn chọn size</p>
-          <ChevronRight className="w-4 h-4" />
-        </div>
+        <p className="cursor-pointer flex items-center justify-between hover:underline text-sm">
+          Hướng dẫn chọn size
+        </p>
       </DialogTrigger>
       <DialogContent className="max-w-2xl">
         <DialogHeader>

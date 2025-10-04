@@ -562,7 +562,9 @@ export default function ProductPage({
                   );
                 }}
               </form.Subscribe>
-              <p className="sm:text-lg underline">Hướng dẫn chọn size</p>
+              {category?.sizeSelectionGuide && (
+                <SizeSelectionGuide src={category?.sizeSelectionGuide} />
+              )}
             </div>
 
             {product.sizeTags?.length > 1 && (
@@ -583,9 +585,6 @@ export default function ProductPage({
                     />
                   )}
                 </form.Subscribe>
-                {category?.sizeSelectionGuide && (
-                  <SizeSelectionGuide src={category?.sizeSelectionGuide} />
-                )}
               </>
             )}
             {!!product.similarProducts?.length && (
