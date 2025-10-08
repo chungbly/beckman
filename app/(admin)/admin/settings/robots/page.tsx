@@ -2,8 +2,8 @@
 
 import { APIStatus } from "@/client/callAPI";
 import { updateConfig } from "@/client/configs.client";
-import AceEmmetEditor from "@/components/ace-editor";
 import PageBreadCrumb from "@/components/app-layout/page-breadcrumb";
+import MirrorEditor from "@/components/mirror-editor";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -87,9 +87,9 @@ export default function RobotsViewer() {
           </div>
         </CardHeader>
         <CardContent className="h-[65vh]">
-          <AceEmmetEditor
-            language="xml"
-            value={content || ""}
+          <MirrorEditor
+            height="600px"
+            value={robotsContent || ""}
             onChange={(value) => setContent(value)}
           />
         </CardContent>

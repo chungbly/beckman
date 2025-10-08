@@ -8,9 +8,9 @@ import {
   getCategory,
   updateCategory,
 } from "@/client/category.client";
-import AceEmmetEditor from "@/components/ace-editor";
 import PageBreadCrumb from "@/components/app-layout/page-breadcrumb";
 import GrapesStudio from "@/components/grapes/v1";
+import MirrorEditor from "@/components/mirror-editor";
 import SumbitButton from "@/components/submit-button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -99,7 +99,7 @@ export default function CategoryForm(props: {
       onSubmit: schema,
     },
     onSubmit: async ({ value, formApi, meta }) => {
-      if (!value._id || id === "new") {
+      if (!category?._id) {
         const res = await createCategory(value);
         if (res.status === APIStatus.OK && res.data) {
           toast({
@@ -323,7 +323,7 @@ export default function CategoryForm(props: {
                 <form.Field
                   name="filterJSON"
                   children={(field) => (
-                    <AceEmmetEditor
+                    <MirrorEditor
                       value={field.state.value || ""}
                       onChange={(value) => field.handleChange(value)}
                     />

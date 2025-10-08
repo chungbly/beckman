@@ -1,8 +1,8 @@
 "use client";
 import { APIStatus } from "@/client/callAPI";
 import { createEmbed, getEmbed, updateEmbed } from "@/client/embed.client";
-import AceEmmetEditor from "@/components/ace-editor";
 import PageBreadCrumb from "@/components/app-layout/page-breadcrumb";
+import MirrorEditor from "@/components/mirror-editor";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -223,7 +223,7 @@ export default function EmbedCodeForm() {
             <form.Field
               name="code"
               children={(field) => (
-                <AceEmmetEditor
+                <MirrorEditor
                   value={field.state.value || ""}
                   onChange={(value) => field.handleChange(value)}
                 />
