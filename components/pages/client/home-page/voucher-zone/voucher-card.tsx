@@ -273,6 +273,9 @@ export default function VoucherCard({
     if (!customer) return;
     setIsCustomerOwned(customer.voucherCodes?.includes(voucher.code) || false);
   }, [customer, voucher.code]);
+
+  if (!voucher.isPrivate) return null;
+
   return (
     <div
       className={cn(

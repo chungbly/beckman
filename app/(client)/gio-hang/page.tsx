@@ -5,42 +5,75 @@ import { formatCurrency } from "@/utils/number";
 import { useQuery } from "@tanstack/react-query";
 import { useStore } from "zustand";
 
+import { APIStatus } from "@/client/callAPI";
 import { updateCart } from "@/client/cart.client";
+import {
+  getDistricts,
+  getProvinces,
+  getWards,
+} from "@/client/master-data.client";
+import { createOrder } from "@/client/order.client";
 import CartProductItem from "@/components/pages/client/cart/cart-item";
 import CartItemSkeleton from "@/components/pages/client/cart/cart-item-skeleton";
 import EmptyCart from "@/components/pages/client/cart/empty-cart";
 import MobileActionBar from "@/components/pages/client/cart/mobile-action-bar";
 import OrderInfo from "@/components/pages/client/cart/order-info";
 import SuggestionAndSimilarProducts from "@/components/pages/client/cart/suggestion-and-similar-products";
-import { ggTagTracking } from "@/components/third-parties/utils";
+import { fbTracking, ggTagTracking } from "@/components/third-parties/utils";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Separator } from "@/components/ui/separator";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/hooks/use-toast";
 import { getUserId } from "@/lib/cookies";
 import { buildCartQuery } from "@/query/order.query";
 import { getCouponsQuery, getUserVouchersQuery } from "@/query/voucher.query";
+import { useConfigs } from "@/store/useConfig";
 import { useCustomerStore } from "@/store/useCustomer";
 import { formSchema } from "@/types/cart";
 import { CartBuilderRes } from "@/types/order";
+import { Voucher } from "@/types/voucher";
 import { useForm } from "@tanstack/react-form";
 import { LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useMemo } from "react";
+
+export const LineInfo = ({
+  title,
+  value,
+}: {
+  title: React.ReactNode;
+  value: React.ReactNode;
+}) => {
+  return (
+    <div className="w-full grid grid-cols-9 gap-4 ">
+      <div className="col-span-3 text-sm">{title}</div>
+      <div className="col-span-6 grid grid-cols-8 gap-4">
+        <div className="col-span-3" />
+        <div className="col-span-5 sm:col-span-3 justify-self-end flex items-center">
+          {value}
+        </div>
+      </div>
+    </div>
+  );
+};
 
 function CartPage() {
   const router = useRouter();
   const { toast } = useToast();
   const isMobile = useIsMobile();
+  const configs = useConfigs((s) => s.configs);
   const items = useStore(useCartStore, (state) => state.items);
-  const voucherCodes = useStore(useCartStore, (s) => s.userSelectedVouchers);
+  const voucherCodes = useCartStore((s) => s.userSelectedVouchers);
   const ignoreVouchers = useStore(useCartStore, (s) => s.ignoreVouchers);
   const shippingInfo = useStore(useCartStore, (s) => s.info);
-  const customer = useCustomerStore((s) => s.customer);
   const productIds = items.map((item) => item.productId);
   const totalSelected = items.reduce(
     (sum, item) => sum + (item.isSelected ? 1 : 0),
     0
   );
+
+  const SHIPPING_FEE_DEFAULT = (configs?.["SHIPPING_FEE_DEFAULT"] ??
+    35000) as number;
 
   const { data: cart, isLoading } = useQuery(
     buildCartQuery(
@@ -51,24 +84,79 @@ function CartPage() {
       shippingInfo?.phoneNumber
     )
   );
+  const getAddressDetail = async (
+    address: string,
+    pronvinceCode: number,
+    districtCode: number,
+    wardCode: number
+  ) => {
+    const getProvincesResp = await getProvinces();
+    if (!getProvincesResp || getProvincesResp.status !== APIStatus.OK) return;
+    const provinces = getProvincesResp.data;
+    const province = provinces.find((p) => p.ProvinceID === pronvinceCode);
+    if (!province) return;
+    const getDistrictResp = await getDistricts(pronvinceCode);
+    if (!getDistrictResp || getDistrictResp.status !== APIStatus.OK) return;
+    const districts = getDistrictResp.data;
+    const district = districts.find((p) => p.DistrictID === districtCode);
+    if (!district) return;
 
+    const getWardsResp = await getWards(districtCode);
+    if (!getWardsResp || getWardsResp.status !== APIStatus.OK) return;
+    const wards = getWardsResp.data;
+    const ward = wards.find((p) => p.WardCode === wardCode.toString());
+    if (!ward) return;
+    return `${address}, ${ward.WardName}, ${district.DistrictName}, ${province.ProvinceName}`;
+  };
   const {
     cart: products,
     appliedVoucherCodes,
     invalidVouchers,
     ...prices
   } = (cart || {}) as CartBuilderRes;
-
   const form = useForm({
     defaultValues: shippingInfo,
     onSubmit: async ({ value }) => {
       if (!totalSelected) return;
       useCartStore.getState().setInfo(value);
+      const { note, address, ...rest } = value;
+      const detailAddress = await getAddressDetail(
+        address,
+        rest.provinceCode,
+        rest.districtCode,
+        rest.wardCode
+      );
+      if (!detailAddress) {
+        return toast({
+          title: "Thông tin không hợp lệ",
+          description: "Địa chỉ mua hàng không tồn tại, vui lòng kiểm tra lại",
+          variant: "error",
+        });
+      }
+      const { fullName, phoneNumber } = rest;
+      if (!fullName) {
+        return toast({
+          variant: "error",
+          title: "Lỗi",
+          description: "Vui lòng nhập họ và tên",
+        });
+      }
+      if (!phoneNumber || !/^\d{10,11}$/.test(phoneNumber)) {
+        return toast({
+          variant: "error",
+          title: "Lỗi",
+          description: "Vui lòng nhập số điện thoại hợp lệ",
+        });
+      }
+      const shippingInfo = {
+        ...rest,
+        address: detailAddress,
+      };
       const userId =
         (await getUserId()) ||
         useCustomerStore.getState().customer?._id ||
         useCustomerStore.getState().userId;
-
+      const isAnonymous = !userId || userId?.includes("-");
       if (!userId) {
         return toast({
           variant: "error",
@@ -77,51 +165,74 @@ function CartPage() {
             "Xảy ra lỗi bất thường, liên hệ admin. Mã lỗi: 0x01usr09",
         });
       }
+      const payload = {
+        items: items
+          .filter((i) => i.quantity > 0 && i.isSelected)
+          .map((i) => ({
+            productId: i.productId,
+            quantity: i.quantity,
+            addons: i.addons || [],
+          })),
+        shippingInfo,
+        note,
+        voucherCodes,
+      };
+
+      const res = await createOrder(payload);
+      if (res.status !== APIStatus.OK) {
+        return toast({
+          title: "Đặt hàng không thành công",
+          description: res.message,
+          variant: "error",
+        });
+      }
       await new Promise((resolve) => {
-        ggTagTracking(products || [], "", "begin_checkout", prices.finalPrice);
+        ggTagTracking(products, "purchase", "purchase", prices.finalPrice);
+        fbTracking(products, "Purchase", "Purchase", prices.finalPrice);
         setTimeout(resolve, 1000);
       });
-      await updateCart(userId, {
-        items,
-        userSelectedVouchers: voucherCodes,
-        ignoreVouchers,
-        shippingInfo: value,
-      });
-      router.push("/dat-hang");
+      const order = res.data;
+      const orderCode = order?.code;
+      if (process.env.NODE_ENV === "production") {
+        useCartStore.getState().clearCart();
+        useCartStore.getState().setInfo({
+          ...shippingInfo,
+          note: "",
+        });
+        await updateCart(userId, {
+          items: [],
+          shippingInfo,
+          userSelectedVouchers: [],
+          ignoreVouchers: [],
+        });
+      }
+
+      router.push(`/don-hang/${orderCode}`);
     },
-    ...(!isMobile && {
-      validators: {
-        onSubmit: formSchema,
-      },
-    }),
+    validators: {
+      ...(!isMobile ? { onSubmit: formSchema } : {}),
+    },
   });
   const phoneNumber = form.getFieldValue("phoneNumber");
 
   const { data: userVouchers } = useQuery(
     getUserVouchersQuery({
-      ...(phoneNumber
-        ? { phoneNumber }
-        : {
-            userId:
-              useCustomerStore.getState().customer?._id ||
-              useCustomerStore.getState().userId ||
-              "",
-          }),
+      ...(phoneNumber ? { phoneNumber } : {}),
     })
   );
   const { data: coupons } = useQuery(getCouponsQuery());
-  const vouchers = Array.from(
-    new Set(
-      [...(userVouchers || []), ...(coupons || [])].filter((v) => {
-        if (!v.isCoupon) {
-          if (!v.isPrivate) return true;
-          return v.isPrivate && customer?.voucherCodes?.includes(v.code);
-        }
-        return appliedVoucherCodes?.includes(v.code);
-      })
-    )
-  );
-
+  const vouchers = useMemo(() => {
+    const result: Voucher[] = [];
+    [...(userVouchers || []), ...(coupons || [])].forEach((v) => {
+      if (result.some((i) => i.code === v.code)) return;
+      if (!v.isCoupon) {
+        result.push(v);
+      } else if (appliedVoucherCodes?.includes(v.code)) {
+        result.push(v);
+      }
+    });
+    return result;
+  }, [userVouchers, coupons, appliedVoucherCodes]);
   const isLoadingPrice = (isLoading || !prices) && !!items.length;
 
   const isSelectedAll = items.every((item) => {
@@ -132,8 +243,15 @@ function CartPage() {
     );
   });
 
-  const { finalPrice, totalPrice, shippingFee, totalSaved, cartFixedDiscount } =
-    (prices || {}) as CartBuilderRes;
+  const {
+    finalPrice,
+    totalPrice,
+    shippingFee,
+    totalSaved,
+    cartFixedDiscount,
+    totalSalePrice,
+    discount,
+  } = (prices || {}) as CartBuilderRes;
 
   const toggleSelectAll = (checked: boolean) => {
     if (checked) {
@@ -158,9 +276,10 @@ function CartPage() {
 
   useEffect(() => {
     useCartStore.getState().setAutoAppliedVouchers(appliedVoucherCodes || []);
+    const voucherCodes = useCartStore.getState().userSelectedVouchers;
     useCartStore.setState({
-      userSelectedVouchers: voucherCodes.filter(
-        (v) => !appliedVoucherCodes.includes(v)
+      userSelectedVouchers: voucherCodes.filter((v) =>
+        appliedVoucherCodes.includes(v)
       ),
     });
   }, [appliedVoucherCodes]);
@@ -195,8 +314,72 @@ function CartPage() {
                 );
               })
             )}
+
+            <div className="space-y-2 bg-[var(--light-beige)] p-2 sm:p-4 mt-4">
+              <p className="font-bold">Chi tiết thanh toán</p>
+              <LineInfo
+                title={"Tổng tiền hàng"}
+                value={
+                  isLoadingPrice ? (
+                    <LoaderCircle
+                      size={18}
+                      className="animate-spin text-[var(--brown-brand)]"
+                    />
+                  ) : (
+                    formatCurrency(totalSalePrice)
+                  )
+                }
+              />
+              <LineInfo
+                title={"Giảm phí vận chuyển"}
+                value={
+                  isLoadingPrice ? (
+                    <LoaderCircle
+                      size={18}
+                      className="animate-spin text-[var(--brown-brand)]"
+                    />
+                  ) : (
+                    <span className="text-[var(--red-brand)]">
+                      {formatCurrency(shippingFee - SHIPPING_FEE_DEFAULT)}
+                    </span>
+                  )
+                }
+              />
+              <LineInfo
+                title={"Voucher ưu đãi"}
+                value={
+                  isLoadingPrice ? (
+                    <LoaderCircle
+                      size={18}
+                      className="animate-spin text-[var(--brown-brand)]"
+                    />
+                  ) : (
+                    <span className="text-[var(--red-brand)]">
+                      {formatCurrency(discount)}
+                    </span>
+                  )
+                }
+              />
+              <Separator />
+              <LineInfo
+                title={"Tổng thanh toán"}
+                value={
+                  isLoadingPrice ? (
+                    <LoaderCircle
+                      size={18}
+                      className="animate-spin text-[var(--red-brand)]"
+                    />
+                  ) : (
+                    <span className="text-[var(--red-brand)] font-bold">
+                      {formatCurrency(finalPrice)}
+                    </span>
+                  )
+                }
+              />
+            </div>
+
             <div className="max-sm:hidden z-[51] space-y-1">
-              {!!cartFixedDiscount && (
+              {/* {!!cartFixedDiscount && (
                 <div className="bg-[var(--light-beige)] w-full sm:grid grid-cols-9 gap-4 p-4">
                   <p className="col-span-3 flex items-center gap-2 font-bold text-[var(--red-brand)]">
                     Giá trị giảm thêm
@@ -217,7 +400,7 @@ function CartPage() {
                     </div>
                   </div>
                 </div>
-              )}
+              )} */}
               <div className="bg-[var(--light-beige)] w-full sm:grid grid-cols-9 gap-4 p-4">
                 <div className="col-span-3 flex items-center gap-2">
                   <Checkbox
@@ -235,7 +418,7 @@ function CartPage() {
                       {isLoadingPrice ? (
                         <LoaderCircle
                           size={18}
-                          className="animate-spin text-[var(--brown-brand)]"
+                          className="animate-spin text-[var(--red-brand)]"
                         />
                       ) : (
                         <span className="font-bold text-base text-[var(--red-brand)]">
@@ -268,10 +451,10 @@ function CartPage() {
                           !Object.keys(prices).length ||
                           isSubmitting
                         }
-                        className="col-span-2 rounded-none bg-[var(--red-brand)] text-white "
+                        className="col-span-2 rounded-none bg-[#CD7F32] text-white font-bold "
                         onClick={form.handleSubmit}
                       >
-                        {isSubmitting ? "Đang xử lý..." : "Mua hàng"}
+                        {isSubmitting ? "Đang xử lý..." : "MUA NGAY"}
                       </Button>
                     )}
                   />

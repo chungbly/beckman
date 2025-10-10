@@ -25,6 +25,7 @@ import {
 } from "@tanstack/react-form";
 import { useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
+import Image from "next/image";
 import { useCallback } from "react";
 import VoucherCard from "../home-page/voucher-zone/voucher-card";
 
@@ -73,7 +74,7 @@ function OrderInfo({
     }, 300),
     []
   );
-
+  console.log("vouchers", vouchers);
   return (
     <div
       className={cn(
@@ -87,9 +88,17 @@ function OrderInfo({
         </h2>
         <div className="mt-6 pt-4 border-t max-sm:hidden">
           <div className="p-4 px-8  bg-[url('/icons/voucher-bg.svg')] bg-no-repeat bg-[var(--red-brand)]">
-            <h2 className="text-3xl sm:text-[calc(3rem+2px)] font-bold text-white mb-4 font-road-rage ">
-              Voucher Zone
-            </h2>
+            <div className="flex gap-2 items-center mb-4">
+              <h2 className="text-3xl sm:text-[calc(3rem+2px)] font-bold text-white  font-road-rage ">
+                Voucher liên kết
+              </h2>
+              <Image
+                src="/icons/r8ckie_white_logo.svg"
+                alt="r8ckie_white_logo"
+                width={113}
+                height={38}
+              />
+            </div>
             <form.Field name="phoneNumber">
               {(field) => (
                 <div className="relative">

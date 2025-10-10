@@ -7,7 +7,7 @@ export const getAllAvailabeCoupon = {
     const res = await getVouchers({
       isActive: true,
       isCoupon: true,
-      isAvailabe: true,
+      isAvailable: true,
     });
     if (res.status !== APIStatus.OK || !res.data || !res.data?.length)
       return [];
@@ -28,7 +28,7 @@ export const getUserVouchers = async ({
       isActive: true,
       phoneNumber,
       customerId: userId,
-      isAvailabe: true,
+      isAvailable: true,
     },
     100,
     1,
@@ -43,7 +43,7 @@ const getCoupons = async () => {
     {
       isActive: true,
       isCoupon: true,
-      isAvailabe: true,
+      isAvailable: true,
     },
     100,
     1,

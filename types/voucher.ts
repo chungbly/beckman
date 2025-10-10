@@ -57,7 +57,8 @@ export interface QueryGetVoucher {
   codes?: string[];
   isActive?: boolean;
   isCoupon?: boolean;
-  isAvailabe?: boolean;
+  isAvailable?: boolean;
+  isPrivate?: boolean;
   isUsed?: boolean;
   name?: string;
   type?: string;

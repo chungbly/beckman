@@ -32,7 +32,7 @@ const Header = async () => {
       )}
     >
       <div className="container flex items-center">
-        <Link href="/" className="py-1 relative top-0 sm:translate-y-[25%]">
+        <Link href="/" className="py-1 relative top-0 sm:translate-y-[25%] z-[100]">
           <Image
             src={"/icons/logo.svg"}
             alt="Beckman"

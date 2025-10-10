@@ -86,7 +86,25 @@ function Actions({
         "Tags sản phẩm liên quan": row.suggestionTags.join(","),
         "Số lượng tồn kho": row.stock,
         Màu: row.color,
+        "Tên màu thay thế": row.images?.[0]?.altName || "",
+        "Ảnh đại diện cho màu": row.images?.[0]?.thumbnail || "",
         Size: row.size,
+        "Seo Description": row.seo.description,
+        "Seo Keywords": row.seo.keywords,
+        "Chi tiết sản phẩm":
+          row.description?.length >= 32767
+            ? row.description.slice(0, 32766)
+            : row.description,
+        "Chính sách bảo hành": row.warrantyPolicy,
+        "Hướng dẫn bảo quản": row.careInstructions,
+        "Mô tả phụ": row.subDescription,
+        "Tên phụ": row.subName,
+        "Tên phụ 2": row.secondSubName,
+        "Chi tiết 1": `${row.discribles?.[0]?.title} || ${row.discribles?.[0]?.content}`,
+        "Chi tiết 2": `${row.discribles?.[1]?.title} || ${row.discribles?.[1]?.content}`,
+        "Chi tiết 3": `${row.discribles?.[2]?.title} || ${row.discribles?.[2]?.content}`,
+        "Chi tiết 4": `${row.discribles?.[3]?.title} || ${row.discribles?.[3]?.content}`,
+        "Chi tiết 5": `${row.discribles?.[4]?.title} || ${row.discribles?.[4]?.content}`,
       };
     });
 
@@ -168,6 +186,14 @@ function Actions({
                   })
                   .filter((c) => c)
               : [];
+            const altColorName = row["Tên màu thay thế"] as string;
+            const colorThumbnail = row["Ảnh đại diện cho màu"] as string;
+            const careInstructions = row["Hướng dẫn bảo quản"] as string;
+            const warrantyPolicy = row["Hướng dẫn bảo hành"] as string;
+            const subDescription = row["Mô tả phụ"] as string;
+            const subName = row["Tên phụ"] as string;
+            const secondSubName = row["Tên phụ 2"] as string;
+
             products.push(
               sanitizeObject({
                 kvId,
@@ -195,6 +221,13 @@ function Actions({
                       .map((i) => i.trim())
                   : [],
                 sold: sold || undefined,
+                altColorName: altColorName || undefined,
+                colorThumbnail: colorThumbnail || undefined,
+                careInstructions: careInstructions || undefined,
+                warrantyPolicy: warrantyPolicy || undefined,
+                subDescription: subDescription || undefined,
+                subName: subName || undefined,
+                secondSubName: secondSubName || undefined,
               })
             );
           }

@@ -621,7 +621,7 @@ export default function ProductPage({
 
             <div className="grid grid-cols-2 gap-4">
               <Button
-                className="bg-[#36454F] hover:bg-[#36454F] hover:shadow-[0_5px_5px_rgba(54,69,79,0.25)] rounded-none transition-shadow"
+                className="sm:text-2xl sm:h-[60px] bg-[#36454F] hover:bg-[#36454F] hover:shadow-[0_5px_5px_rgba(54,69,79,0.25)] rounded-none transition-shadow"
                 onClick={(e) => handleAddToCart(e, controls)}
               >
                 THÊM VÀO GIỎ
@@ -643,7 +643,7 @@ export default function ProductPage({
               </Button>
 
               <Button
-                className="flex-1 bg-[#CD7F32] hover:bg-[#CD7F32] hover:shadow-[0_5px_5px_rgba(54,69,79,0.25)] rounded-none"
+                className="sm:text-2xl sm:h-[60px] flex-1 bg-[#CD7F32] hover:bg-[#CD7F32] hover:shadow-[0_5px_5px_rgba(54,69,79,0.25)] rounded-none"
                 onClick={async (e) => {
                   const isOK = await handleAddToCart(e, controls);
                   if (!isOK) return;
@@ -660,7 +660,7 @@ export default function ProductPage({
                 height={30}
                 alt="Giao hàng miễn phí"
               />
-              <div className="text-[var(--brown-brand)] flex items-center sm:text-xl">
+              <div className="text-[var(--brown-brand)] flex items-center sm:text-lg">
                 <Dot />
                 <b>
                   MIỄN PHÍ giao hàng toàn quốc - thời gian giao từ 5 - 7 ngày
@@ -668,7 +668,7 @@ export default function ProductPage({
               </div>
             </div>
             <RenderHTMLFromCMS
-              className="max-sm:text-sm text-black"
+              className="sm:text-2xl text-black"
               html={product.subDescription}
             />
 
@@ -677,11 +677,16 @@ export default function ProductPage({
               <ScrollArea className="h-fit sm:h-[750px] absolute bottom-0 border-t-2 border-black/50">
                 <div className="space-y-4  pt-4">
                   {/* Product 1 */}
-                  {product.recommendedProducts?.map((p) => {
+                  {product.recommendedProducts?.map((p, index) => {
                     return (
                       <div
                         key={p._id}
-                        className="flex border-b-2 border-black/50 pb-4"
+                        className={cn(
+                          "flex border-b border-black/50 pb-4",
+                          index === product.recommendedProducts?.length - 1
+                            ? "border-b-0"
+                            : ""
+                        )}
                       >
                         <Image
                           width={200}

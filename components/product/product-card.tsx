@@ -92,7 +92,7 @@ export function ProductCard({
       </div>
       <div className="p-2 sm:p-3 space-y-1 flex flex-col flex-1 overflow-hidden">
         <span className="text-[#777777] text-sm sm:text-xl">
-          {product.categories?.[0]?.name} -{product.kvCode}
+          {product.secondSubName}
         </span>
         <h3 className="font-bold sm:text-2xl text-[#36454F] leading-tight">
           {product.name}

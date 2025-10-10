@@ -27,6 +27,7 @@ export interface Product {
   salePrice: number;
   name: string;
   subName: string;
+  secondSubName: string;
   discribles: Describle[];
   careInstructions: string;
   warrantyPolicy: string;
