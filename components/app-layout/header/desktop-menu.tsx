@@ -116,7 +116,7 @@ export function HeaderMenu({ categories }: { categories: Category[] }) {
               "grid grid-cols-5 w-screen container mx-auto h-auto items-center !p-[20px]"
             )}
           >
-            <div className="col-span-3 flex self-start gap-[20px]">
+            <div className="col-span-3 flex self-start gap-[20px] pt-10">
               {!!category.children.length ? (
                 Object.keys(group).map((g) => {
                   const childs = group[g];

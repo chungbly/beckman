@@ -46,7 +46,7 @@ export const MenuItem = ({
       {active === item && (
         <div className="fixed top-10 left-0 right-0 h-10 w-screen max-w-[100vw]" />
       )}
-      <div className="fixed top-20 left-0 right-0 w-screen max-w-[100vw] bg-white">
+      <div className="fixed top-[var(--header-height)] left-0 right-0 w-screen max-w-[100vw] bg-white">
         {active !== null && (
           <motion.div
             initial={{ opacity: 0, scale: 0.85, y: 10 }}

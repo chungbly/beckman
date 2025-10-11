@@ -100,11 +100,21 @@ function Actions({
         "Mô tả phụ": row.subDescription,
         "Tên phụ": row.subName,
         "Tên phụ 2": row.secondSubName,
-        "Chi tiết 1": `${row.discribles?.[0]?.title} || ${row.discribles?.[0]?.content}`,
-        "Chi tiết 2": `${row.discribles?.[1]?.title} || ${row.discribles?.[1]?.content}`,
-        "Chi tiết 3": `${row.discribles?.[2]?.title} || ${row.discribles?.[2]?.content}`,
-        "Chi tiết 4": `${row.discribles?.[3]?.title} || ${row.discribles?.[3]?.content}`,
-        "Chi tiết 5": `${row.discribles?.[4]?.title} || ${row.discribles?.[4]?.content}`,
+        "Chi tiết 1": `${row.discribles?.[0]?.title || ""} || ${
+          row.discribles?.[0]?.content || ""
+        }`,
+        "Chi tiết 2": `${row.discribles?.[1]?.title || ""} || ${
+          row.discribles?.[1]?.content || ""
+        }`,
+        "Chi tiết 3": `${row.discribles?.[2]?.title || ""} || ${
+          row.discribles?.[2]?.content || ""
+        }`,
+        "Chi tiết 4": `${row.discribles?.[3]?.title || ""} || ${
+          row.discribles?.[3]?.content || ""
+        }`,
+        "Chi tiết 5": `${row.discribles?.[4]?.title || ""} || ${
+          row.discribles?.[4]?.content || ""
+        }`,
       };
     });
 
@@ -193,6 +203,20 @@ function Actions({
             const subDescription = row["Mô tả phụ"] as string;
             const subName = row["Tên phụ"] as string;
             const secondSubName = row["Tên phụ 2"] as string;
+            const discribles = [
+              row["Chi tiết 1"],
+              row["Chi tiết 2"],
+              row["Chi tiết 3"],
+              row["Chi tiết 4"],
+              row["Chi tiết 5"],
+            ];
+            const discriblesObj = discribles.map((d) => {
+              const [title, content] = d.split("||");
+              return {
+                title: title?.trim() || "",
+                content: content?.trim() || "",
+              };
+            });
 
             products.push(
               sanitizeObject({
@@ -228,6 +252,7 @@ function Actions({
                 subDescription: subDescription || undefined,
                 subName: subName || undefined,
                 secondSubName: secondSubName || undefined,
+                discribles: discriblesObj,
               })
             );
           }
@@ -256,6 +281,7 @@ function Actions({
       setIsUploading(false);
       return;
     }
+    return;
     const res = await updateProducts(products);
 
     if (res.status !== APIStatus.OK) {
