@@ -23,7 +23,6 @@ import "@grapesjs/studio-sdk/style";
 import { useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import FileManager from "../file-manager";
-import "./style.css";
 import pluginSwiper from "./swiper";
 
 export default function GrapesStudio({

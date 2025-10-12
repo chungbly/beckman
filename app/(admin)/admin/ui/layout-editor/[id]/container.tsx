@@ -3,7 +3,6 @@ import { APIStatus } from "@/client/callAPI";
 import { updateConfig } from "@/client/configs.client";
 import PageBreadCrumb from "@/components/app-layout/page-breadcrumb";
 import GrapesStudio from "@/components/grapes/v1";
-import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { CustomPage } from "../container";
 
@@ -44,7 +43,7 @@ function AboutPageBuilder(props: {
   })();
 
   return (
-    <Card className="shadow-lg h-full">
+    <div className="shadow-lg h-full">
       <PageBreadCrumb breadcrumbs={[{ name: page.title }]} />
       <div className="h-full">
         <GrapesStudio
@@ -70,7 +69,7 @@ function AboutPageBuilder(props: {
           }}
         />
       </div>
-    </Card>
+    </div>
   );
 }
 
