@@ -45,7 +45,7 @@ function AboutPageBuilder(props: {
   return (
     <div className="shadow-lg h-full">
       <PageBreadCrumb breadcrumbs={[{ name: page.title }]} />
-      <div className="h-full">
+      <div className="h-full [transform:none]">
         <GrapesStudio
           value={value}
           pages={{
