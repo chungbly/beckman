@@ -78,7 +78,27 @@ export default function GrapesStudio({
     <>
       <StudioEditor
         options={{
-          onReady: (editor) => (window.editor = editor),
+          onReady: (editor) => {
+            window.editor = editor;
+            const iframe = editor.Canvas.getFrameEl();
+            if (!iframe) return;
+
+            // 🧠 Trick: ép GrapesJS focus iframe sau khi load
+            setTimeout(() => {
+              try {
+                iframe.contentWindow?.focus();
+                const doc = iframe.contentDocument;
+                if (doc && doc.body) {
+                  doc.body.contentEditable = "true";
+                  // simulate a minimal interaction để Safari "unlock"
+                  const event = new MouseEvent("mousedown", { bubbles: true });
+                  doc.body.dispatchEvent(event);
+                }
+              } catch (err) {
+                console.warn("Focus iframe failed", err);
+              }
+            }, 500);
+          },
           gjsOptions: {
             storageManager: false,
             assetManager: {
