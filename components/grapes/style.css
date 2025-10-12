@@ -1,0 +1,11 @@
+.gjs-frame,
+.gjs-cv-canvas {
+  pointer-events: auto !important;
+  position: relative !important;
+  z-index: 9999 !important;
+  transform: none !important;
+}
+.gjs-frame {
+  display: block !important;
+  background: transparent !important;
+}

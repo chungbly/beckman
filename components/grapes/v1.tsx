@@ -20,10 +20,11 @@ import StudioEditor, {
   ProjectDataResult,
 } from "@grapesjs/studio-sdk/react";
 import "@grapesjs/studio-sdk/style";
+import { useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import FileManager from "../file-manager";
+import "./style.css";
 import pluginSwiper from "./swiper";
-import { useEffect } from "react";
 
 export default function GrapesStudio({
   pages,
