@@ -23,6 +23,7 @@ import "@grapesjs/studio-sdk/style";
 import { createRoot } from "react-dom/client";
 import FileManager from "../file-manager";
 import pluginSwiper from "./swiper";
+import { useEffect } from "react";
 
 export default function GrapesStudio({
   pages,
@@ -59,6 +60,19 @@ export default function GrapesStudio({
       reader.readAsDataURL(blob);
     });
   }
+
+  useEffect(() => {
+    const observer = new MutationObserver(() => {
+      document.querySelectorAll("iframe.gjs-frame").forEach((iframe) => {
+        iframe.removeAttribute("sandbox");
+        iframe.setAttribute("allow-same-origin", "true");
+        iframe.setAttribute("allow-scripts", "true");
+      });
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <>
