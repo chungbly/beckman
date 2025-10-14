@@ -2,9 +2,14 @@
 import { APIStatus } from "@/client/callAPI";
 import { updateConfig } from "@/client/configs.client";
 import PageBreadCrumb from "@/components/app-layout/page-breadcrumb";
-import GrapesStudio from "@/components/grapes/v1";
+// import GrapesStudio from "@/components/grapes/v1";
 import { useToast } from "@/hooks/use-toast";
+import dynamic from "next/dynamic";
 import { CustomPage } from "../container";
+
+const GrapesStudio = dynamic(() => import("@/components/grapes/v1"), {
+  ssr: false,
+});
 
 function AboutPageBuilder(props: {
   page: CustomPage;
@@ -43,7 +48,7 @@ function AboutPageBuilder(props: {
   })();
 
   return (
-    <div className="shadow-lg h-full">
+    <div className="shadow-lg h-full [transform:none]">
       <PageBreadCrumb breadcrumbs={[{ name: page.title }]} />
       <div className="h-full [transform:none]">
         <GrapesStudio
