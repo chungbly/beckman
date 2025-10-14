@@ -67,34 +67,21 @@ export default function GrapesStudio({
         iframe.removeAttribute("sandbox");
         iframe.setAttribute("allow-same-origin", "true");
         iframe.setAttribute("allow-scripts", "true");
+        if (iframe && !iframe.hasAttribute("sandbox")) {
+          iframe.setAttribute(
+            "sandbox",
+            "allow-same-origin allow-scripts allow-popups allow-forms allow-modals allow-downloads"
+          );
+          iframe.removeAttribute("tabindex");
+          (iframe as HTMLIFrameElement).style.pointerEvents = "auto";
+          console.log("✅ Patched iframe sandbox");
+          return true;
+        }
       });
     });
 
     observer.observe(document.body, { childList: true, subtree: true });
     return () => observer.disconnect();
-  }, []);
-
-  useEffect(() => {
-    const fixIframe = () => {
-      const iframe = document.querySelector(".gjs-frame");
-      if (iframe && !iframe.hasAttribute("sandbox")) {
-        iframe.setAttribute(
-          "sandbox",
-          "allow-same-origin allow-scripts allow-popups allow-forms allow-modals allow-downloads"
-        );
-        iframe.removeAttribute("tabindex");
-        (iframe as HTMLIFrameElement).style.pointerEvents = "auto";
-        console.log("✅ Patched iframe sandbox");
-        return true;
-      }
-      return false;
-    };
-
-    const id = setInterval(() => {
-      if (fixIframe()) clearInterval(id);
-    }, 500);
-
-    return () => clearInterval(id);
   }, []);
 
   return (
