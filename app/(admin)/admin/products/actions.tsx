@@ -281,7 +281,6 @@ function Actions({
       setIsUploading(false);
       return;
     }
-    return;
     const res = await updateProducts(products);
 
     if (res.status !== APIStatus.OK) {
