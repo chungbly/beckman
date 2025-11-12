@@ -42,6 +42,7 @@ import { fbTracking, ggTagTracking } from "../third-parties/utils";
 import ReadMore from "../ui/read-more";
 import { ScrollArea } from "../ui/scroll-area";
 import SizeSelectionGuide from "./size-guide-selection";
+import Link from "next/link";
 export type ProductDetailForm = {
   name: string | undefined;
   kvId: number | undefined;
@@ -599,7 +600,9 @@ export default function ProductPage({
                       if (!altName) return null;
 
                       return (
-                        <div key={p._id} className="flex items-center gap-2">
+                        <Link
+                          href={`/${p.seo?.slug}`}
+                          key={p._id} className="flex items-center gap-2">
                           <Image
                             src={colorThumbnail || p.seo?.thumbnail || ""}
                             alt={p.name}
@@ -611,7 +614,7 @@ export default function ProductPage({
                           <p className="text-xs sm:text-xl hover:underline cursor-pointer">
                             {altName}
                           </p>
-                        </div>
+                        </Link>
                       );
                     })}
                   </div>

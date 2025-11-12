@@ -115,6 +115,10 @@ function Actions({
         "Chi tiết 5": `${row.discribles?.[4]?.title || ""} || ${
           row.discribles?.[4]?.content || ""
         }`,
+        "Sản phẩm tương tự": row.similarProducts?.map((p) => p.kvId).join(","),
+        "Sản phẩm mua kèm": row.recommendedProducts
+          ?.map((p) => p.kvId)
+          .join(","),
       };
     });
 
@@ -217,6 +221,14 @@ function Actions({
                 content: content?.trim() || "",
               };
             });
+            const similarProducts = ((row["Sản phẩm tương tự"] as string) || "")
+              ?.split(",")
+              ?.map((id) => +id.trim());
+            const recommendedProducts = (
+              (row["Sản phẩm mua kèm"] as string) || ""
+            )
+              ?.split(",")
+              ?.map((id) => +id.trim());
 
             products.push(
               sanitizeObject({
@@ -253,6 +265,8 @@ function Actions({
                 subName: subName || undefined,
                 secondSubName: secondSubName || undefined,
                 discribles: discriblesObj,
+                similarProducts,
+                recommendedProducts,
               })
             );
           }
@@ -277,6 +291,7 @@ function Actions({
     if (!file) return;
     setIsUploading(true);
     const products = await parseExcelProducts(file);
+    return;
     if (!products) {
       setIsUploading(false);
       return;
