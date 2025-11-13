@@ -224,10 +224,12 @@ function Actions({
             const similarProducts =
               String((row["Sản phẩm tương tự"] as string) || "")
                 ?.split(",")
+                ?.filter(Boolean)
                 ?.map((id) => +id.trim()) || [];
             const recommendedProducts =
               String((row["Sản phẩm mua kèm"] as string) || "")
                 ?.split(",")
+                ?.filter(Boolean)
                 ?.map((id) => +id.trim()) || [];
 
             products.push(
@@ -265,8 +267,8 @@ function Actions({
                 subName: subName || undefined,
                 secondSubName: secondSubName || undefined,
                 discribles: discriblesObj,
-                similarProducts,
-                recommendedProducts,
+                similarProducts: Array.from(new Set(similarProducts)),
+                recommendedProducts: Array.from(new Set(recommendedProducts)),
               })
             );
           }
@@ -290,6 +292,8 @@ function Actions({
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
+    e.target.value = "";
+    console.log("file", file);
     if (!file) return;
     setIsUploading(true);
     const products = await parseExcelProducts(file);
