@@ -143,7 +143,7 @@ function Actions({
     setIsLoading(false);
   };
 
-  function parseExcelProducts(file: File): Promise<Partial<Product>[]> {
+  function parseExcelProducts(file: File): Promise<Partial<Product>[] | null> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
 
@@ -221,14 +221,14 @@ function Actions({
                 content: content?.trim() || "",
               };
             });
-            const similarProducts = ((row["Sản phẩm tương tự"] as string) || "")
-              ?.split(",")
-              ?.map((id) => +id.trim());
-            const recommendedProducts = (
-              (row["Sản phẩm mua kèm"] as string) || ""
-            )
-              ?.split(",")
-              ?.map((id) => +id.trim());
+            const similarProducts =
+              String((row["Sản phẩm tương tự"] as string) || "")
+                ?.split(",")
+                ?.map((id) => +id.trim()) || [];
+            const recommendedProducts =
+              String((row["Sản phẩm mua kèm"] as string) || "")
+                ?.split(",")
+                ?.map((id) => +id.trim()) || [];
 
             products.push(
               sanitizeObject({
@@ -275,9 +275,11 @@ function Actions({
           toast({
             variant: "error",
             title: "Có lỗi xảy ra",
-            description: JSON.stringify(e),
+            description: JSON.stringify(
+              (e as unknown as { message: string }).message
+            ),
           });
-          reject();
+          resolve(null);
         }
       };
 
@@ -291,7 +293,6 @@ function Actions({
     if (!file) return;
     setIsUploading(true);
     const products = await parseExcelProducts(file);
-    return;
     if (!products) {
       setIsUploading(false);
       return;
