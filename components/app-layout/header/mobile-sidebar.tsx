@@ -70,6 +70,23 @@ export function MobileSidebar({
               />
             );
           })}
+          <div
+            style={{
+              order: categories.length + 1,
+            }}
+            className={cn(
+              "w-full py-[3px] flex h-[30px] pr-4 justify-between pl-1 font-bold uppercase focus-visible:ring-0 focus-visible:outline-none focus-visible:ring-offset-0",
+              "bg-transparent hover:bg-transparent text-[var(--brown-brand)] text-xl"
+            )}
+          >
+            <Link
+              href="/magazine"
+              className="flex flex-1 items-center gap-2"
+              onClick={handleClose}
+            >
+              Magazine
+            </Link>
+          </div>
         </div>
       </ScrollArea>
     </div>

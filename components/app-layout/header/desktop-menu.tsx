@@ -241,6 +241,22 @@ export function HeaderMenu({ categories }: { categories: Category[] }) {
           </MenuItem>
         );
       })}
+      <Link
+        href="/magazine"
+        style={{
+          order: categoriesTree.length + 1,
+        }}
+      >
+        <Button
+          onMouseEnter={() => setActive(null)}
+          variant="ghost"
+          className={cn(
+            "hover:bg-transparent hover:text-[var(--brown-brand)] justify-start w-full rounded-none text-[var(--brown-brand)] uppercase text-xl font-bold"
+          )}
+        >
+          Magazine
+        </Button>
+      </Link>
     </Menu>
   );
 }
