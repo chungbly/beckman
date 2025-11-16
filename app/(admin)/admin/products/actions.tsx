@@ -203,7 +203,7 @@ function Actions({
             const altColorName = row["Tên màu thay thế"] as string;
             const colorThumbnail = row["Ảnh đại diện cho màu"] as string;
             const careInstructions = row["Hướng dẫn bảo quản"] as string;
-            const warrantyPolicy = row["Hướng dẫn bảo hành"] as string;
+            const warrantyPolicy = row["Chính sách bảo hành"] as string;
             const subDescription = row["Mô tả phụ"] as string;
             const subName = row["Tên phụ"] as string;
             const secondSubName = row["Tên phụ 2"] as string;
