@@ -110,7 +110,7 @@ export default async function BlogPage({
       </p>
       <div className="grid lg:grid-cols-5 gap-[20px] px-4 mt-8">
         {/* Featured Posts */}
-        <div className="h-fit col-span-1 sm:p-[20px] sm:border-r border-[var(--brown-brand)] sticky top-20">
+        <div className="h-fit col-span-1 sm:p-[20px] sm:border-r border-[var(--brown-brand)] sm:sticky top-20">
           <h2 className="font-bold text-[40px] underline">Tin nổi bật</h2>
           <div className="space-y-5">
             {!!featuredPost?.length &&
