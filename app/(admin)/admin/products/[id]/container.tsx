@@ -788,11 +788,11 @@ export default function ProductEditPage({ product }: { product: Product }) {
                         <Link
                           className="underline text-sky-500"
                           target="_blank"
-                          href={`https://beckman.com.vn/${
+                          href={`https://beckman.vn.vn/${
                             field.state.value?.slug || ""
                           }`}
                         >
-                          {`https://beckman.com.vn/${
+                          {`https://beckman.vn.vn/${
                             field.state.value?.slug || ""
                           }`}
                         </Link>

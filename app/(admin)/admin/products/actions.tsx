@@ -71,7 +71,7 @@ function Actions({
         STT: index + 1,
         ID: row.kvId,
         SKU: row.kvCode,
-        "Link sản phẩm": `www.Beckman.com/${row.seo.slug}`,
+        "Link sản phẩm": `www.beckman.vn/${row.seo.slug}`,
         "Trạng thái": row.isShow ? "Đang hoạt động" : "Ngừng hoạt động",
         "Giá gốc": row.basePrice,
         "Giá Sale": row.salePrice || "",
@@ -236,7 +236,7 @@ function Actions({
               sanitizeObject({
                 kvId,
                 basePrice,
-                slug: slug.replace("www.Beckman.com/", ""),
+                slug: slug.replace("www.Beckman.vn/", ""),
                 salePrice: salePrice || undefined,
                 isShow: status === "Đang hoạt động",
                 name: escapeHtml(name.trim()),

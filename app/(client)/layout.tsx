@@ -20,7 +20,7 @@ export const metadata: Metadata = {
   openGraph: {
     images: ["/favicon.png"],
   },
-  metadataBase: new URL("https://beckman.vm"),
+  metadataBase: new URL("https://beckman.vn"),
   icons: {
     icon: "/favicon.png",
   },

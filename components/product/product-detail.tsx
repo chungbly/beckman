@@ -26,6 +26,7 @@ import { AnimationControls, useAnimation } from "framer-motion";
 import { Dot } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   notFound,
   usePathname,
@@ -42,7 +43,6 @@ import { fbTracking, ggTagTracking } from "../third-parties/utils";
 import ReadMore from "../ui/read-more";
 import { ScrollArea } from "../ui/scroll-area";
 import SizeSelectionGuide from "./size-guide-selection";
-import Link from "next/link";
 export type ProductDetailForm = {
   name: string | undefined;
   kvId: number | undefined;
@@ -275,7 +275,7 @@ export default function ProductPage({
     },
     offers: {
       "@type": "Offer",
-      url: `https://beckman.com/${product?.seo?.slug}`,
+      url: `https://beckman.vn/${product?.seo?.slug}`,
       priceCurrency: "VND",
       price: product?.finalPrice,
       availability: product?.stock ? "InStock" : "OutOfStock",
@@ -602,7 +602,9 @@ export default function ProductPage({
                       return (
                         <Link
                           href={`/${p.seo?.slug}`}
-                          key={p._id} className="flex items-center gap-2">
+                          key={p._id}
+                          className="flex items-center gap-2"
+                        >
                           <Image
                             src={colorThumbnail || p.seo?.thumbnail || ""}
                             alt={p.name}
@@ -671,13 +673,13 @@ export default function ProductPage({
               </div>
             </div>
             <RenderHTMLFromCMS
-              className="sm:text-2xl text-black"
+              className="sm:text-2xl text-black sm:leading-[1.6] text-center"
               html={product.subDescription}
             />
 
             {/* Shoes Tree Product List */}
             {!!product.recommendedProducts?.length && (
-              <ScrollArea className="h-fit sm:h-[750px] absolute bottom-0 border-t-2 border-black/50">
+              <ScrollArea className="h-fit sm:h-[750px] absolute bottom-0 border-t border-black/50">
                 <div className="space-y-4  pt-4">
                   {/* Product 1 */}
                   {product.recommendedProducts?.map((p, index) => {
