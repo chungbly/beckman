@@ -11,7 +11,7 @@ function SizeSelectionGuide({ src }: { src: string }) {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <p className="cursor-pointer flex items-center justify-between hover:underline text-sm">
+        <p className="cursor-pointer flex items-center justify-between hover:underline sm:text-lg text-sm">
           Hướng dẫn chọn size
         </p>
       </DialogTrigger>

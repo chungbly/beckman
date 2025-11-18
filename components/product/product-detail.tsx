@@ -107,6 +107,9 @@ export default function ProductPage({
   });
   const categories = product?.categories;
   const category = categories?.[0];
+  const sizeSelectionGuide =
+    category?.sizeSelectionGuide ||
+    categories?.find((c) => c.sizeSelectionGuide)?.sizeSelectionGuide;
 
   const { data: variants } = useQuery({
     queryKey: ["get-product-variants", slug, userId],
@@ -517,7 +520,7 @@ export default function ProductPage({
           />
           <div
             className={cn(
-              "space-y-3 sm:col-span-1 ",
+              "flex flex-col sm:col-span-1 gap-[10px] p-[10px]",
               "h-full sm:h-[1200px] md:h-[1200px] xl:h-[1200px] relative",
               !!product.recommendedProducts?.length
                 ? "xl:h-[1200px]"
@@ -541,7 +544,7 @@ export default function ProductPage({
             <div className="text-xs xl:text-xl text-muted-foreground">
               {currentProduct?.subName}
             </div>
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-between min-h-[60px]">
               <form.Subscribe
                 selector={(state) => ({
                   basePrice: state.values.basePriceTotal,
@@ -563,8 +566,8 @@ export default function ProductPage({
                   );
                 }}
               </form.Subscribe>
-              {category?.sizeSelectionGuide && (
-                <SizeSelectionGuide src={category?.sizeSelectionGuide} />
+              {sizeSelectionGuide && (
+                <SizeSelectionGuide src={sizeSelectionGuide} />
               )}
             </div>
 
@@ -589,10 +592,10 @@ export default function ProductPage({
               </>
             )}
             {!!product.similarProducts?.length && (
-              <>
+              <div className="flex flex-col gap-[20px] py-[10px]">
                 <div className="sm:text-2xl">Sản phẩm tương tự</div>
                 <ScrollArea>
-                  <div className="flex items-center gap-6 mb-4">
+                  <div className="flex items-center gap-6">
                     {product.similarProducts.map((p) => {
                       const image = p.images.find((i) => i.color === p.color);
                       const colorThumbnail = image?.thumbnail;
@@ -621,7 +624,7 @@ export default function ProductPage({
                     })}
                   </div>
                 </ScrollArea>
-              </>
+              </div>
             )}
 
             <div className="grid grid-cols-2 gap-4">
@@ -658,7 +661,7 @@ export default function ProductPage({
                 MUA NGAY
               </Button>
             </div>
-            <div className="flex items-center border p-3 border-[var(--gray-beige)]">
+            <div className="flex items-center border p-5 border-[var(--gray-beige)]">
               <Image
                 src="/icons/free-shipping.svg"
                 width={51}
@@ -679,7 +682,7 @@ export default function ProductPage({
 
             {/* Shoes Tree Product List */}
             {!!product.recommendedProducts?.length && (
-              <ScrollArea className="h-fit sm:h-[750px] absolute bottom-0 border-t border-black/50">
+              <ScrollArea className="h-fit sm:min-h-[750px] absolute bottom-0 border-t border-black/50">
                 <div className="space-y-4  pt-4">
                   {/* Product 1 */}
                   {product.recommendedProducts?.map((p, index) => {
@@ -689,7 +692,7 @@ export default function ProductPage({
                         className={cn(
                           "flex border-b border-black/50 pb-4",
                           index === product.recommendedProducts?.length - 1
-                            ? "border-b-0"
+                            ? "border-b-0 pb-0"
                             : ""
                         )}
                       >
