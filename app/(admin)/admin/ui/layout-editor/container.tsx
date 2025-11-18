@@ -91,8 +91,8 @@ export default function PageManager({
   const [isPreviewDialogOpen, setIsPreviewDialogOpen] = useState(false);
   const [newPage, setNewPage] = useState(DEFAULT_PAGE);
 
-  const handleSave = async (silent: boolean = false) => {
-    const res = await updateConfig("PAGE_MANAGER", JSON.stringify(pages));
+  const handleSave = async (silent: boolean = false, newPages: CustomPage[] = pages) => {
+    const res = await updateConfig("PAGE_MANAGER", JSON.stringify(newPages));
     if (res.status === APIStatus.OK) {
       if (!silent) {
         toast({
@@ -138,18 +138,18 @@ export default function PageManager({
     }
   };
 
-  const handleUpdatePage = () => {
+  const handleUpdatePage = async () => {
     if (selectedPage) {
-      setPages(
-        pages.map((p) =>
-          p.id === selectedPage.id
-            ? {
-                ...selectedPage,
-                updatedAt: new Date().toISOString().split("T")[0],
-              }
-            : p
-        )
+      const newPages = pages.map((p) =>
+        p.id === selectedPage.id
+          ? {
+              ...selectedPage,
+              updatedAt: new Date().toISOString().split("T")[0],
+            }
+          : p
       );
+      await handleSave(true, newPages);
+      setPages(newPages);
       setIsEditDialogOpen(false);
       setSelectedPage(null);
     }
