@@ -71,17 +71,17 @@ function Actions({
         STT: index + 1,
         ID: row.kvId,
         SKU: row.kvCode,
-        "Link sản phẩm": `www.beckman.vn/${row.seo.slug}`,
+        "Link sản phẩm": row.seo.slug ? `www.beckman.vn/${row.seo.slug}` : "",
         "Trạng thái": row.isShow ? "Đang hoạt động" : "Ngừng hoạt động",
         "Giá gốc": row.basePrice,
         "Giá Sale": row.salePrice || "",
-        "Link ảnh đại diện": row.seo.thumbnail,
+        "Link ảnh đại diện": row.seo?.thumbnail,
         "Hình ảnh": row.images
-          .map((d) => d.urls)
-          .flat()
+          ?.map((d) => d.urls)
+          ?.flat()
           .join(","),
         "Tên sản phẩm": row.name,
-        "Danh mục": row.categories.map((c) => c.name).join(","),
+        "Danh mục": row.categories?.map((c) => c.name)?.join(","),
         Tags: row.tags.join(","),
         "Tags sản phẩm liên quan": row.suggestionTags.join(","),
         "Số lượng tồn kho": row.stock,
@@ -89,8 +89,8 @@ function Actions({
         "Tên màu thay thế": row.images?.[0]?.altName || "",
         "Ảnh đại diện cho màu": row.images?.[0]?.thumbnail || "",
         Size: row.size,
-        "Seo Description": row.seo.description,
-        "Seo Keywords": row.seo.keywords,
+        "Seo Description": row.seo?.description,
+        "Seo Keywords": row.seo?.keywords,
         "Chi tiết sản phẩm":
           row.description?.length >= 32767
             ? row.description.slice(0, 32766)
