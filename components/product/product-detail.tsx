@@ -156,8 +156,6 @@ export default function ProductPage({
   });
   const items = useStore(useCartStore, (state) => state.items);
   const shippingInfo = useStore(useCartStore, (s) => s.info);
-  const voucherCodes = useStore(useCartStore, (s) => s.userSelectedVouchers);
-  const ignoreVouchers = useStore(useCartStore, (s) => s.ignoreVouchers);
   const [active, setActive] = useState("product-info");
   const listRef = useRef<HTMLDivElement>(null);
   const [indicatorStyle, setIndicatorStyle] = useState({ left: 0, width: 0 });
@@ -174,8 +172,6 @@ export default function ProductPage({
             },
           ]
         : [],
-      voucherCodes,
-      ignoreVouchers,
       shippingInfo?.provinceCode
     )
   );

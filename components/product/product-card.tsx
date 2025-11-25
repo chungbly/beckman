@@ -60,7 +60,7 @@ export function ProductCard({
       )}
       style={style}
     >
-      <div className="relative aspect-square overflow-hidden flex items-center justify-center">
+      <div className="relative aspect-[335/285] overflow-hidden flex items-center justify-center">
         {product.seo?.thumbnail ? (
           <Image
             src={product.seo?.thumbnail || ""}

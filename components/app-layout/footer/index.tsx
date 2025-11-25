@@ -15,9 +15,9 @@ const Footer = async () => {
   ] as SupportPage;
   return (
     <ClientFooterWrapper>
-      <div className="sm:absolute sm:inset-0 z-[1] pb-12 container h-full grid grid-cols-1 items-center sm:grid-cols-5 sm:px-2 px-0">
+      <div className="sm:absolute sm:inset-0 z-[1] container h-full grid grid-cols-1 items-center sm:grid-cols-6 sm:px-2 px-0">
         <div className="col-span-1 max-sm:hidden" />
-        <div className="col-span-3 grid sm:grid-cols-3 gap-2">
+        <div className="col-span-4 grid sm:grid-cols-3 gap-2">
           <div className="flex items-center justify-center w-full">
             <Image
               src="/icons/footer-logo.svg"

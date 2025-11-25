@@ -26,16 +26,13 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useToast } from "@/hooks/use-toast";
 import { getUserId } from "@/lib/cookies";
 import { buildCartQuery } from "@/query/order.query";
-import { getCouponsQuery, getUserVouchersQuery } from "@/query/voucher.query";
 import { useConfigs } from "@/store/useConfig";
 import { useCustomerStore } from "@/store/useCustomer";
 import { formSchema } from "@/types/cart";
 import { CartBuilderRes } from "@/types/order";
-import { Voucher } from "@/types/voucher";
 import { useForm } from "@tanstack/react-form";
 import { LoaderCircle } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo } from "react";
 
 export const LineInfo = ({
   title,
@@ -63,8 +60,6 @@ function CartPage() {
   const isMobile = useIsMobile();
   const configs = useConfigs((s) => s.configs);
   const items = useStore(useCartStore, (state) => state.items);
-  const voucherCodes = useCartStore((s) => s.userSelectedVouchers);
-  const ignoreVouchers = useStore(useCartStore, (s) => s.ignoreVouchers);
   const shippingInfo = useStore(useCartStore, (s) => s.info);
   const productIds = items.map((item) => item.productId);
   const totalSelected = items.reduce(
@@ -76,13 +71,7 @@ function CartPage() {
     35000) as number;
 
   const { data: cart, isLoading } = useQuery(
-    buildCartQuery(
-      items,
-      voucherCodes,
-      ignoreVouchers,
-      shippingInfo?.provinceCode,
-      shippingInfo?.phoneNumber
-    )
+    buildCartQuery(items, shippingInfo?.provinceCode, shippingInfo?.phoneNumber)
   );
   const getAddressDetail = async (
     address: string,
@@ -108,12 +97,7 @@ function CartPage() {
     if (!ward) return;
     return `${address}, ${ward.WardName}, ${district.DistrictName}, ${province.ProvinceName}`;
   };
-  const {
-    cart: products,
-    appliedVoucherCodes,
-    invalidVouchers,
-    ...prices
-  } = (cart || {}) as CartBuilderRes;
+  const { cart: products, ...prices } = (cart || {}) as CartBuilderRes;
   const form = useForm({
     defaultValues: shippingInfo,
     onSubmit: async ({ value }) => {
@@ -175,7 +159,7 @@ function CartPage() {
           })),
         shippingInfo,
         note,
-        voucherCodes,
+        voucherCodes: [],
       };
 
       const res = await createOrder(payload);
@@ -213,26 +197,7 @@ function CartPage() {
       ...(!isMobile ? { onSubmit: formSchema } : {}),
     },
   });
-  const phoneNumber = form.getFieldValue("phoneNumber");
 
-  const { data: userVouchers } = useQuery(
-    getUserVouchersQuery({
-      ...(phoneNumber ? { phoneNumber } : {}),
-    })
-  );
-  const { data: coupons } = useQuery(getCouponsQuery());
-  const vouchers = useMemo(() => {
-    const result: Voucher[] = [];
-    [...(userVouchers || []), ...(coupons || [])].forEach((v) => {
-      if (result.some((i) => i.code === v.code)) return;
-      if (!v.isCoupon) {
-        result.push(v);
-      } else if (appliedVoucherCodes?.includes(v.code)) {
-        result.push(v);
-      }
-    });
-    return result;
-  }, [userVouchers, coupons, appliedVoucherCodes]);
   const isLoadingPrice = (isLoading || !prices) && !!items.length;
 
   const isSelectedAll = items.every((item) => {
@@ -273,16 +238,6 @@ function CartPage() {
       });
     }
   };
-
-  useEffect(() => {
-    useCartStore.getState().setAutoAppliedVouchers(appliedVoucherCodes || []);
-    const voucherCodes = useCartStore.getState().userSelectedVouchers;
-    useCartStore.setState({
-      userSelectedVouchers: voucherCodes.filter((v) =>
-        appliedVoucherCodes.includes(v)
-      ),
-    });
-  }, [appliedVoucherCodes]);
 
   return (
     <div className="bg-white min-h-screen max-sm:mb-[56px]">
@@ -463,7 +418,7 @@ function CartPage() {
             </div>
           </div>
 
-          <OrderInfo vouchers={vouchers || []} form={form as any} />
+          <OrderInfo form={form as any} />
         </div>
         <SuggestionAndSimilarProducts ids={productIds} />
       </div>
@@ -475,7 +430,6 @@ function CartPage() {
         totalSaved={totalSaved}
         onSubmit={form.handleSubmit}
         isLoading={isLoadingPrice}
-        vouchers={vouchers || []}
       />
     </div>
   );

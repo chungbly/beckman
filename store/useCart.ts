@@ -12,8 +12,6 @@ export type CartItem = {
 type CartState = {
   items: CartItem[];
   appliedVouchers: string[];
-  userSelectedVouchers: string[];
-  ignoreVouchers: string[];
   info: TOrderInfo;
   addItem: (productId: number, addons?: number[]) => void;
   addAddons: (productId: number, addons?: number[]) => void;
@@ -26,14 +24,10 @@ type CartState = {
   selectAll: () => void;
   unselectAll: () => void;
   setInfo: (info: TOrderInfo) => void;
-  setVoucher: (voucher: string) => void;
-  removeVoucher: (voucher: string) => void;
   setAutoAppliedVouchers: (vouchers: string[]) => void;
-  setUserDeselectedAutoAppliedVouchers: (vouchers: string[]) => void;
 };
 export const useCartStore = create<CartState>()((set, get) => ({
   items: [],
-  userSelectedVouchers: [],
   ignoreVouchers: [],
   appliedVouchers: [],
   info: {
@@ -151,20 +145,7 @@ export const useCartStore = create<CartState>()((set, get) => ({
     });
   },
   setInfo: (info) => set({ info }),
-  setVoucher: async (voucher) => {
-    set({ userSelectedVouchers: [...get().userSelectedVouchers, voucher] });
-  },
-  removeVoucher: (voucher) => {
-    set({
-      userSelectedVouchers: get().userSelectedVouchers.filter(
-        (v) => v !== voucher
-      ),
-    });
-  },
   setAutoAppliedVouchers: (vouchers: string[]) => {
     set({ appliedVouchers: vouchers });
-  },
-  setUserDeselectedAutoAppliedVouchers: (vouchers: string[]) => {
-    set({ ignoreVouchers: vouchers });
   },
 }));

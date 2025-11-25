@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useConfigs } from "@/store/useConfig";
 import { Product } from "@/types/product";
-import { Separator } from "@radix-ui/react-separator";
 import { useState } from "react";
 
 export interface SizeSelectorProps {
@@ -85,8 +84,8 @@ export function SizeSelector({
                 variant="outline"
                 disabled={!isAvailable}
                 className={cn(
-                  "max-sm:flex-1 sm:h-[60px] sm:w-[95px] sm:text-2xl rounded-none font-normal px-4 max-sm:hover:bg-[#FFECD9] hover:border-[#CD7F32] border-x-[2px] border-y-[2px] bg-white text-black",
-                  selectedSize == size && "bg-[#FFECD9]"
+                  "max-sm:flex-1 sm:h-[60px] sm:w-[95px] sm:text-2xl rounded-none font-normal px-4 hover:bg-[#FFECD9] border border-black/50 bg-white text-black",
+                  selectedSize == size && "border-[#CD7F32] border-[2px]"
                 )}
                 onClick={() => onSelect(size)}
               >

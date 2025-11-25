@@ -8,11 +8,9 @@ import { APIStatus } from "@/client/callAPI";
 import { getProvinces } from "@/client/master-data.client";
 import { AutoComplete } from "@/components/ui/auto-complete";
 import { Input } from "@/components/ui/input";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { AutosizeTextarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 import { useCartStore } from "@/store/useCart";
-import { useCustomerStore } from "@/store/useCustomer";
 import { TOrderInfo } from "@/types/cart";
 import { Voucher } from "@/types/voucher";
 import { escapeHtml } from "@/utils";
@@ -24,15 +22,11 @@ import {
   ReactFormExtendedApi,
 } from "@tanstack/react-form";
 import { useQuery } from "@tanstack/react-query";
-import { Search } from "lucide-react";
-import Image from "next/image";
 import { useCallback } from "react";
-import VoucherCard from "../home-page/voucher-zone/voucher-card";
 
 function OrderInfo({
   form,
-  className,
-  vouchers,
+  className
 }: {
   className?: string;
   form: ReactFormExtendedApi<
@@ -49,7 +43,6 @@ function OrderInfo({
     FormAsyncValidateOrFn<TOrderInfo> | undefined,
     unknown
   >;
-  vouchers: Voucher[];
 }) {
   const { data: provinces, isLoading } = useQuery({
     queryKey: ["provinces"],
@@ -74,7 +67,6 @@ function OrderInfo({
     }, 300),
     []
   );
-  console.log("vouchers", vouchers);
   return (
     <div
       className={cn(
@@ -86,74 +78,6 @@ function OrderInfo({
         <h2 className="text-base sm:text-lg font-bold mb-4">
           Thông tin mua hàng
         </h2>
-        <div className="mt-6 pt-4 border-t max-sm:hidden">
-          <div className="p-4 px-8  bg-[url('/icons/voucher-bg.svg')] bg-no-repeat bg-[var(--red-brand)]">
-            <div className="flex gap-2 items-center mb-4">
-              <h2 className="text-3xl sm:text-[calc(3rem+2px)] font-bold text-white  font-road-rage ">
-                Voucher liên kết
-              </h2>
-              <Image
-                src="/icons/r8ckie_white_logo.svg"
-                alt="r8ckie_white_logo"
-                width={113}
-                height={38}
-              />
-            </div>
-            <form.Field name="phoneNumber">
-              {(field) => (
-                <div className="relative">
-                  <Input
-                    placeholder="Nhập số điện thoại để hiển thị voucher"
-                    defaultValue={field.state.value}
-                    onChange={(e) => {
-                      updatePhoneNumber(e.target.value);
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        const value = (e.target as HTMLInputElement).value;
-                        field.handleChange(escapeHtml(value));
-
-                        useCartStore.setState({
-                          userSelectedVouchers: [],
-                          ignoreVouchers: [],
-                          info: {
-                            ...useCartStore.getState().info,
-                            phoneNumber: field.state.value,
-                          },
-                        });
-                      }
-                    }}
-                    onBlur={(e) => {
-                      field.handleChange(escapeHtml(e.target.value));
-                      useCartStore.setState({
-                        userSelectedVouchers: [],
-                        ignoreVouchers: [],
-                      });
-                    }}
-                    className="rounded-none"
-                  />
-                  <Search className="absolute top-1/2 right-2 -translate-y-1/2" />
-                </div>
-              )}
-            </form.Field>
-
-            {!!vouchers?.length && (
-              <ScrollArea
-                className="flex h-[300px] mt-2 "
-                viewportClassName="p-0"
-              >
-                {vouchers.map((voucher, index) => (
-                  <VoucherCard
-                    voucher={voucher}
-                    className="my-2 w-full"
-                    key={index}
-                    customer={useCustomerStore.getState().customer}
-                  />
-                ))}
-              </ScrollArea>
-            )}
-          </div>
-        </div>
         <div className="space-y-3 mt-3">
           <form.Field name="fullName">
             {(field) => (
@@ -186,8 +110,6 @@ function OrderInfo({
                   onBlur={(e) => {
                     field.handleChange(escapeHtml(e.target.value));
                     useCartStore.setState({
-                      userSelectedVouchers: [],
-                      ignoreVouchers: [],
                       info: {
                         ...useCartStore.getState().info,
                         phoneNumber: field.state.value,

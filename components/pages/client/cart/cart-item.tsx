@@ -339,39 +339,6 @@ function CartProductItem({
           </div>
         );
       })}
-
-      {!!vouchers.length &&
-        vouchers.map((voucher, index) => {
-          if (DONT_SHOW_IN_CART_PAGE_VOUCHER_CODES.includes(voucher.code))
-            return;
-          const products = voucherAppliedProducts.filter(
-            (p) => p.voucherCode === voucher.code
-          );
-          return (
-            <div key={voucher._id + index} className="space-y-1 mt-2">
-              <Link
-                href={`/giam-them/${voucher.code}`}
-                className="text-sm text-[var(--red-brand)] hover:underline"
-              >
-                Sản phẩm <b>{voucher.name}</b> khi mua kèm
-              </Link>
-              {products.map((product) => {
-                const item = items.find((i) => i.productId === product.kvId);
-                if (!item) return null;
-                return (
-                  <div key={product._id}>
-                    <ProductItem
-                      product={product}
-                      item={item}
-                      isEditable={isEditable}
-                      className="text-sm text-gray-500 px-0 lg:px-0"
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          );
-        })}
     </ProductItem>
   );
 }
