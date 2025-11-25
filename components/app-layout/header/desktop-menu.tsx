@@ -113,10 +113,10 @@ export function HeaderMenu({ categories }: { categories: Category[] }) {
               </Link>
             }
             className={cn(
-              "grid grid-cols-5 w-screen container mx-auto h-auto items-center !p-[20px]"
+              "flex w-screen container mx-auto h-auto items-center !p-[55px] gap-20"
             )}
           >
-            <div className="col-span-3 flex self-start gap-[20px] pt-10">
+            <div className="w-fit flex self-start gap-[20px] pt-10">
               {!!category.children.length ? (
                 Object.keys(group).map((g) => {
                   const childs = group[g];
@@ -137,7 +137,7 @@ export function HeaderMenu({ categories }: { categories: Category[] }) {
                               href={
                                 child.slug ? `/danh-muc/${child.slug}` : "#"
                               }
-                              className="text-[#777777] hover:underline"
+                              className="!text-[#777777] hover:underline"
                               style={{
                                 order: childIndex
                                   ? childIndex
@@ -228,7 +228,7 @@ export function HeaderMenu({ categories }: { categories: Category[] }) {
               )}
             </div>
             {category.desktopBanner && (
-              <div className="col-span-2 relative h-[350px]">
+              <div className="flex-1 relative h-[350px]">
                 <Image
                   src={category.desktopBanner}
                   alt={category.name}

@@ -27,12 +27,15 @@ const Header = async () => {
   return (
     <header
       className={cn(
-        "flex items-center py-1 h-[var(--header-mobile-height)] sm:h-[var(--header-height)] max-sm:shadow-sm sticky top-0 z-50 sm:mb-[var(--header-menu-height)]",
+        "flex items-center py-1 h-[var(--header-mobile-height)] sm:h-[var(--header-height)] max-sm:shadow-sm sticky top-0 z-50",
         "bg-[url('/icons/header-pattern.svg')] bg-repeat"
       )}
     >
       <div className="container flex items-center">
-        <Link href="/" className="py-1 relative top-0 sm:translate-y-[25%] z-[100]">
+        <Link
+          href="/"
+          className="py-1 relative top-0 sm:translate-y-[25%] z-[100]"
+        >
           <Image
             src={"/icons/logo.svg"}
             alt="Beckman"
