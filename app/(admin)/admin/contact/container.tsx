@@ -36,6 +36,7 @@ import {
 } from "lucide-react";
 import dynamic from "next/dynamic";
 import { v4 } from "uuid";
+import { getSociaLinkIcon } from "./utils";
 
 const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
 
@@ -59,22 +60,6 @@ export interface Contact {
   description: string;
 }
 
-const getSociaLinkIcon = (name: string) => {
-  switch (name.toLowerCase()) {
-    case "facebook":
-      return <Facebook className="h-4 w-4" />;
-    case "twitter":
-      return <TwitterIcon className="h-4 w-4" />;
-    case "instagram":
-      return <InstagramIcon className="h-4 w-4" />;
-    case "linkedin":
-      return <LinkedinIcon className="h-4 w-4" />;
-    case "tiktok":
-      return <IconBrandTiktok className="h-4 w-4" />;
-    default:
-      return <LinkIcon className="h-4 w-4" />;
-  }
-};
 
 export default function ContactInfo({
   configs,

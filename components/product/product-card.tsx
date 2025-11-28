@@ -55,7 +55,9 @@ export function ProductCard({
     <Link
       href={`/${product.seo?.slug || "#"}`}
       className={cn(
-        "group bg-[url('/images/product-card-bg.png')] bg-contain !no-underline flex flex-col h-full rounded-none cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1",
+        "group bg-[url('/images/product-card-bg.png')] bg-contain !no-underline",
+        "flex flex-col h-full rounded-none cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1",
+        "border border-[#4F2C1E]",
         className
       )}
       style={style}

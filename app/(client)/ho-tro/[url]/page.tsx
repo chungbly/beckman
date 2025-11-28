@@ -55,7 +55,7 @@ async function Page(props: {
   if (!page) notFound();
   const content = (configs?.[page.key] || "") as string;
   return (
-    <div className="container pt-8">
+    <div className="container pt-4 sm:pt-12">
       <Breadcrumb
         items={[{ label: "Trang chủ", href: "/" }, { label: page.name }]}
         className="hidden sm:flex text-[var(--brown-brand)]"

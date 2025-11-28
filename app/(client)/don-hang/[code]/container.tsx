@@ -48,7 +48,7 @@ export default function OrderCompletePageContainer({
     items.push(rest);
   });
   return (
-    <div className="container mx-auto px-4 py-12">
+    <div className="container mx-auto px-4 py-12 mt-4 sm:mt-12">
       <Card className="max-w-2xl mx-auto">
         <CardHeader>
           <motion.div
@@ -73,6 +73,12 @@ export default function OrderCompletePageContainer({
             <div className="flex justify-between">
               <span className="font-medium">Mã đơn hàng:</span>
               <span className="text-primary">{order.code}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-medium">Phí vận chuyển:</span>
+              <span className="font-bold text-[var(--red-brand)]">
+                {formatCurrency(order.shippingFee)}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="font-medium">Tổng cộng:</span>

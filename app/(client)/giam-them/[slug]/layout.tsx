@@ -56,7 +56,7 @@ async function CategoryLayout(props: Props) {
     return notFound();
   }
   return (
-    <div className="container px-2 sm:px-4 sm:pt-2">
+    <div className="container px-2 sm:px-4 mt-4 sm:mt-12">
       <Breadcrumb
         items={[
           {

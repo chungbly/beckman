@@ -240,7 +240,7 @@ function CartPage() {
   };
 
   return (
-    <div className="bg-white min-h-screen max-sm:mb-[56px]">
+    <div className="bg-white min-h-screen max-sm:mb-[56px] pt-4 sm:pt-12">
       <div className="container py-6 max-sm:px-0">
         <h1 className="text-2xl font-bold mb-6 max-sm:px-2">Giỏ hàng</h1>
 
@@ -282,6 +282,21 @@ function CartPage() {
                     />
                   ) : (
                     formatCurrency(totalSalePrice)
+                  )
+                }
+              />
+              <LineInfo
+                title={"Phí vận chuyển"}
+                value={
+                  isLoadingPrice ? (
+                    <LoaderCircle
+                      size={18}
+                      className="animate-spin text-[var(--brown-brand)]"
+                    />
+                  ) : (
+                    <span className="text-[var(--red-brand)]">
+                      {formatCurrency(items.length ? SHIPPING_FEE_DEFAULT : 0)}
+                    </span>
                   )
                 }
               />
@@ -377,7 +392,7 @@ function CartPage() {
                         />
                       ) : (
                         <span className="font-bold text-base text-[var(--red-brand)]">
-                          {formatCurrency(finalPrice - shippingFee)}
+                          {formatCurrency(finalPrice)}
                         </span>
                       )}
                     </p>

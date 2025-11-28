@@ -18,7 +18,9 @@ const lora = Lora({
 
 async function Layout({ children }: { children: React.ReactNode }) {
   return (
-    <div className={cn(lora.className, "text-[var(--brown-brand)]")}>
+    <div
+      className={cn(lora.className, "text-[var(--brown-brand)] mt-4 sm:mt-12")}
+    >
       {children}
     </div>
   );

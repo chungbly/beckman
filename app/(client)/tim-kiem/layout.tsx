@@ -19,7 +19,7 @@ async function CategoryLayout(props: Props) {
   const filter = configs?.["FILTER_JSON"] as FilterSection[];
 
   return (
-    <div className="container px-2 sm:px-4 sm:pt-2">
+    <div className="container px-2 sm:px-4 mt-4 sm:mt-12">
       <Breadcrumb
         items={[
           {
@@ -27,7 +27,7 @@ async function CategoryLayout(props: Props) {
             href: "/",
           },
           {
-            label: 'Tìm kiếm',
+            label: "Tìm kiếm",
           },
         ]}
         className="hidden sm:flex sm:mb-2 text-[var(--brown-brand)]"

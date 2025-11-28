@@ -503,7 +503,7 @@ export default function ProductPage({
 
   return (
     <>
-      <div className="container mx-auto px-2 sm:px-0 sm:py-6 max-sm:mb-[48px] max-sm:mt-[36px]">
+      <div className="container mx-auto px-2 sm:px-0 sm:py-6 max-sm:mb-[48px] max-sm:mt-[36px] mt-4 sm:mt-12">
         <script
           defer
           type="application/ld+json"

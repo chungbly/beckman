@@ -1,4 +1,5 @@
 import { Contact } from "@/app/(admin)/admin/contact/container";
+import { getSociaLinkIcon } from "@/app/(admin)/admin/contact/utils";
 import { SupportPage } from "@/app/(admin)/admin/policy/[url]/container";
 import { getGlobalConfig } from "@/lib/configs";
 import Image from "next/image";
@@ -106,19 +107,20 @@ const Footer = async () => {
               <h3 className="font-bold text-2xl text-[var(--brown-brand)]">
                 FOLLOW US
               </h3>
-              <ul className="space-y-3 h-auto transition-all duration-300">
+              <div className="flex items-center gap-2 h-auto transition-all duration-300 mt-2">
                 {socialLinks.map((item) => (
-                  <li key={item.name} className="text-xl uppercase">
-                    <Link
-                      href={item.url}
-                      rel="noopener noreferrer"
-                      className="hover:text-[var(--brown-brand)]"
-                    >
-                      {item.name}
-                    </Link>
-                  </li>
+                  <Link
+                    key={item.name}
+                    href={item.url}
+                    rel="noopener noreferrer"
+                    className="text-[var(--brown-brand)] text-xl uppercase"
+                  >
+                    {getSociaLinkIcon(item.name)
+                      ? getSociaLinkIcon(item.name, "w-8 h-8")
+                      : item.name}
+                  </Link>
                 ))}
-              </ul>
+              </div>
             </div>
           </div>
         </div>

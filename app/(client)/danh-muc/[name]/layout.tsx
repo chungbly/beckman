@@ -1,5 +1,6 @@
 import { getCategory } from "@/client/category.client";
 import RenderHTMLFromCMS from "@/components/app-layout/render-html-from-cms";
+import { cn } from "@/lib/utils";
 import { Metadata, ResolvingMetadata } from "next";
 
 import { notFound } from "next/navigation";
@@ -60,7 +61,14 @@ async function CategoryLayout(props: Props) {
           <RenderHTMLFromCMS html={category.header.html} />
         </>
       )}
-      <div className="container px-2 sm:px-4 sm:pt-2">{props.children}</div>
+      <div
+        className={cn(
+          "container px-2 sm:px-4 sm:pt-2",
+          !category.header && "sm:mt-10"
+        )}
+      >
+        {props.children}
+      </div>
     </>
   );
 }
