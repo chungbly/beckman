@@ -54,7 +54,7 @@ function AuditLogTable({
     }),
     columnHelper.accessor("resource", {
       header: "Resource",
-      cell: (info) => info.getValue(),
+      cell: (info) => <div className="max-w-xs overflow-hidden text-ellipsis line-clamp-3">{info.getValue()}</div>,
     }),
     columnHelper.accessor("resourceId", {
       header: "Resource ID",

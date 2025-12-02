@@ -574,14 +574,23 @@ export default function MagazineEditor() {
                               )}
                               <div className="text-sm">
                                 Url:
-                                <Link
-                                  className="underline text-blue-400"
-                                  href={`/magazine/${
-                                    subfield?.state?.value || ""
-                                  }`}
-                                >
-                                  magazine/{subfield?.state?.value || ""}
-                                </Link>
+                                <form.Field
+                                  name="isMagazine"
+                                  children={(field) => {
+                                    const isMagazine = field.state.value;
+                                    return (
+                                      <Link
+                                        className="underline text-blue-400"
+                                        href={`/${
+                                          isMagazine ? "magazine" : "gioi-thieu"
+                                        }/${subfield?.state?.value || ""}`}
+                                      >
+                                        {isMagazine ? "magazine" : "gioi-thieu"}
+                                        /{subfield?.state?.value || ""}
+                                      </Link>
+                                    );
+                                  }}
+                                />
                               </div>
                             </div>
                           );

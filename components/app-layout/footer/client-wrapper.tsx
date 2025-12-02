@@ -16,7 +16,7 @@ function ClientFooterWrapper({ children }: { children: React.ReactNode }) {
       )}
     >
       <Image
-        src="/images/footer_bg.png"
+        src="/_images/footer_bg.png"
         alt="footer bg"
         width={1920}
         height={800}

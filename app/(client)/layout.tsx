@@ -37,7 +37,7 @@ export default async function RootLayout({
   return (
     <div
       className={cn(
-        "min-h-screen bg-[url('/images/background.png')] bg-cover bg-repeat-round font-inter antialiased",
+        "min-h-screen bg-[url('/_images/background.png')] bg-cover bg-repeat-round font-inter antialiased",
         oswald.className
       )}
     >
