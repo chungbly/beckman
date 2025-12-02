@@ -105,6 +105,7 @@ export default function ProductPage({
       return res.data[0];
     },
   });
+  console.log(product);
   const categories = product?.categories;
   const category = categories?.[0];
   const sizeSelectionGuide =
@@ -520,7 +521,10 @@ export default function ProductPage({
               "h-full sm:h-[1200px] md:h-[1200px] xl:h-[1200px] relative",
               !!product.recommendedProducts?.length
                 ? "xl:h-[1200px]"
-                : "md:h-[1000px] xl:h-[1000px]"
+                : "md:h-[1000px] xl:h-[1000px]",
+              !product.recommendedProducts?.length &&
+                product.images.length === 1 &&
+                "md:h-[700px] xl:h-[700px]"
             )}
           >
             <form.Field name="kvCode">

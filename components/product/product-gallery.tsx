@@ -182,7 +182,10 @@ function ProductGallery({ product, className }: ProductGalleryProps) {
               "max-sm:!min-h-[647px]",
               !!product.recommendedProducts?.length
                 ? "md:h-[1400px]"
-                : "md:h-[1000px]"
+                : "md:h-[1000px]",
+              !product.recommendedProducts?.length &&
+                product.images.length === 1 &&
+                "md:h-[700px] xl:h-[700px]"
             )}
           >
             {images.map((image, index) => {
