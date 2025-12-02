@@ -236,7 +236,7 @@ function Actions({
               sanitizeObject({
                 kvId,
                 basePrice,
-                slug: slug.replace("www.Beckman.vn/", ""),
+                slug: slug?.toLowerCase()?.replaceAll("www.beckman.vn/", ""),
                 salePrice: salePrice || undefined,
                 isShow: status === "Đang hoạt động",
                 name: escapeHtml(name.trim()),
