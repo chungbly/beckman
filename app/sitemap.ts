@@ -88,9 +88,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
   const postUrls = posts.map((post) => {
     return {
-      url: `https://beckman.vn/${post.isMagazine ? "magazine" : "gioi-thieu"}/${
-        post.seo.slug
-      }`,
+      url: `https://beckman.vn/magazine/${post.seo.slug}`,
       lastModified: new Date(),
       changeFrequency: "daily" as ChangeFrequency,
       priority: 1,

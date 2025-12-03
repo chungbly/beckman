@@ -15,7 +15,6 @@ interface Props {
     page: string;
     title: string;
     isShow: string;
-    isMagazine: string;
     authorId: string;
   }>;
 }
@@ -27,9 +26,6 @@ async function Page(props: Props) {
     page: +searchParams.page || 1,
     title: searchParams.title,
     isShow: searchParams.isShow ? searchParams.isShow === "true" : true,
-    isMagazine: searchParams.isMagazine
-      ? searchParams.isMagazine === "true"
-      : true,
     authorId: searchParams.authorId,
   };
   await queryClient.prefetchQuery(getPostsQuery(query));

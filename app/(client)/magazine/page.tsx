@@ -35,7 +35,6 @@ export const getPostInfinityQuery = (tags: string[]) => {
           // isOutStanding: false,
           isSlide: false,
           isShow: true,
-          isMagazine: true,
         },
         12,
         pageParam,
@@ -65,7 +64,6 @@ const getFeaturedPost = async () => {
     {
       isOutStanding: true,
       isShow: true,
-      isMagazine: true,
     },
     2,
     1

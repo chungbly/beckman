@@ -43,7 +43,6 @@ export const getSimilarPostsInfinityQuery = (slug: string) => {
       const res = await getSimilarPosts(
         {
           slug,
-          isMagazine: true,
         },
         12,
         pageParam,

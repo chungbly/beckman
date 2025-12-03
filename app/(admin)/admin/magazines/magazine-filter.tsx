@@ -34,7 +34,6 @@ const WithLabel = ({
 type Filter = {
   title: string;
   isShow: boolean;
-  isMagazine: boolean;
   authorId: string;
   page?: number;
 };
@@ -44,7 +43,6 @@ function MagazineFilter({ query }: { query: Filter }) {
   const form = useForm({
     defaultValues: {
       title: query.title || "",
-      isMagazine: query.isMagazine,
       isShow: query.isShow,
       authorId: query.authorId || "",
     },
@@ -92,25 +90,6 @@ function MagazineFilter({ query }: { query: Filter }) {
               <SelectContent>
                 <SelectItem value="true">Hiển thị</SelectItem>
                 <SelectItem value="false">Ẩn</SelectItem>
-              </SelectContent>
-            </Select>
-          )}
-        />
-      </WithLabel>
-      <WithLabel className="col-span-1" label="Loại">
-        <form.Field
-          name="isMagazine"
-          children={(field) => (
-            <Select
-              value={field.state.value ? "magazine" : "about"}
-              onValueChange={(v) => field.handleChange(v === "magazine")}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="magazine">Magazine</SelectItem>
-                <SelectItem value="about">Giới thiệu</SelectItem>
               </SelectContent>
             </Select>
           )}

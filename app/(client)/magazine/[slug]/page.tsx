@@ -32,7 +32,6 @@ const getPost = async (slug: string) => {
     {
       slug,
       isShow: true,
-      isMagazine: true,
     },
     1,
     1
@@ -79,7 +78,6 @@ const getSameAuthorPosts = async (slug: string) => {
       slug,
       isShow: true,
       getRandom: true,
-      isMagazine: true,
     },
     2,
     1

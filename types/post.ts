@@ -18,7 +18,6 @@ export interface Post {
   content: string;
   tags: string[];
   images: string[];
-  isMagazine: boolean;
   isShow: boolean;
   isSlide: boolean;
   isOutStanding: boolean;
@@ -49,7 +48,6 @@ export interface GetPostQuery {
   title?: string;
   isShow?: boolean;
   authorId?: string;
-  isMagazine?: boolean;
   isSlide?: boolean;
   isOutStanding?: boolean;
   getRandom?: boolean;
