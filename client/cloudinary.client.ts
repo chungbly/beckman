@@ -8,15 +8,11 @@ import {
 import { callAPI } from "./callAPI";
 
 export const getFolderTree = () => {
-  return callAPI<CloudinaryFolderTree[]>("/api/cloudinary/folder-tree", {
-    baseURL: process.env.NEXT_PUBLIC_CLOUDINARY_HOST_URL,
-  });
+  return callAPI<CloudinaryFolderTree[]>("/api/cloudinary/folder-tree", {});
 };
 
 export const getSubFolders = (path: string) => {
   return callAPI<CloudinaryFolder[]>("/api/cloudinary/folders", {
-    baseURL: process.env.NEXT_PUBLIC_CLOUDINARY_HOST_URL,
-
     query: {
       path,
     },
@@ -25,8 +21,6 @@ export const getSubFolders = (path: string) => {
 
 export const getFolder = (folderId: string) => {
   return callAPI<CloudinaryFolder>("/api/cloudinary/folder", {
-    baseURL: process.env.NEXT_PUBLIC_CLOUDINARY_HOST_URL,
-
     query: {
       id: folderId,
     },
@@ -35,8 +29,6 @@ export const getFolder = (folderId: string) => {
 
 export const getFolderFiles = (path: string) => {
   return callAPI<CloudinaryFile[]>("/api/cloudinary/list", {
-    baseURL: process.env.NEXT_PUBLIC_CLOUDINARY_HOST_URL,
-
     query: {
       path,
     },
@@ -51,8 +43,6 @@ export const createFolder = (
   }
 ) => {
   return callAPI("/api/cloudinary/folder", {
-    baseURL: process.env.NEXT_PUBLIC_CLOUDINARY_HOST_URL,
-
     method: "POST",
     body: JSON.stringify({
       ...folder,
@@ -82,7 +72,6 @@ export const uploadFile = async (
   }
 
   return await callAPI<CloudinaryFile[]>("/api/cloudinary/upload", {
-    baseURL: process.env.NEXT_PUBLIC_CLOUDINARY_HOST_URL,
     method: "POST",
     headers: {
       Authorization: token ? `Bearer ${token}` : "",
@@ -93,8 +82,6 @@ export const uploadFile = async (
 
 export const checkNameExists = (names: string[], currentFolderPath: string) => {
   return callAPI<string[]>("/api/cloudinary/check-name", {
-    baseURL: process.env.NEXT_PUBLIC_CLOUDINARY_HOST_URL,
-
     method: "POST",
     body: JSON.stringify({
       names,
@@ -105,8 +92,6 @@ export const checkNameExists = (names: string[], currentFolderPath: string) => {
 
 export const deleteFiles = (ids: string[]) => {
   return callAPI("/api/cloudinary/files", {
-    baseURL: process.env.NEXT_PUBLIC_CLOUDINARY_HOST_URL,
-
     method: "DELETE",
     body: JSON.stringify({
       ids,
@@ -116,7 +101,6 @@ export const deleteFiles = (ids: string[]) => {
 
 export const renameFile = (id: string, name: string) => {
   return callAPI("/api/cloudinary/files/re-name", {
-    baseURL: process.env.NEXT_PUBLIC_CLOUDINARY_HOST_URL,
     method: "POST",
     body: JSON.stringify({
       id,
@@ -133,7 +117,6 @@ export const moveFiles = (
   }
 ) => {
   return callAPI("/api/cloudinary/files/move", {
-    baseURL: process.env.NEXT_PUBLIC_CLOUDINARY_HOST_URL,
     method: "POST",
     body: JSON.stringify({
       ids,
@@ -150,7 +133,6 @@ export const copyFiles = (
   }
 ) => {
   return callAPI("/api/cloudinary/files/copy", {
-    baseURL: process.env.NEXT_PUBLIC_CLOUDINARY_HOST_URL,
     method: "POST",
     body: JSON.stringify({
       ids,
@@ -161,8 +143,6 @@ export const copyFiles = (
 
 export const deleteFolders = (ids: string[]) => {
   return callAPI("/api/cloudinary/folder", {
-    baseURL: process.env.NEXT_PUBLIC_CLOUDINARY_HOST_URL,
-
     method: "DELETE",
     body: JSON.stringify({
       ids,
@@ -172,7 +152,6 @@ export const deleteFolders = (ids: string[]) => {
 
 export const renameFolder = (folderId: string, name: string) => {
   return callAPI("/api/cloudinary/folder/re-name", {
-    baseURL: process.env.NEXT_PUBLIC_CLOUDINARY_HOST_URL,
     method: "POST",
     body: JSON.stringify({
       folderId,

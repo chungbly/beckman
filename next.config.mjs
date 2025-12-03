@@ -24,6 +24,10 @@ const nextConfig = {
         destination: "/api/robots",
       },
       {
+        source: "/backend/api/cloudinary/:path*",
+        destination: `${process.env.NEXT_PUBLIC_CLOUDINARY_HOST_URL}/api/cloudinary/:path*`,
+      },
+      {
         source: "/backend/:path*",
         destination: `${process.env.NEXT_PUBLIC_API_HOST_URL}/:path*`,
       },
