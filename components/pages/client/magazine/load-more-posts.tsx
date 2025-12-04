@@ -43,7 +43,10 @@ function LoadMorePosts() {
             <Post key={post._id} post={post} size="small" />
           ))}
         </div>
-        <div className="space-y-[20px] sm:border-r sm:border-l sm:px-[20px] border-[var(--brown-brand)]">
+        <div className={cn("space-y-[20px] sm:px-[20px] border-[var(--brown-brand)]",
+                          secondPosts.length && "sm:border-l",
+                           thirdPosts.length && "sm:border-r"
+                          )}>
           {secondPosts?.map((post) => (
             <Post key={post._id} post={post} size="small" />
           ))}

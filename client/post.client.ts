@@ -33,6 +33,7 @@ export const getCategoryCountByTag = async (tags: string[]) => {
     query: {
       q: JSON.stringify({
         tags,
+        isShow:true
       }),
     },
   });

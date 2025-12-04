@@ -33,7 +33,7 @@ export const getPostInfinityQuery = (tags: string[]) => {
               }
             : {}),
           // isOutStanding: false,
-          isSlide: false,
+          //isSlide: false,
           isShow: true,
         },
         12,
