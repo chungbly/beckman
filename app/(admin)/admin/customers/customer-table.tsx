@@ -18,6 +18,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import Link from "next/link";
+import moment from "moment-timezone";
 
 const columnHelper = createColumnHelper<Customer>();
 
@@ -34,7 +35,7 @@ const columns = [
         className="hover:underline text-primary p-2"
         href={`/admin/customers/${info.row.original._id}`}
       >
-        {info.getValue() || '---'}
+        {info.getValue() || "---"}
       </Link>
     ),
   }),
@@ -58,6 +59,24 @@ const columns = [
   columnHelper.accessor("voucherCodes", {
     header: "Mã voucher",
     cell: (info) => info.getValue().join(", "),
+  }),
+  columnHelper.accessor("createdAt", {
+    header: "Ngày tạo",
+    cell: (info) =>
+      info.getValue()
+        ? moment
+            .tz(info.getValue(), "Asia/Ho_Chi_Minh")
+            .format("DD/MM/YYYY HH:mm:ss")
+        : "Không xác định",
+  }),
+  columnHelper.accessor("updatedAt", {
+    header: "Ngày cập nhật",
+    cell: (info) =>
+      info.getValue()
+        ? moment
+            .tz(info.getValue(), "Asia/Ho_Chi_Minh")
+            .format("DD/MM/YYYY HH:mm:ss")
+        : "Không xác định",
   }),
 ];
 function CustomerTable({
