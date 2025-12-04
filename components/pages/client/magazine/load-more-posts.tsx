@@ -2,6 +2,7 @@
 import { getPostInfinityQuery } from "@/app/(client)/magazine/page";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useConfigs } from "@/store/useConfig";
 import { Post as TPost } from "@/types/post";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { ChevronDown, Loader } from "lucide-react";
@@ -12,11 +13,16 @@ function LoadMorePosts() {
   const searchParams = useSearchParams();
   const tags = searchParams.get("tags") || "";
   const tagArr = tags?.split(",").filter((tag) => !!tag);
+  const configs = useConfigs((s) => s.configs);
+  const PINNED_POST_ID = configs?.["PINNED_POST_ID"] as string;
 
   const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
     useInfiniteQuery(getPostInfinityQuery(tagArr));
 
-  const posts = data?.pages?.flatMap((page) => page?.items || []) ?? [];
+  const posts = (
+    data?.pages?.flatMap((page) => page?.items || []) ?? []
+  ).filter((post) => post._id !== PINNED_POST_ID);
+
   if (!posts || !posts?.length) return null;
   const firstPosts: TPost[] = [];
   const secondPosts: TPost[] = [];
@@ -43,10 +49,13 @@ function LoadMorePosts() {
             <Post key={post._id} post={post} size="small" />
           ))}
         </div>
-        <div className={cn("space-y-[20px] sm:px-[20px] border-[var(--brown-brand)]",
-                          secondPosts.length && "sm:border-l",
-                           thirdPosts.length && "sm:border-r"
-                          )}>
+        <div
+          className={cn(
+            "space-y-[20px] sm:px-[20px] border-[var(--brown-brand)]",
+            secondPosts.length && "sm:border-l",
+            thirdPosts.length && "sm:border-r"
+          )}
+        >
           {secondPosts?.map((post) => (
             <Post key={post._id} post={post} size="small" />
           ))}
