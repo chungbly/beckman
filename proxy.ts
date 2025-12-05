@@ -22,7 +22,7 @@ async function getRedirectsCached() {
   return redirectCache.data;
 }
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const requestHeaders = new Headers(request.headers);
   const pathname = request.nextUrl.pathname;
   requestHeaders.set("x-pathname", pathname);
