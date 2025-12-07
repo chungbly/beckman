@@ -2,7 +2,7 @@ import { Metadata } from "next";
 export async function generateMetadata(): Promise<Metadata> {
   return {
     openGraph: {
-      images: ["/favicon.png"],
+      images: ["/favicon.svg"],
     },
     description: "Beckman - Admin Dashboard",
     title: "Beckman - Admin Dashboard",

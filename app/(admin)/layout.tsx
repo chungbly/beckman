@@ -54,11 +54,11 @@ import MainContent from "./main-content";
 
 export const metadata: Metadata = {
   openGraph: {
-    images: ["/favicon.png"],
+    images: ["/favicon.svg"],
   },
   metadataBase: new URL("https://beckman.vn"),
   icons: {
-    icon: "/favicon.png",
+    icon: "/favicon.svg",
   },
   description: "Beckman - Be a Classic Gentleman",
   title: "Beckman - Be a Classic Gentleman",

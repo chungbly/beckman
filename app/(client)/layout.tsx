@@ -4,10 +4,10 @@ import AppLayout from "@/components/app-layout";
 import InitCookies from "@/components/app-layout/init-cookies";
 import FacebookPixel from "@/components/third-parties/facebook";
 import GoogleTagManagers from "@/components/third-parties/google";
+import { Toaster } from "@/components/ui/sonner";
 import { cn } from "@/lib/utils";
 import { Metadata } from "next";
 import DynamicClientScript from "../dynamic-client-script";
-import { Toaster } from "@/components/ui/sonner";
 
 const oswald = Oswald({
   weight: ["300", "400", "500", "700"],
@@ -18,11 +18,11 @@ const oswald = Oswald({
 
 export const metadata: Metadata = {
   openGraph: {
-    images: ["/favicon.png"],
+    images: ["/favicon.svg"],
   },
   metadataBase: new URL("https://beckman.vn"),
   icons: {
-    icon: "/favicon.png",
+    icon: "/favicon.svg",
   },
   description: "Beckman - Be a Classic Gentleman",
   title: "Beckman - Be a Classic Gentleman",
