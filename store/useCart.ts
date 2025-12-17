@@ -35,7 +35,7 @@ export const useCartStore = create<CartState>()((set, get) => ({
     phoneNumber: "",
     provinceCode: 0,
     districtCode: 0,
-    wardCode: 0,
+    wardCode: "",
     address: "",
     note: "",
   },

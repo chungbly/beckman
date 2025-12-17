@@ -37,7 +37,7 @@ interface Item extends Product {
 }
 
 export interface ShippingInfo {
-  wardCode: number;
+  wardCode: string;
   districtCode: number;
   provinceCode: number;
   fullName: string;

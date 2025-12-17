@@ -20,7 +20,7 @@ export function CartSyncer() {
         phoneNumber: customer?.phoneNumbers?.[0] || "",
         provinceCode: 0,
         districtCode: 0,
-        wardCode: 0,
+        wardCode: "",
         address: "",
         note: "",
       },
