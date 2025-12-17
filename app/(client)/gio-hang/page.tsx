@@ -77,7 +77,7 @@ function CartPage() {
     address: string,
     pronvinceCode: number,
     districtCode: number,
-    wardCode: number
+    wardCode: string
   ) => {
     const getProvincesResp = await getProvinces();
     if (!getProvincesResp || getProvincesResp.status !== APIStatus.OK) return;
@@ -93,7 +93,7 @@ function CartPage() {
     const getWardsResp = await getWards(districtCode);
     if (!getWardsResp || getWardsResp.status !== APIStatus.OK) return;
     const wards = getWardsResp.data;
-    const ward = wards.find((p) => p.WardCode === wardCode.toString());
+    const ward = wards.find((p) => p.WardCode === wardCode);
     if (!ward) return;
     return `${address}, ${ward.WardName}, ${district.DistrictName}, ${province.ProvinceName}`;
   };

@@ -143,7 +143,7 @@ function OrderInfo({
                     onChange={(v) => {
                       field.handleChange(v?.value || 0);
                       form.setFieldValue("districtCode", 0);
-                      form.setFieldValue("wardCode", 0);
+                      form.setFieldValue("wardCode", "");
                       useCartStore.setState({
                         info: {
                           ...useCartStore.getState().info,
@@ -175,7 +175,7 @@ function OrderInfo({
                       value={+field.state.value}
                       onChange={(v) => {
                         field.handleChange(v.value);
-                        form.setFieldValue("wardCode", 0);
+                        form.setFieldValue("wardCode", "");
                         useCartStore.setState({
                           info: {
                             ...useCartStore.getState().info,
@@ -206,7 +206,13 @@ function OrderInfo({
                       districtCode={+districtField.state.value}
                       value={field.state.value.toString()}
                       onChange={(v) => {
-                        field.handleChange(+v.value || 0);
+                        field.handleChange(v.value);
+                        useCartStore.setState({
+                          info: {
+                            ...useCartStore.getState().info,
+                            wardCode: v.value,
+                          },
+                        });
                       }}
                     />
                     {(field.state.meta.errors?.[0] as any)?.message && (

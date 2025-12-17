@@ -5,7 +5,7 @@ export const formSchema = z.object({
   phoneNumber: z.string().min(10, "Số điện thoại không hợp lệ"),
   provinceCode: z.number().min(1, "Tỉnh/Thành phố là bắt buộc"),
   districtCode: z.number().min(1, "Quận/Huyện là bắt buộc"),
-  wardCode: z.number().min(1, "Phường/Xã là bắt buộc"),
+  wardCode: z.string().min(1, "Phường/Xã là bắt buộc"),
   address: z.string().min(1, "Địa chỉ là bắt buộc"),
   note: z.string().optional(),
 });
