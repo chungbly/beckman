@@ -74,7 +74,6 @@ export default function GrapesStudio({
           );
           iframe.removeAttribute("tabindex");
           (iframe as HTMLIFrameElement).style.pointerEvents = "auto";
-          console.log("✅ Patched iframe sandbox");
           return true;
         }
       });

@@ -293,7 +293,6 @@ function Actions({
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     e.target.value = "";
-    console.log("file", file);
     if (!file) return;
     setIsUploading(true);
     const products = await parseExcelProducts(file);

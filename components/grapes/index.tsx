@@ -8,7 +8,6 @@ import pluginSwiper from "./swiper";
 
 export default function DefaultEditor() {
   const onEditor = (editor: Editor) => {
-    console.log("Editor loaded", { editor });
     editor.on("load", () => {
       const iframeDoc = editor.Canvas.getDocument();
       let link = iframeDoc.createElement("link");
