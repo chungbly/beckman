@@ -12,7 +12,7 @@ import Post from "./post";
 function LoadMorePosts() {
   const searchParams = useSearchParams();
   const tags = searchParams.get("tags") || "";
-  const tagArr = tags?.split(",").filter((tag) => !!tag);
+  const tagArr = tags?.split(",").map((tag) => tag.trim()).filter((tag) => !!tag);
   const configs = useConfigs((s) => s.configs);
   const PINNED_POST_ID = configs?.["PINNED_POST_ID"] as string;
 

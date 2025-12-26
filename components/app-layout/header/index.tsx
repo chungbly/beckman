@@ -1,6 +1,7 @@
 import { APIStatus } from "@/client/callAPI";
 import { getCategories } from "@/client/category.client";
 import { cn } from "@/lib/utils";
+import { headers } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
 import { HeaderMenu } from "./desktop-menu";
@@ -23,7 +24,19 @@ const fetchCategories = async () => {
 
 const Header = async () => {
   const categories = await fetchCategories();
-
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname");
+  const isSmallContainer =
+    ["/danh-muc/", "/magazine/"].some(
+      (path) => pathname?.startsWith(path) && pathname !== path
+    ) ||
+    (pathname?.split("/").length === 2 && [
+      "gio-hang",
+      "custom-page",
+      "don-hang",
+      "giam-them",
+      "tim-kiem",
+    ]);
   return (
     <header
       className={cn(
@@ -31,7 +44,13 @@ const Header = async () => {
         "bg-[url('/icons/header-pattern.svg')] bg-repeat"
       )}
     >
-      <div className="container flex items-center">
+      <div
+        id="header-container"
+        className={cn(
+          "container flex items-center",
+          isSmallContainer && "max-w-[1220px]"
+        )}
+      >
         <Link
           href="/"
           className="py-1 relative top-0 sm:translate-y-[25%] z-[100]"

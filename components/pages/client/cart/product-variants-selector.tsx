@@ -46,7 +46,7 @@ function ProductVariantSelector({
     queryKey: ["get-product-variants", product.kvId],
     queryFn: async () => {
       const res = await getVariants({
-        slug: product.seo.slug,
+        slug: product.seo?.slug,
       });
       if (res.status !== APIStatus.OK || !res.data) return null;
       return res.data;

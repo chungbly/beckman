@@ -96,7 +96,7 @@ export function ProductCard({
         <span className="text-[#777777] text-sm sm:text-xl">
           {product.secondSubName}
         </span>
-        <h3 className="font-bold sm:text-2xl text-[#36454F] leading-tight">
+        <h3 className="font-bold text-base sm:text-2xl text-[#36454F] leading-tight">
           {product.name}
         </h3>
         <span className="text-[#777777] text-sm sm:text-xl">
@@ -105,7 +105,7 @@ export function ProductCard({
         <div className="flex-1 flex justify-end flex-col">
           <Separator className="bg-[#D9D9D9]" />
 
-          <div className="flex items-center justify-between gap-1">
+          <div className="flex items-center justify-between gap-1 mt-1">
             {product.finalPrice && (
               <span className="sm:text-2xl font-bold text-[var(--brown-brand)]">
                 {formatCurrency(product.finalPrice)}

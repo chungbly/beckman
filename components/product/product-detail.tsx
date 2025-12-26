@@ -105,7 +105,6 @@ export default function ProductPage({
       return res.data[0];
     },
   });
-  console.log(product);
   const categories = product?.categories;
   const category = categories?.[0];
   const sizeSelectionGuide =
@@ -359,7 +358,7 @@ export default function ProductPage({
       form.setFieldValue("size", "");
       form.setFieldValue("kvId", product?.kvId);
       form.setFieldValue("kvCode", product?.kvCode);
-      router.push(`/${product.seo.slug}`);
+      router.push(`/${product.seo?.slug}`);
       return;
     }
     const childProduct = variants?.find((p) => p.color === color);
@@ -477,12 +476,23 @@ export default function ProductPage({
   }, [cart, product]);
 
   useEffect(() => {
+    const headerContainer = document.querySelector(
+      "#header-container"
+    ) as HTMLElement;
+    if (!headerContainer) return;
+    const maxWidth = window.getComputedStyle(headerContainer).maxWidth;
+    if (maxWidth === "1400px") {
+      headerContainer.classList.add("max-w-[1220px]");
+    }
     ggTagTracking(
       [currentProduct!],
       category?.name || "",
       "view_item",
       product?.finalPrice
     );
+    return () => {
+      headerContainer.classList.remove("max-w-[1220px]");
+    };
   }, [slug]);
 
   useEffect(() => {
@@ -504,7 +514,7 @@ export default function ProductPage({
 
   return (
     <>
-      <div className="container mx-auto px-2 sm:px-0 sm:py-6 max-sm:mb-[48px] max-sm:mt-[36px] mt-4 sm:mt-12">
+      <div className="container max-w-[1220px] mx-auto px-2 sm:px-0 sm:py-6 max-sm:mb-[48px] max-sm:mt-[36px] mt-4 sm:mt-12">
         <script
           defer
           type="application/ld+json"
@@ -751,7 +761,7 @@ export default function ProductPage({
         </div>
       </div>
       <div className="bg-[#F0F0F0]">
-        <div className="container mx-auto px-0 max-sm:mb-[48px] ">
+        <div className="container max-w-[1220px] mx-auto px-0 max-sm:mb-[48px] ">
           <Tabs
             value={active}
             onValueChange={(value) => {

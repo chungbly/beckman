@@ -32,7 +32,7 @@ function ShoeCare({
           >
             <div className="relative aspect-square w-[100px]">
               <Image
-                src={product.images?.[0]?.urls?.[0] || product.seo.thumbnail}
+                src={product.images?.[0]?.urls?.[0] || product.seo?.thumbnail}
                 alt={product.name}
                 fill
               />

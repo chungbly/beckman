@@ -23,7 +23,12 @@ function Post({
 }) {
   if (size === "small") {
     return (
-      <div className={cn("space-y-4 hover:shadow-lg hover:bg-white/10 p-1", className)}>
+      <div
+        className={cn(
+          "space-y-4 hover:shadow-lg hover:bg-white/10 p-1",
+          className
+        )}
+      >
         <h3 className="font-bold text-xl line-clamp-2">
           <Link href={`${prefix}/${post.seo.slug}`} className="hover:underline">
             {post.title}
@@ -110,8 +115,11 @@ function Post({
         )}
       </div>
       <div className="sm:p-4 sm:py-1 sm:col-span-1">
-        <h3 className="font-bold text-6xl ">
-          <Link href={`${prefix}/${post.seo.slug}`} className="hover:underline line-clamp-3 leading-[77px]">
+        <h3 className="font-bold text-2xl sm:text-[40px] ">
+          <Link
+            href={`${prefix}/${post.seo.slug}`}
+            className="hover:underline line-clamp-4 sm:leading-[57px]"
+          >
             {post.title}
           </Link>
         </h3>

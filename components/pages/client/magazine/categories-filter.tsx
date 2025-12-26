@@ -20,7 +20,7 @@ async function MagazineCategoryFilter() {
         <Link
           className="hover:shadow-lg p-[10px]"
           key={c.tag}
-          href={`/magazine?tags=${c.tag}`}
+          href={`/magazine?tags=${encodeURIComponent(c.tag)}`}
         >
           <p className="font-bold text-3xl">{c.tag}</p>
           <span>Số lượng bài viết : {c.count}</span>

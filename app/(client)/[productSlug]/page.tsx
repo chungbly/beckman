@@ -122,7 +122,7 @@ async function Page(props: Props) {
       <HydrationBoundary state={dehydrate(queryClient)}>
         <ProductPage slug={productSlug} configs={configs} userId={userId!} />
       </HydrationBoundary>
-      <div className="container mx-auto px-0 sm:py-6 max-sm:mb-[48px]">
+      <div className="container max-w-[1220px] mx-auto px-0 sm:py-6 max-sm:mb-[48px]">
         <SimilarProducts
           query={{
             slug: productSlug,
