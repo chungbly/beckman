@@ -89,7 +89,6 @@ export default function MagazineEditor() {
             thumbnail: "",
           },
           content: "",
-          isSlide: false,
           isOutStanding: false,
           isShow: true,
           tags: [],

@@ -19,7 +19,6 @@ export interface Post {
   tags: string[];
   images: string[];
   isShow: boolean;
-  isSlide: boolean;
   isOutStanding: boolean;
   title: string;
   subDescription: string;
@@ -48,7 +47,6 @@ export interface GetPostQuery {
   title?: string;
   isShow?: boolean;
   authorId?: string;
-  isSlide?: boolean;
   isOutStanding?: boolean;
   getRandom?: boolean;
   slug?: string;
