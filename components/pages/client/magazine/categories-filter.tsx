@@ -23,7 +23,7 @@ async function MagazineCategoryFilter({ tags }: { tags: string[] }) {
         <Link
           className={cn(
             "hover:shadow-lg p-2.5",
-            tags.includes(c.tag) ? "border-[var(--brown-brand)] border-2" : ""
+            tags.includes(c.tag) ? "border-[var(--brown-brand)] border-4" : ""
           )}
           key={c.tag}
           scroll={!isMobile}
