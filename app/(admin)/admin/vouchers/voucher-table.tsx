@@ -28,7 +28,8 @@ import {
 import { Trash } from "lucide-react";
 import moment from "moment-timezone";
 import Link from "next/link";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useMemo, useState } from "react";
 import { IndeterminateCheckbox } from "../magazines/magazine-table";
 
 const columnHelper = createColumnHelper<Voucher>();
@@ -37,7 +38,27 @@ function VoucherTable({ vouchers, meta }: { vouchers: Voucher[]; meta: Meta }) {
   const [selectedRows, setSelectedRows] = useState<RowSelectionState>({});
   const { setAlert, closeAlert } = useAlert();
   const { toast } = useToast();
-  const columns = [
+  const router = useRouter();
+
+  const handleToggleStatus = useCallback(async (id: string, newStatus: boolean) => {
+    const res = await updateVoucher(id, {
+      isActive: newStatus,
+    });
+    if (res.status === APIStatus.OK) {
+      toast({
+        title: "Cập nhật trạng thái thành công",
+      });
+      router.refresh();
+    } else {
+      toast({
+        title: "Cập nhật trạng thái thất bại",
+        description: res.message,
+        variant: "error",
+      });
+    }
+  }, [router, toast]);
+
+  const columns = useMemo(() => [
     columnHelper.display({
       id: "select",
       header: ({ table }) => (
@@ -85,7 +106,7 @@ function VoucherTable({ vouchers, meta }: { vouchers: Voucher[]; meta: Meta }) {
       cell: (info) => (
         <Badge
           className={cn(
-            "cursor-pointer",
+            "cursor-pointer hover:opacity-80 transition-opacity",
             info.getValue() ? "bg-green-600" : "bg-slate-500"
           )}
           onClick={() => {
@@ -95,21 +116,7 @@ function VoucherTable({ vouchers, meta }: { vouchers: Voucher[]; meta: Meta }) {
                 info.getValue() ? "tắt" : "bật"
               } voucher này không?`,
               onSubmit: async () => {
-                const res = await updateVoucher(info.row.original._id, {
-                  isActive: !info.getValue(),
-                });
-                if (res.status === APIStatus.OK) {
-                  toast({
-                    title: "Cập nhật trạng thái thành công",
-                  });
-                  window.location.href = `/admin/vouchers?v=${Math.random()}`;
-                } else {
-                  toast({
-                    title: "Cập nhật trạng thái thất bại",
-                    description: res.message,
-                    variant: "error",
-                  });
-                }
+                await handleToggleStatus(info.row.original._id, !info.getValue());
                 closeAlert();
               },
             });
@@ -180,7 +187,7 @@ function VoucherTable({ vouchers, meta }: { vouchers: Voucher[]; meta: Meta }) {
     //       ? moment(info.getValue()).format("DD/MM/YYYY HH:mm:ss")
     //       : "Không xác định",
     // }),
-  ];
+  ], [handleToggleStatus, setAlert, closeAlert]);
   const table = useReactTable({
     data: vouchers,
     columns,
@@ -192,7 +199,7 @@ function VoucherTable({ vouchers, meta }: { vouchers: Voucher[]; meta: Meta }) {
     getCoreRowModel: getCoreRowModel(),
     onRowSelectionChange: setSelectedRows,
   });
-  const handleDelete = () => {
+  const handleDelete = useCallback(() => {
     setAlert({
       title: "Xoá Voucher",
       description: `Bạn có chắc chắn muốn xoá ${
@@ -204,7 +211,8 @@ function VoucherTable({ vouchers, meta }: { vouchers: Voucher[]; meta: Meta }) {
           toast({
             title: "Xoá Voucher thành công",
           });
-          window.location.reload();
+          router.refresh();
+          setSelectedRows({});
         } else {
           toast({
             title: "Xoá Voucher thất bại",
@@ -215,7 +223,7 @@ function VoucherTable({ vouchers, meta }: { vouchers: Voucher[]; meta: Meta }) {
         closeAlert();
       },
     });
-  };
+  }, [selectedRows, router, toast, setAlert, closeAlert]);
   return (
     <>
       <div className="flex justify-end gap-4">

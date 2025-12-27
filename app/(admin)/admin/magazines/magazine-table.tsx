@@ -1,7 +1,7 @@
 "use client";
 
 import { APIStatus } from "@/client/callAPI";
-import { deletePosts } from "@/client/post.client";
+import { deletePosts, updatePost } from "@/client/post.client";
 import TablePagination from "@/components/app-layout/table-pagination";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,7 @@ import { getPostsQuery } from "@/query/post.query";
 import { useAlert } from "@/store/useAlert";
 import { Post } from "@/types/post";
 import { IconPhotoOff } from "@tabler/icons-react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   createColumnHelper,
   flexRender,
@@ -31,7 +31,14 @@ import { Trash } from "lucide-react";
 import moment from "moment";
 import Image from "next/image";
 import Link from "next/link";
-import { HTMLProps, useEffect, useRef, useState } from "react";
+import {
+  HTMLProps,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import MagazineTableSkeleton from "./magazine-table-skeleton";
 
 export function IndeterminateCheckbox({
@@ -60,114 +67,6 @@ export function IndeterminateCheckbox({
 
 const columnHelper = createColumnHelper<Post>();
 
-const columns = [
-  columnHelper.display({
-    id: "select",
-    header: ({ table }) => (
-      <div className="px-2">
-        <IndeterminateCheckbox
-          {...{
-            checked: table.getIsAllRowsSelected(),
-            indeterminate: table.getIsSomeRowsSelected(),
-            onChange: table.getToggleAllRowsSelectedHandler(),
-          }}
-        />
-      </div>
-    ),
-    cell: ({ row }) => (
-      <div className="px-2">
-        <IndeterminateCheckbox
-          {...{
-            checked: row.getIsSelected(),
-            disabled: !row.getCanSelect(),
-            indeterminate: row.getIsSomeSelected(),
-            onChange: row.getToggleSelectedHandler(),
-          }}
-        />
-      </div>
-    ),
-  }),
-  columnHelper.display({
-    id: "id",
-    header: "#",
-    cell: (info) => info.row.index + 1,
-  }),
-  columnHelper.accessor("isShow", {
-    header: "Trạng thái",
-    cell: (info) => (
-      <Badge
-        className={cn("", info.getValue() ? "bg-green-600" : "bg-slate-500")}
-      >
-        {info.getValue() ? "Active" : "Inactive"}
-      </Badge>
-    ),
-  }),
-  columnHelper.accessor("title", {
-    header: "Tên bài viết",
-    cell: (info) => (
-      <Link
-        className="underline text-primary"
-        href={`/admin/magazines/${info.row.original._id}`}
-      >
-        {info.getValue()}
-      </Link>
-    ),
-  }),
-  columnHelper.accessor("seo", {
-    header: "Ảnh đại diện",
-    cell: (info) =>
-      info.getValue()?.thumbnail ? (
-        <Image
-          src={info.getValue().thumbnail!}
-          width={50}
-          height={50}
-          className="rounded-sm aspect-square object-cover"
-          alt="magazine thumbnail for seo"
-        />
-      ) : (
-        <IconPhotoOff className="w-[50px] h-[50px] aspect-square text-gray-500" />
-      ),
-  }),
-  columnHelper.accessor("tags", {
-    header: "Tag",
-    cell: (info) => (
-      <div className="flex flex-wrap gap-2">
-        {info.getValue()?.map((tag) => (
-          <Badge key={tag}>{tag}</Badge>
-        ))}
-      </div>
-    ),
-  }),
-
-  columnHelper.accessor("isOutStanding", {
-    header: "Nổi bật",
-    cell: (info) => (
-      <Badge
-        className={cn(
-          "min-w-fit",
-          info.getValue() ? "bg-green-600" : "bg-slate-500"
-        )}
-      >
-        {info.getValue() ? "Nổi bật" : "Không"}
-      </Badge>
-    ),
-  }),
-
-  columnHelper.accessor("createdAt", {
-    header: "Thời gian tạo",
-    cell: (info) =>
-      info.getValue()
-        ? moment(info.getValue()).format("DD/MM/YYYY HH:mm:ss")
-        : "Không xác định",
-  }),
-  columnHelper.accessor("updatedAt", {
-    header: "Thời gian cập nhật",
-    cell: (info) =>
-      info.getValue()
-        ? moment(info.getValue()).format("DD/MM/YYYY HH:mm:ss")
-        : "Không xác định",
-  }),
-];
 function MagazineTable({
   query,
 }: {
@@ -180,8 +79,148 @@ function MagazineTable({
 }) {
   const { setAlert, closeAlert } = useAlert();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
   const { data: magazines, isLoading } = useQuery(getPostsQuery(query));
   const [selectedRows, setSelectedRows] = useState<RowSelectionState>({});
+
+  const handleToggleStatus = useCallback(
+    async (id: string, newStatus: boolean) => {
+      const res = await updatePost(id, { isShow: newStatus });
+      if (res.status === APIStatus.OK) {
+        toast({
+          title: "Cập nhật trạng thái thành công",
+          description: `Bài viết đã được ${
+            newStatus ? "kích hoạt" : "vô hiệu hóa"
+          }`,
+        });
+        queryClient.invalidateQueries({ queryKey: ["get-post", query] });
+      } else {
+        toast({
+          title: "Cập nhật trạng thái thất bại",
+          description: res.message,
+          variant: "error",
+        });
+      }
+    },
+    [query, queryClient, toast]
+  );
+
+  const columns = useMemo(
+    () => [
+      columnHelper.display({
+        id: "select",
+        header: ({ table }) => (
+          <div className="px-2">
+            <IndeterminateCheckbox
+              {...{
+                checked: table.getIsAllRowsSelected(),
+                indeterminate: table.getIsSomeRowsSelected(),
+                onChange: table.getToggleAllRowsSelectedHandler(),
+              }}
+            />
+          </div>
+        ),
+        cell: ({ row }) => (
+          <div className="px-2">
+            <IndeterminateCheckbox
+              {...{
+                checked: row.getIsSelected(),
+                disabled: !row.getCanSelect(),
+                indeterminate: row.getIsSomeSelected(),
+                onChange: row.getToggleSelectedHandler(),
+              }}
+            />
+          </div>
+        ),
+      }),
+      columnHelper.display({
+        id: "id",
+        header: "#",
+        cell: (info) => info.row.index + 1,
+      }),
+      columnHelper.accessor("isShow", {
+        header: "Trạng thái",
+        cell: (info) => (
+          <Badge
+            className={cn(
+              "cursor-pointer hover:opacity-80 transition-opacity",
+              info.getValue() ? "bg-green-600" : "bg-slate-500"
+            )}
+            onClick={() =>
+              handleToggleStatus(info.row.original._id, !info.getValue())
+            }
+          >
+            {info.getValue() ? "Active" : "Inactive"}
+          </Badge>
+        ),
+      }),
+      columnHelper.accessor("title", {
+        header: "Tên bài viết",
+        cell: (info) => (
+          <Link
+            className="underline text-primary"
+            href={`/admin/magazines/${info.row.original._id}`}
+          >
+            {info.getValue()}
+          </Link>
+        ),
+      }),
+      columnHelper.accessor("seo", {
+        header: "Ảnh đại diện",
+        cell: (info) =>
+          info.getValue()?.thumbnail ? (
+            <Image
+              src={info.getValue().thumbnail!}
+              width={50}
+              height={50}
+              className="rounded-sm aspect-square object-cover"
+              alt="magazine thumbnail for seo"
+            />
+          ) : (
+            <IconPhotoOff className="w-[50px] h-[50px] aspect-square text-gray-500" />
+          ),
+      }),
+      columnHelper.accessor("tags", {
+        header: "Tag",
+        cell: (info) => (
+          <div className="flex flex-wrap gap-2">
+            {info.getValue()?.map((tag) => (
+              <Badge key={tag}>{tag}</Badge>
+            ))}
+          </div>
+        ),
+      }),
+      columnHelper.accessor("isOutStanding", {
+        header: "Nổi bật",
+        cell: (info) => (
+          <Badge
+            className={cn(
+              "min-w-fit",
+              info.getValue() ? "bg-green-600" : "bg-slate-500"
+            )}
+          >
+            {info.getValue() ? "Nổi bật" : "Không"}
+          </Badge>
+        ),
+      }),
+      columnHelper.accessor("createdAt", {
+        header: "Thời gian tạo",
+        cell: (info) =>
+          info.getValue()
+            ? moment(info.getValue()).format("DD/MM/YYYY HH:mm:ss")
+            : "Không xác định",
+      }),
+      columnHelper.accessor("updatedAt", {
+        header: "Thời gian cập nhật",
+        cell: (info) =>
+          info.getValue()
+            ? moment(info.getValue()).format("DD/MM/YYYY HH:mm:ss")
+            : "Không xác định",
+      }),
+    ],
+    [handleToggleStatus]
+  );
+
   const table = useReactTable({
     data: magazines?.items || [],
     columns,
@@ -206,6 +245,8 @@ function MagazineTable({
           toast({
             title: "Xoá bài viết thành công",
           });
+          queryClient.invalidateQueries({ queryKey: ["get-post", query] });
+          setSelectedRows({});
         } else {
           toast({
             title: "Xoá bài viết thất bại",

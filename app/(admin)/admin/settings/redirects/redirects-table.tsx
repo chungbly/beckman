@@ -40,8 +40,10 @@ import {
   RowSelectionState,
   useReactTable,
 } from "@tanstack/react-table";
+import { useQueryClient } from "@tanstack/react-query";
 import { Pencil, Plus, Rocket, Trash } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { IndeterminateCheckbox } from "../../magazines/magazine-table";
 
@@ -56,6 +58,8 @@ function RedirectsTable({
 }) {
   const { setAlert, closeAlert } = useAlert();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
   const [data, _setData] = useState(() => [...redirects]);
   const [selectedRows, setSelectedRows] = useState<RowSelectionState>({});
   const [editRow, setEditRow] = useState<Partial<Redirect> | null>(null);
@@ -191,6 +195,9 @@ function RedirectsTable({
         toast({
           title: "Cập nhật thành công",
         });
+        queryClient.invalidateQueries({ 
+          queryKey: ["getRedirect", searchParams.get("rootUrl"), searchParams.get("destinationUrl"), searchParams.get("limit"), searchParams.get("page")] 
+        });
         return;
       }
       toast({
@@ -210,6 +217,9 @@ function RedirectsTable({
       if (res.status === APIStatus.OK) {
         toast({
           title: "Tạo thành công",
+        });
+        queryClient.invalidateQueries({ 
+          queryKey: ["getRedirect", searchParams.get("rootUrl"), searchParams.get("destinationUrl"), searchParams.get("limit"), searchParams.get("page")] 
         });
         return;
       }
@@ -233,7 +243,10 @@ function RedirectsTable({
           toast({
             title: "Xoá lệnh Redirect thành công",
           });
-          window.location.reload();
+          queryClient.invalidateQueries({ 
+            queryKey: ["getRedirect", searchParams.get("rootUrl"), searchParams.get("destinationUrl"), searchParams.get("limit"), searchParams.get("page")] 
+          });
+          setSelectedRows({});
         } else {
           toast({
             title: "Xoá lệnh Redirect thất bại",
@@ -363,7 +376,6 @@ function RedirectsTable({
               handleSubmit={async () => {
                 await onSubmit();
                 setEditRow(null);
-                window.location.reload();
               }}
             />
           </DialogFooter>

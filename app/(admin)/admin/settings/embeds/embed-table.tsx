@@ -25,8 +25,10 @@ import {
   RowSelectionState,
   useReactTable,
 } from "@tanstack/react-table";
+import { useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash } from "lucide-react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { v4 } from "uuid";
 
@@ -35,6 +37,8 @@ const columnHelper = createColumnHelper<Embed>();
 function EmbedsTable({ embeds, meta }: { embeds: Embed[]; meta: Meta }) {
   const { setAlert, closeAlert } = useAlert();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
   const [data, _setData] = useState(() => [...embeds]);
   const [selectedRows, setSelectedRows] = useState<RowSelectionState>({});
 
@@ -66,6 +70,9 @@ function EmbedsTable({ embeds, meta }: { embeds: Embed[]; meta: Meta }) {
                 variant: "success",
                 title: "Thành công",
                 description: "Cập nhật trạng thái thành công",
+              });
+              queryClient.invalidateQueries({ 
+                queryKey: ["getEmbeds", searchParams.get("name"), searchParams.get("limit"), searchParams.get("page")] 
               });
             }}
           />
@@ -128,7 +135,10 @@ function EmbedsTable({ embeds, meta }: { embeds: Embed[]; meta: Meta }) {
           toast({
             title: "Xoá lệnh Redirect thành công",
           });
-          window.location.reload();
+          queryClient.invalidateQueries({ 
+            queryKey: ["getEmbeds", searchParams.get("name"), searchParams.get("limit"), searchParams.get("page")] 
+          });
+          setSelectedRows({});
         } else {
           toast({
             title: "Xoá lệnh Redirect thất bại",

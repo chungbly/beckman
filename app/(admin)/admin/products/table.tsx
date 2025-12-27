@@ -22,6 +22,7 @@ import { useAlert } from "@/store/useAlert";
 import { Meta } from "@/types/api-response";
 import { Product } from "@/types/product";
 import { formatCurrency, formatNumber } from "@/utils/number";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   createColumnHelper,
   flexRender,
@@ -32,7 +33,15 @@ import {
 import { ShieldCheck, ShieldMinus } from "lucide-react";
 import moment from "moment";
 import Link from "next/link";
-import { HTMLProps, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import {
+  HTMLProps,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import Actions from "./actions";
 
 function IndeterminateCheckbox({
@@ -73,6 +82,8 @@ function ProductTable({
   const [selectedRows, setSelectedRows] = useState<RowSelectionState>({});
   const { setAlert, closeAlert } = useAlert();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
+  const searchParams = useSearchParams();
 
   const columns = useMemo(
     () => [
@@ -119,43 +130,56 @@ function ProductTable({
       }),
       columnHelper.accessor("isShow", {
         header: "Trạng thái",
-        cell: (info) => (
-          <Badge
-            className={cn(
-              "cursor-pointer",
-              info.getValue() ? "bg-green-600" : "bg-slate-500"
-            )}
-            onClick={() => {
-              setAlert({
-                title: "Cập nhật trạng thái",
-                description: `Bạn có chắc chắn muốn ${
-                  info.getValue() ? "ẩn" : "hiện"
-                } sản phẩm này không?`,
-                onSubmit: async () => {
-                  const res = await updateProductStatus(
-                    [info.row.original.kvId],
-                    !info.getValue()
-                  );
-                  if (res.status === APIStatus.OK) {
-                    toast({
-                      title: "Cập nhật trạng thái thành công",
-                    });
-                    window.location.reload();
-                  } else {
-                    toast({
-                      title: "Cập nhật trạng thái thất bại",
-                      description: res.message,
-                      variant: "error",
-                    });
-                  }
-                  closeAlert();
-                },
-              });
-            }}
-          >
-            {info.getValue() ? "Active" : "Inactive"}
-          </Badge>
-        ),
+        cell: (info) => {
+          const handleToggle = () => {
+            setAlert({
+              title: "Cập nhật trạng thái",
+              description: `Bạn có chắc chắn muốn ${
+                info.getValue() ? "ẩn" : "hiện"
+              } sản phẩm này không?`,
+              onSubmit: async () => {
+                const res = await updateProductStatus(
+                  [info.row.original.kvId],
+                  !info.getValue()
+                );
+                if (res.status === APIStatus.OK) {
+                  toast({
+                    title: "Cập nhật trạng thái thành công",
+                  });
+                  const limit = searchParams.get("limit") ?? 20;
+                  const page = searchParams.get("page") ?? 1;
+                  queryClient.invalidateQueries({
+                    queryKey: [
+                      "products",
+                      query,
+                      limit ? +limit : 20,
+                      +page,
+                      true,
+                    ],
+                  });
+                } else {
+                  toast({
+                    title: "Cập nhật trạng thái thất bại",
+                    description: res.message,
+                    variant: "error",
+                  });
+                }
+                closeAlert();
+              },
+            });
+          };
+          return (
+            <Badge
+              className={cn(
+                "cursor-pointer",
+                info.getValue() ? "bg-green-600" : "bg-slate-500"
+              )}
+              onClick={handleToggle}
+            >
+              {info.getValue() ? "Active" : "Inactive"}
+            </Badge>
+          );
+        },
       }),
       columnHelper.accessor("kvCode", {
         header: "Mã sản phẩm",
@@ -239,7 +263,16 @@ function ProductTable({
             : "Không xác định",
       }),
     ],
-    [meta.limit, meta.page]
+    [
+      meta.limit,
+      meta.page,
+      query,
+      queryClient,
+      searchParams,
+      toast,
+      setAlert,
+      closeAlert,
+    ]
   );
   const table = useReactTable({
     data: products,
@@ -252,34 +285,42 @@ function ProductTable({
     getRowId: (row) => row.kvId.toString(),
   });
 
-  const handleChangeProductStatus = async (ids: number[], status: boolean) => {
-    const isAccept = await new Promise((resolve) => {
-      setAlert({
-        title: "Cập nhật trạng thái",
-        description: `Bạn có chắc chắn muốn ${
-          status ? "hiện" : "ẩn"
-        } sản phẩm này không?`,
-        onSubmit: () => {
-          resolve(true);
-          closeAlert();
-        },
+  const handleChangeProductStatus = useCallback(
+    async (ids: number[], status: boolean) => {
+      const isAccept = await new Promise((resolve) => {
+        setAlert({
+          title: "Cập nhật trạng thái",
+          description: `Bạn có chắc chắn muốn ${
+            status ? "hiện" : "ẩn"
+          } sản phẩm này không?`,
+          onSubmit: () => {
+            resolve(true);
+            closeAlert();
+          },
+        });
       });
-    });
-    if (!isAccept) return;
-    const res = await updateProductStatus(ids, status);
-    if (res.status === APIStatus.OK) {
-      toast({
-        title: "Cập nhật trạng thái thành công",
-      });
-      window.location.reload();
-    } else {
-      toast({
-        title: "Cập nhật trạng thái thất bại",
-        description: res.message,
-        variant: "error",
-      });
-    }
-  };
+      if (!isAccept) return;
+      const res = await updateProductStatus(ids, status);
+      if (res.status === APIStatus.OK) {
+        toast({
+          title: "Cập nhật trạng thái thành công",
+        });
+        const limit = searchParams.get("limit") ?? 20;
+        const page = searchParams.get("page") ?? 1;
+        queryClient.invalidateQueries({
+          queryKey: ["products", query, limit ? +limit : 20, +page, true],
+        });
+        setSelectedRows({});
+      } else {
+        toast({
+          title: "Cập nhật trạng thái thất bại",
+          description: res.message,
+          variant: "error",
+        });
+      }
+    },
+    [query, queryClient, searchParams, toast, setAlert, closeAlert]
+  );
 
   return (
     <>

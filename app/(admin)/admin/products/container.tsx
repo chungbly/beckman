@@ -13,7 +13,7 @@ function Container({ query }: { query: Partial<GetProductQuery> }) {
   const limit = searchParams.get("limit") ?? 20;
   const page = searchParams.get("page") ?? 1;
   const { data, isLoading } = useQuery(
-    getProductsQuery(query, limit ? +limit || 20 : 20, +page || 1, true)
+    getProductsQuery(query, limit ? +limit || 20 : 20, +page || 1, true, false)
   );
   const prds = data?.items ?? [];
   const meta = data?.meta;

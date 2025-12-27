@@ -37,7 +37,8 @@ async function Page(props: {
       query,
       limit ? +limit || 20 : 20,
       parseInt(searchParams.page || "1") || 1,
-      true
+      true,
+      false
     )
   );
 
