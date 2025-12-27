@@ -1,5 +1,5 @@
 "use client";
-import { getPostInfinityQuery } from "@/app/(client)/magazine/page";
+import { getPostInfinityQuery } from "@/app/(client)/magazine/get-post-query";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useConfigs } from "@/store/useConfig";

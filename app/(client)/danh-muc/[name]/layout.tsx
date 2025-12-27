@@ -63,7 +63,7 @@ async function CategoryLayout(props: Props) {
       )}
       <div
         className={cn(
-          "container px-2 sm:px-4 sm:pt-2",
+          "container max-w-[1220px] px-2 sm:px-4 sm:pt-2",
           !category.header && "sm:mt-10"
         )}
       >

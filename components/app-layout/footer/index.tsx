@@ -34,12 +34,12 @@ const Footer = async () => {
 
             <div className="sm:py-16 py-2 sm:px-0 px-4 flex flex-col gap-4 sm:items-center">
               <div className="w-fit min-w-40">
-                <h3 className="font-bold text-2xl text-[var(--brown-brand)]">
+                <h3 className="font-bold text-xl sm:text-2xl text-[var(--brown-brand)]">
                   VỀ CHÚNG TÔI
                 </h3>
 
                 <ul className="space-y-2  transition-all duration-300">
-                  <li className="text-xl">
+                  <li className="sm:text-xl">
                     <Link
                       href={`/gioi-thieu`}
                       className="hover:text-[var(--brown-brand)]"
@@ -57,7 +57,7 @@ const Footer = async () => {
                     )
                       return null;
                     return (
-                      <li className="text-xl" key={url}>
+                      <li className="sm:text-xl" key={url}>
                         <Link
                           href={`/ho-tro/${url}`}
                           className="hover:text-[var(--brown-brand)]"
@@ -70,7 +70,7 @@ const Footer = async () => {
                 </ul>
               </div>
               <div className="w-fit min-w-40">
-                <h3 className="font-bold text-2xl text-[var(--brown-brand)]">
+                <h3 className="font-bold text-xl sm:text-2xl text-[var(--brown-brand)]">
                   DỊCH VỤ
                 </h3>
 
@@ -85,7 +85,7 @@ const Footer = async () => {
                     )
                       return null;
                     return (
-                      <li className="text-xl" key={url}>
+                      <li className="sm:text-xl" key={url}>
                         <Link
                           href={`/ho-tro/${url}`}
                           className="hover:text-[var(--brown-brand)]"
@@ -104,7 +104,7 @@ const Footer = async () => {
               <ul className="space-y-3 h-auto overflow-hidden transition-all duration-300">
                 <FacebookIframe />
               </ul>
-              <h3 className="font-bold text-2xl text-[var(--brown-brand)]">
+              <h3 className="font-bold text-xl sm:text-2xl text-[var(--brown-brand)]">
                 FOLLOW US
               </h3>
               <div className="flex items-center gap-2 h-auto transition-all duration-300 mt-2">
@@ -113,7 +113,7 @@ const Footer = async () => {
                     key={item.name}
                     href={item.url}
                     rel="noopener noreferrer"
-                    className="text-[var(--brown-brand)] text-xl uppercase"
+                    className="text-[var(--brown-brand)] sm:text-xl uppercase"
                   >
                     {getSociaLinkIcon(item.name)
                       ? getSociaLinkIcon(item.name, "w-8 h-8")

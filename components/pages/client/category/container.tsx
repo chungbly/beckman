@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { getProductInfiniteQuery } from "@/query/product.query";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { ChevronDown, Loader } from "lucide-react";
+import { useEffect } from "react";
 import ProductGrid from "./product-grid";
 import ProductSorting from "./sorting";
 
@@ -26,6 +27,21 @@ function CategoryContainer({
     });
 
   const products = data?.pages?.flatMap((page) => page?.items || []) ?? [];
+
+  useEffect(() => {
+    const headerContainer = document.querySelector(
+      "#header-container"
+    ) as HTMLElement;
+    if (!headerContainer) return;
+    const maxWidth = window.getComputedStyle(headerContainer).maxWidth;
+    if (maxWidth === "1400px") {
+      headerContainer.classList.add("max-w-[1220px]");
+    }
+
+    return () => {
+      headerContainer.classList.remove("max-w-[1220px]");
+    };
+  }, []);
 
   return (
     <>

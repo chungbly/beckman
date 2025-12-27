@@ -76,8 +76,8 @@ function Post({
     );
   }
   return (
-    <div className="grid sm:grid-cols-3">
-      <div className="aspect-video relative sm:col-span-2">
+    <div className="grid sm:grid-cols-3 gap-5">
+      <div className="aspect-square sm:aspect-video relative sm:col-span-2 max-sm:-m-2.5">
         {!!post.images?.length && post.images.length > 1 ? (
           <Carousel
             plugins={[
@@ -86,9 +86,9 @@ function Post({
               }),
             ]}
           >
-            <CarouselContent className=" ml-0">
+            <CarouselContent className="ml-0">
               {post.images.map((image, index) => (
-                <CarouselItem className="relative aspect-video" key={index}>
+                <CarouselItem className="relative sm:aspect-video" key={index}>
                   <Image
                     src={image}
                     alt={post.title}
@@ -114,11 +114,11 @@ function Post({
           )
         )}
       </div>
-      <div className="sm:p-4 sm:py-1 sm:col-span-1">
+      <div className="py-2.5 sm:col-span-1 space-y-2.5">
         <h3 className="font-bold text-2xl sm:text-[40px] ">
           <Link
             href={`${prefix}/${post.seo.slug}`}
-            className="hover:underline line-clamp-4 sm:leading-[57px]"
+            className="hover:underline line-clamp-4 sm:leading-[48px]"
           >
             {post.title}
           </Link>

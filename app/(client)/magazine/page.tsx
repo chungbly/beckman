@@ -1,17 +1,17 @@
-import { APIStatus } from "@/client/callAPI";
 import { getPostById, getPosts } from "@/client/post.client";
 import MagazineCategoryFilter from "@/components/pages/client/magazine/categories-filter";
 import LoadMorePosts from "@/components/pages/client/magazine/load-more-posts";
 import Post from "@/components/pages/client/magazine/post";
+import ScrollToHash from "@/components/pages/client/magazine/scroll-to-hash";
 import { getGlobalConfig } from "@/lib/configs";
-import { Meta } from "@/types/api-response";
-import { PostWithMeta, Post as TPost } from "@/types/post";
+import { isMobileServer } from "@/lib/isMobileServer";
 import {
   dehydrate,
   HydrationBoundary,
   QueryClient,
 } from "@tanstack/react-query";
 import Image from "next/image";
+import { getPostInfinityQuery } from "./get-post-query";
 
 const getPinnedPost = async (id: string) => {
   const res = await getPostById(id);
@@ -21,40 +21,6 @@ const getPinnedPost = async (id: string) => {
   return res.data;
 };
 
-export const getPostInfinityQuery = (tags: string[]) => {
-  return {
-    queryKey: ["regular-posts", tags],
-    queryFn: async ({ pageParam = 1 }) => {
-      const res = await getPosts(
-        {
-          ...(tags?.length
-            ? {
-                tags,
-              }
-            : {}),
-          isOutStanding: false,
-          isShow: true,
-        },
-        12,
-        pageParam,
-        true
-      );
-
-      if (!res || res.status !== APIStatus.OK || !res.data) {
-        return {
-          items: [] as TPost[],
-          meta: {} as Meta,
-        } as PostWithMeta;
-      }
-      return res.data;
-    },
-    getNextPageParam: (lastPage: PostWithMeta, pages: PostWithMeta[]) => {
-      if (!lastPage?.meta?.hasNextPage) return undefined;
-      return pages.length + 1;
-    },
-    initialPageParam: 1,
-  };
-};
 const getRegularPosts = async (query: QueryClient, tags: string[]) => {
   await query.prefetchInfiniteQuery(getPostInfinityQuery(tags));
 };
@@ -84,6 +50,7 @@ export default async function BlogPage({
   const tagArr = tags?.split(",").filter((tag) => !!tag);
   const configs = await getGlobalConfig();
   const PINNED_POST_ID = configs?.["PINNED_POST_ID"] as string;
+  const isMobile = await isMobileServer();
 
   const query = new QueryClient();
   const [pinnedPost, _, featuredPost] = await Promise.all([
@@ -94,6 +61,7 @@ export default async function BlogPage({
 
   return (
     <div className="">
+      <ScrollToHash />
       <div className="relative w-full h-[155px]  sm:h-[310px] border-b border-[var(--brown-brand)]">
         <Image
           src="/icons/beckman.svg"
@@ -102,10 +70,15 @@ export default async function BlogPage({
           className="aspect-[1162/200] max-w-[1162px] mx-auto max-sm:p-2"
         />
       </div>
-      <p className="font-bold tracking-[4px] sm:tracking-[9px] text-center border-b-4 border-[var(--brown-brand)]">
+      <p className="font-bold text-black tracking-[4px] sm:tracking-[9px] leading-[24px] text-center border-b-[10px] border-[var(--brown-brand)] py-2.5">
         TẠP CHÍ DÀNH CHO NHỮNG GÃ TRAI PHÓNG KHOÁNG VÀ ĐANG TÌM KIẾM CHÂN TRỜI
       </p>
-      <div className="grid lg:grid-cols-5 gap-[20px] px-4 mt-8">
+      <div className="grid lg:grid-cols-5 gap-[20px] px-2.5 mt-8">
+        {pinnedPost && isMobile && (
+          <div className="sm:hidden">
+            <Post post={pinnedPost} />
+          </div>
+        )}
         {/* Featured Posts */}
         <div className="h-fit col-span-1 sm:p-[20px] sm:border-r border-[var(--brown-brand)] sm:sticky top-20">
           <h2 className="font-bold text-[40px] underline">Tin nổi bật</h2>
@@ -116,26 +89,49 @@ export default async function BlogPage({
               ))}
           </div>
         </div>
-        <div className="lg:col-span-3 space-y-8">
-          {pinnedPost && <Post post={pinnedPost} />}
+        {isMobile && (
+          <>
+            <div className="space-y-4.5 sm:hidden">
+              {/* Categories */}
+              <div className="py-2.5 sm:p-[20px] sm:border-l border-[var(--brown-brand)] sm:sticky top-20">
+                <h2 className="font-bold text-[40px] mb-[20px] underline">
+                  Danh mục
+                </h2>
+                <MagazineCategoryFilter tags={tagArr} />
+              </div>
+            </div>
+            <div id="regular-posts" className="sm:hidden grid md:grid-cols-2 gap-6">
+              <HydrationBoundary state={dehydrate(query)}>
+                <LoadMorePosts />
+              </HydrationBoundary>
+            </div>
+          </>
+        )}
 
-          {/* Regular Posts Grid */}
-          <div className="grid md:grid-cols-2 gap-6">
-            <HydrationBoundary state={dehydrate(query)}>
-              <LoadMorePosts />
-            </HydrationBoundary>
-          </div>
-        </div>
-        {/* Sidebar */}
-        <div className="space-y-8 hidden sm:block">
-          {/* Categories */}
-          <div className="p-[20px] sm:border-l border-[var(--brown-brand)] sticky top-20">
-            <h2 className="font-bold text-[40px] mb-[20px] underline">
-              Danh mục
-            </h2>
-            <MagazineCategoryFilter />
-          </div>
-        </div>
+        {!isMobile && (
+          <>
+            <div className="lg:col-span-3 space-y-4.5 max-sm:hidden">
+              {pinnedPost && <Post post={pinnedPost} />}
+
+              {/* Regular Posts Grid */}
+              <div className="grid md:grid-cols-2 gap-6">
+                <HydrationBoundary state={dehydrate(query)}>
+                  <LoadMorePosts />
+                </HydrationBoundary>
+              </div>
+            </div>
+            {/* Sidebar */}
+            <div className="space-y-8 hidden sm:block">
+              {/* Categories */}
+              <div className="p-[20px] sm:border-l border-[var(--brown-brand)] sticky top-20">
+                <h2 className="font-bold text-[40px] mb-[20px] underline">
+                  Danh mục
+                </h2>
+                <MagazineCategoryFilter tags={tagArr} />
+              </div>
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
