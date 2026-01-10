@@ -12,7 +12,7 @@ const REDIRECT_CACHE_TTL = 1 * 30 * 1000;
 
 async function getRedirectsCached() {
   const now = Date.now();
-  if (!redirectCache || now > redirectCache.expiresAt) {
+  if (!redirectCache || !redirectCache?.data || now > redirectCache.expiresAt) {
     const data = await getRedirectsWithCache();
     redirectCache = {
       data,
