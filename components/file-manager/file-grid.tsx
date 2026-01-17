@@ -32,7 +32,7 @@ import {
 import moment from "moment";
 import dynamic from "next/dynamic";
 import Image from "next/image";
-import { DragEvent } from "react";
+import { DragEvent, useRef } from "react";
 import { useFileManager } from ".";
 import { TooltipWrap } from "../ui/tooltip";
 const RightMenu = dynamic(() => import("./file-right-menu"));
@@ -42,7 +42,7 @@ export const getFileIcon = (file: CloudinaryFile) => {
     case "image":
       return (
         <Image
-          src={file.secure_url}
+          src={file.url}
           fill
           sizes="(min-width: 1024px) 200px, 100px"
           alt={file.display_name}
@@ -53,7 +53,7 @@ export const getFileIcon = (file: CloudinaryFile) => {
       return (
         <div className="absolute top-0 left-0 w-full h-full">
           <video
-            src={file.secure_url}
+            src={file.url}
             className="object-cover rounded-sm absolute top-0 left-0 w-full h-full"
           />
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-black/50 rounded-full p-2 text-white">
@@ -84,6 +84,7 @@ export default function FileGrid() {
   );
 
   const { toast } = useToast();
+  const draggingTypeRef = useRef<"file" | "folder" | null>(null);
   return (
     <ContextMenu modal={false}>
       <ContextMenuTrigger>
@@ -134,10 +135,18 @@ export default function FileGrid() {
                           <button
                             className="group w-full flex gap-4 items-center relative rounded-lg border h-full p-3 hover:bg-accent"
                             draggable
-                            onDragStart={(e) =>
-                              e.dataTransfer.setData("text/plain", folder.id)
-                            }
-                            onDragOver={(e) => e.preventDefault()}
+                            onDragStart={(e) => {
+                              e.dataTransfer.setData("text/plain", folder.id);
+                              e.dataTransfer.setData("type", "folder");
+                              draggingTypeRef.current = "folder";
+                            }}
+                            onDragEnd={() => {
+                              draggingTypeRef.current = null;
+                            }}
+                            onDragOver={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
                             onDrop={(e) => {
                               e.stopPropagation();
                               handleDrop(
@@ -168,7 +177,8 @@ export default function FileGrid() {
                             children={(field) => (
                               <div
                                 className={cn(
-                                  "group relative rounded-lg border bg-accent-foreground/[0.01] h-full p-1 hover:border-primary"
+                                  "group relative rounded-lg border bg-accent-foreground/[0.01] h-full p-1 hover:border-primary",
+                                  "drag-over-file"
                                 )}
                                 onClick={() => {
                                   field.handleChange(
@@ -184,16 +194,71 @@ export default function FileGrid() {
                                   }
                                 }}
                                 draggable
-                                onDragStart={(e) =>
-                                  e.dataTransfer.setData("text/plain", file._id)
-                                }
-                                onDragOver={(e) => e.preventDefault()}
+                                onDragStart={(e) => {
+                                  e.dataTransfer.setData("text/plain", file._id);
+                                  e.dataTransfer.setData("type", "file");
+                                  draggingTypeRef.current = "file";
+                                  
+                                  // Tạo drag image từ element hiện tại
+                                  const dragElement = e.currentTarget.cloneNode(true) as HTMLElement;
+                                  dragElement.style.width = `${e.currentTarget.offsetWidth}px`;
+                                  dragElement.style.opacity = "0.8";
+                                  dragElement.style.position = "absolute";
+                                  dragElement.style.top = "-9999px";
+                                  dragElement.style.pointerEvents = "none";
+                                  dragElement.style.transform = "scale(0.9)";
+                                  dragElement.style.boxShadow = "0 10px 30px rgba(0, 0, 0, 0.3)";
+                                  document.body.appendChild(dragElement);
+                                  
+                                  // Set drag image
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  e.dataTransfer.setDragImage(
+                                    dragElement,
+                                    rect.width / 2,
+                                    rect.height / 2
+                                  );
+                                  
+                                  // Xóa element sau khi drag bắt đầu
+                                  setTimeout(() => {
+                                    if (document.body.contains(dragElement)) {
+                                      document.body.removeChild(dragElement);
+                                    }
+                                  }, 0);
+                                }}
+                                onDragEnd={() => {
+                                  draggingTypeRef.current = null;
+                                }}
+                                onDragOver={(e) => {
+                                  // Nếu đang drag file, không cho phép drop lên file khác
+                                  if (draggingTypeRef.current === "file") {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    e.dataTransfer.dropEffect = "none";
+                                    e.currentTarget.style.cursor = "not-allowed";
+                                    return;
+                                  }
+                                  
+                                  e.preventDefault();
+                                  e.stopPropagation();
+                                }}
+                                onDragLeave={(e) => {
+                                  e.currentTarget.style.cursor = "";
+                                }}
                                 onDrop={(e) => {
+                                  // Chặn drop file lên file khác
+                                  if (draggingTypeRef.current === "file") {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    e.currentTarget.style.cursor = "";
+                                    return;
+                                  }
+                                  
                                   e.stopPropagation();
                                   handleDrop(
                                     e as unknown as DragEvent<HTMLButtonElement>,
                                     file.asset_id
                                   );
+                                  e.currentTarget.style.cursor = "";
                                 }}
                                 onDoubleClick={() =>
                                   form.setFieldValue(
@@ -347,7 +412,7 @@ export default function FileGrid() {
                     const res = await moveFiles(moveFileIds, {
                       folderPath: currentFolderPath,
                     });
-                    if (res.status === APIStatus.OK) {
+                    if (res?.status === APIStatus.OK) {
                       form.setFieldValue("moveFileIds", []);
                       const sourceFolderPath = files?.find((f) =>
                         moveFileIds.includes(f.asset_id)
