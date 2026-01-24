@@ -52,64 +52,25 @@ export function HeaderMenu({ categories }: { categories: Category[] }) {
   return (
     <div ref={menuRef}>
       <Menu setActive={setActive} className="flex-1 justify-end max-sm:hidden">
-      {categoriesTree?.map((category) => {
-        const index = category.index;
-        if (!category.isShow) return null;
-        const customCss = MENU_CSS[category.slug];
-        if (!category.children.length)
-          return (
-            <Link
-              key={category._id}
-              href={category.slug ? `/danh-muc/${category.slug}` : "#"}
-              style={{
-                order: index ? index : categoriesTree.length,
-              }}
-            >
-              <Button
-                onMouseEnter={() => setActive(null)}
-                variant="ghost"
-                className={cn(
-                  "hover:bg-transparent hover:text-[var(--brown-brand)] justify-start w-full rounded-none text-[var(--brown-brand)] uppercase text-xl font-bold",
-                  customCss
-                )}
+        {categoriesTree?.map((category) => {
+          const index = category.index;
+          if (!category.isShow) return null;
+          const customCss = MENU_CSS[category.slug];
+          if (!category.children.length)
+            return (
+              <Link
+                key={category._id}
+                href={category.slug ? `/danh-muc/${category.slug}` : "#"}
                 style={{
-                  ...(category.backgroundColor && {
-                    background: category.backgroundColor,
-                  }),
-                  ...(category.textColor && { color: category.textColor }),
+                  order: index ? index : categoriesTree.length,
                 }}
               >
-                {category.name}
-              </Button>
-            </Link>
-          );
-
-        const group = category.children.reduce((acc, cur) => {
-          const groupName = cur.groupName || "";
-          if (acc[groupName]) {
-            acc[groupName].push(cur);
-          } else {
-            acc[groupName] = [cur];
-          }
-          return acc;
-        }, {} as Record<string, CategoryTree[]>);
-        return (
-          <MenuItem
-            key={category._id}
-            setActive={setActive}
-            active={active}
-            item={category.name}
-            style={{
-              order: index ? index : categoriesTree.length,
-            }}
-            menuTrigger={
-              <Link href={category.slug ? `/danh-muc/${category.slug}` : "#"}>
                 <Button
+                  onMouseEnter={() => setActive(null)}
                   variant="ghost"
                   className={cn(
-                    "!bg-cover !bg-center rounded-none text-[var(--brown-brand)] uppercase text-xl font-bold",
-                    customCss,
-                    "hover:bg-transparent hover:text-[var(--brown-brand)]"
+                    "hover:bg-transparent hover:text-[var(--brown-brand)] justify-start w-full rounded-none text-[var(--brown-brand)] uppercase text-xl font-bold",
+                    customCss
                   )}
                   style={{
                     ...(category.backgroundColor && {
@@ -119,162 +80,219 @@ export function HeaderMenu({ categories }: { categories: Category[] }) {
                   }}
                 >
                   {category.name}
-                  <ChevronDown
-                    size={16}
-                    className={cn(
-                      "ml-[2px] transition-all ease-linear",
-                      category.name === active ? "-rotate-90" : ""
-                    )}
-                  />
                 </Button>
               </Link>
+            );
+
+          const group = category.children.reduce((acc, cur) => {
+            const groupName = cur.groupName || "";
+            if (acc[groupName]) {
+              acc[groupName].push(cur);
+            } else {
+              acc[groupName] = [cur];
             }
-            className={cn(
-              "flex w-screen container mx-auto h-auto items-center !p-[55px] gap-20"
-            )}
-          >
-            <div className="w-fit flex self-start gap-[20px] pt-10">
-              {!!category.children.length ? (
-                Object.keys(group).map((g) => {
-                  const childs = group[g];
-                  return (
-                    <div key={g} className="text-xl flex flex-col gap-[10px]">
-                      {g && (
-                        <p className="uppercase text-[var(--brown-brand)] font-bold">
-                          {g}
-                        </p>
+            return acc;
+          }, {} as Record<string, CategoryTree[]>);
+          return (
+            <MenuItem
+              key={category._id}
+              setActive={setActive}
+              active={active}
+              item={category.name}
+              style={{
+                order: index ? index : categoriesTree.length,
+              }}
+              menuTrigger={
+                <Link
+                  href={category.slug ? `/danh-muc/${category.slug}` : "#"}
+                >
+                  <Button
+                    variant="ghost"
+                    className={cn(
+                      "!bg-cover !bg-center rounded-none text-[var(--brown-brand)] uppercase text-xl font-bold",
+                      customCss,
+                      "hover:bg-transparent hover:text-[var(--brown-brand)]"
+                    )}
+                    style={{
+                      ...(category.backgroundColor && {
+                        background: category.backgroundColor,
+                      }),
+                      ...(category.textColor && { color: category.textColor }),
+                    }}
+                  >
+                    {category.name}
+                    <ChevronDown
+                      size={16}
+                      className={cn(
+                        "ml-[2px] transition-all ease-linear",
+                        category.name === active ? "-rotate-90" : ""
                       )}
-                      {childs.map((child) => {
-                        const childIndex = child.index;
-                        const customCss = MENU_CSS[child.slug || ""];
-                        if (!child.children.length)
+                    />
+                  </Button>
+                </Link>
+              }
+              className={cn(
+                "flex w-screen container mx-auto h-auto items-center !p-[55px] gap-20"
+              )}
+            >
+              <div className="w-fit flex self-start gap-[20px] pt-10">
+                {!!category.children.length ? (
+                  Object.keys(group).map((g) => {
+                    const childs = group[g];
+                    return (
+                      <div key={g} className="text-xl flex flex-col gap-[10px]">
+                        {g && (
+                          <p className="uppercase text-[var(--brown-brand)] font-bold">
+                            {g}
+                          </p>
+                        )}
+                        {childs.map((child) => {
+                          const childIndex = child.index;
+                          const customCss = MENU_CSS[child.slug || ""];
+                          if (!child.children.length)
+                            return (
+                              <Link
+                                key={child.id}
+                                href={
+                                  child.slug ? `/danh-muc/${child.slug}` : "#"
+                                }
+                                onClick={() => {
+                                  setActive(null);
+                                  setSubmenu(null);
+                                }}
+                                className="!text-[#777777] hover:underline"
+                                style={{
+                                  order: childIndex
+                                    ? childIndex
+                                    : category.children.length,
+                                }}
+                              >
+                                {child.name}
+                              </Link>
+                            );
                           return (
-                            <Link
+                            <SubMenuItem
                               key={child.id}
-                              href={
-                                child.slug ? `/danh-muc/${child.slug}` : "#"
-                              }
-                              className="!text-[#777777] hover:underline"
+                              active={submenu}
+                              setActive={setSubmenu}
+                              item={child.name}
+                              className={cn(
+                                "flex flex-col z-10 text-[var(--brown-brand)] uppercase"
+                              )}
                               style={{
                                 order: childIndex
                                   ? childIndex
                                   : category.children.length,
                               }}
-                            >
-                              {child.name}
-                            </Link>
-                          );
-                        return (
-                          <SubMenuItem
-                            key={child.id}
-                            active={submenu}
-                            setActive={setSubmenu}
-                            item={child.name}
-                            className={cn(
-                              "flex flex-col z-10 text-[var(--brown-brand)] uppercase"
-                            )}
-                            style={{
-                              order: childIndex
-                                ? childIndex
-                                : category.children.length,
-                            }}
-                            subMenuTrigger={
-                              <Link
-                                href={
-                                  child.slug ? `/danh-muc/${child.slug}` : "#"
-                                }
-                              >
-                                <Button
-                                  variant="ghost"
-                                  className={cn(
-                                    "flex w-full justify-between px-2 min-w-[120px]",
-                                    customCss
-                                  )}
-                                >
-                                  {child.name}
-                                  <ChevronRight size={16} className="ml-4" />
-                                </Button>
-                              </Link>
-                            }
-                          >
-                            {child.children.map((subChild) => {
-                              const customCss = MENU_CSS[subChild.slug || ""];
-                              return (
+                              subMenuTrigger={
                                 <Link
-                                  key={subChild.id}
                                   href={
-                                    subChild.slug
-                                      ? `/danh-muc/${subChild.slug}`
-                                      : "#"
+                                    child.slug ? `/danh-muc/${child.slug}` : "#"
                                   }
+                                  onClick={() => {
+                                    setActive(null);
+                                    setSubmenu(null);
+                                  }}
                                 >
                                   <Button
                                     variant="ghost"
                                     className={cn(
-                                      "justify-start pl-2 w-full",
+                                      "flex w-full justify-between px-2 min-w-[120px]",
                                       customCss
                                     )}
                                   >
-                                    {subChild.name}
+                                    {child.name}
+                                    <ChevronRight size={16} className="ml-4" />
                                   </Button>
                                 </Link>
-                              );
-                            })}
-                          </SubMenuItem>
-                        );
-                      })}
-                    </div>
-                  );
-                })
-              ) : (
-                <Link href={category.slug ? `/danh-muc/${category.slug}` : "#"}>
-                  <Button
-                    variant="ghost"
-                    className={cn(
-                      "justify-start text-[var(--brown-brand)] uppercase",
-                      index !== -1 && `order-[${index}]`,
-                      customCss
-                    )}
-                    style={{
-                      background: category.backgroundColor,
-                    }}
-                  >
-                    {category.name}
-                  </Button>
-                </Link>
-              )}
-            </div>
-            {category.desktopBanner && (
-              <div className="flex-1 relative h-[350px]">
-                <Image
-                  src={category.desktopBanner}
-                  alt={category.name}
-                  fill
-                  sizes="800px"
-                  priority
-                />
+                              }
+                            >
+                              {child.children.map((subChild) => {
+                                const customCss = MENU_CSS[subChild.slug || ""];
+                                return (
+                                  <Link
+                                    key={subChild.id}
+                                    href={
+                                      subChild.slug
+                                        ? `/danh-muc/${subChild.slug}`
+                                        : "#"
+                                    }
+                                    onClick={() => {
+                                      setActive(null);
+                                      setSubmenu(null);
+                                    }}
+                                  >
+                                    <Button
+                                      variant="ghost"
+                                      className={cn(
+                                        "justify-start pl-2 w-full",
+                                        customCss
+                                      )}
+                                    >
+                                      {subChild.name}
+                                    </Button>
+                                  </Link>
+                                );
+                              })}
+                            </SubMenuItem>
+                          );
+                        })}
+                      </div>
+                    );
+                  })
+                ) : (
+                  <Link href={category.slug ? `/danh-muc/${category.slug}` : "#"}>
+                    <Button
+                      variant="ghost"
+                      className={cn(
+                        "justify-start text-[var(--brown-brand)] uppercase",
+                        index !== -1 && `order-[${index}]`,
+                        customCss
+                      )}
+                      style={{
+                        background: category.backgroundColor,
+                      }}
+                      onClick={() => {
+                        setActive(null);
+                        setSubmenu(null);
+                      }}
+                    >
+                      {category.name}
+                    </Button>
+                  </Link>
+                )}
               </div>
-            )}
-          </MenuItem>
-        );
-      })}
-      <Link
-        href="/magazine"
-        style={{
-          order: categoriesTree.length + 1,
-        }}
-      >
-        <Button
-          onMouseEnter={() => setActive(null)}
-          variant="ghost"
-          className={cn(
-            "hover:bg-transparent hover:text-[var(--brown-brand)] justify-start w-full rounded-none text-[var(--brown-brand)] uppercase text-xl font-bold"
-          )}
+              {category.desktopBanner && (
+                <div className="flex-1 relative h-[350px]">
+                  <Image
+                    src={category.desktopBanner}
+                    alt={category.name}
+                    fill
+                    sizes="800px"
+                    priority
+                  />
+                </div>
+              )}
+            </MenuItem>
+          );
+        })}
+        <Link
+          href="/magazine"
+          style={{
+            order: categoriesTree.length + 1,
+          }}
         >
-          Magazine
-        </Button>
-      </Link>
-    </Menu>
+          <Button
+            onMouseEnter={() => setActive(null)}
+            variant="ghost"
+            className={cn(
+              "hover:bg-transparent hover:text-[var(--brown-brand)] justify-start w-full rounded-none text-[var(--brown-brand)] uppercase text-xl font-bold"
+            )}
+          >
+            Magazine
+          </Button>
+        </Link>
+      </Menu>
     </div>
   );
 }
