@@ -11,7 +11,7 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import dynamic from "next/dynamic";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 const HeaderSearch = dynamic(() => import("./header-search"));
 export function HeaderMenu({ categories }: { categories: Category[] }) {
   const configs = useConfigs((s) => s.configs);
@@ -31,10 +31,27 @@ export function HeaderMenu({ categories }: { categories: Category[] }) {
 
   const [active, setActive] = useState<string | null>(null);
   const [submenu, setSubmenu] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const MENU_CSS = (configs?.MENU_CSS as Record<string, string>) ?? {};
 
+  // Handle click outside to close menu
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setActive(null);
+        setSubmenu(null);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
+
   return (
-    <Menu setActive={setActive} className="flex-1 justify-end max-sm:hidden">
+    <div ref={menuRef}>
+      <Menu setActive={setActive} className="flex-1 justify-end max-sm:hidden">
       {categoriesTree?.map((category) => {
         const index = category.index;
         if (!category.isShow) return null;
@@ -258,5 +275,6 @@ export function HeaderMenu({ categories }: { categories: Category[] }) {
         </Button>
       </Link>
     </Menu>
+    </div>
   );
 }
